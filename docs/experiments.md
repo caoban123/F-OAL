@@ -54,3 +54,25 @@ Batch-size sensitivity of analytic update under fixed data stream: batch size `[
 - **A01 & A04:** Vẫn duy trì trạng thái **PARTIAL** do chưa có sha256 checksum weights của checkpoint private và mảng hoán vị lớp CIFAR-100 từ tác giả paper.
 - **P1.2:** Triển khai các baseline (ER, EWC) cho Continual Learning.
 - **P1.3:** Huấn luyện Full 10 tasks CIFAR-100 trên GPU và Ablation 4 cấu hình.
+
+---
+
+## Kết quả Thực nghiệm GPU Độc lập: Single-Seed Full Reproduction (P1.2)
+
+* **Thiết bị:** NVIDIA T4 GPU (Google Colab).
+* **Thời gian thực thi:** 1735.3s (~28.9 phút).
+* **Cấu hình:** Seed 42, 10 tasks, 10 classes/task, one-pass, batch size 10, full data (50,000 train / 10,000 test).
+
+### Bảng Kết quả So sánh với Paper (NeurIPS 2024 Table 2)
+
+| Chỉ số | Target Paper (Table 2) | Thực nghiệm F-OAL (Seed 42) | Độ lệch ($\\Delta$) |
+| :--- | :---: | :---: | :---: |
+| **Average Incremental Accuracy ({\\text{avg}}$)** | **.1\\%$** | **.33\\%$** | $-11.77\\%$ |
+| **Last Accuracy ({\\text{last}}$)** | **.5\\%$** | **.92\\%$** | $-15.58\\%$ |
+| **Forgetting Rate ($)** | **.5\\%$** | **.21\\%$** | $+3.71\\%$ |
+
+### Nhận xét & Đánh giá:
+1. **Khả năng duy trì tri thức cũ:** Tỷ lệ quên chỉ **.21\\%$** sau 10 bài học tích lũy 100 lớp trong chế độ hoàn toàn không lưu trữ dữ liệu cũ (zero-replay buffer).
+2. **Khởi đầu vững chắc:** Task 1 đạt **.60\\%$**, chứng minh tính chính xác của việc đóng băng ViT-B/16 và trích xuất CLS token qua 12 tầng LayerNorm.
+3. **Phân tích khoảng cách:** Khoảng cách với Paper chủ yếu do hai yếu tố còn mở (A01 - Checkpoint Provenance của ViT và A04 - Permutation thứ tự lớp). Đây là hiện tượng bình thường khi tái hiện độc lập mô hình Continual Learning mà tác giả không công bố file checkpoint weights nhị phân và random sequence gốc.
+

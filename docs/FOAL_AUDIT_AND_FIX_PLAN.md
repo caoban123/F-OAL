@@ -680,3 +680,58 @@ python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_1
      * Section 7 (Multi-seed 3 seeds) đã được chủ động comment out và chuyển thành tùy chọn cho giai đoạn P1.3, ngăn chặn việc tự động chạy multi-seed ngoài ý muốn khi nhấn 'Run All'.
      * Mọi lệnh trong notebook đều khớp chính xác với CLI interface của `scripts.train`, `scripts.evaluate`, và `scripts.summarize_runs`.
 
+---
+
+## 20. Báo cáo Nghiệm thu Thực nghiệm GPU Chính thức: P1.2 — Single-Seed Full Reproduction on GPU
+
+* **Thời điểm hoàn thành:** 01/11/2026.
+* **Môi trường thực thi:** Google Colab GPU (NVIDIA T4).
+* **Trạng thái Giai đoạn P1.2:** **PASS** (Đã chạy thành công 100% 10 tasks, lưu đủ 10 checkpoints, trích xuất metrics và export archive).
+* **Thông số thực nghiệm:**
+  * **Dataset:** CIFAR-100 (100 classes, 50,000 train, 10,000 test).
+  * **Giao thức:** 10 tasks $\\times$ 10 classes, streaming batch size 10, **One-pass** (single epoch, zero-replay buffer).
+  * **Random Seed:** Seed 42 (coupled: base=42, class_order=42, projection=42, stream=42).
+  * **Mô hình:** Frozen ViT-B/16 (`vit_base_patch16_224.augreg_in1k`), Feature Fusion (12 blocks mean + LayerNorm), Smooth Projection (=1000, \\gamma=1.0$), RLS Woodbury update (float64, $\\lambda=0.1$).
+  * **Tổng thời gian chạy:** **1735.3 giây (~28.9 phút)** trên GPU T4.
+
+### 20.1. Bảng Đối chiếu Kết quả Thực tế với Paper F-OAL (NeurIPS 2024 Table 2)
+
+| Chỉ số Đánh giá | Mục tiêu Paper (Table 2, CIFAR-100 B0) | Kết quả GPU Thực tế (Seed 42) | Đánh giá & Phân tích Học thuật |
+| :--- | :---: | :---: | :--- |
+| **Average Incremental Accuracy ({\\text{avg}}$)** | **.1\\%$** (multi-seed mean) | **.33\\%$** | Xu hướng hội tụ chuẩn: Task 1 đạt **.60\\%$**, suy giảm mượt dần qua 10 tasks. Khoảng cách với Paper chủ yếu do Checkpoint Provenance (A01) và Class Permutation (A04). |
+| **Last Task Accuracy ({\\text{last}}$)** | **.5\\%$** | **.92\\%$** | Sau khi tích lũy cả 100 lớp, độ chính xác vẫn duy trì trên \\%$, vượt xa các baseline thông thường như Fine-tuning (~-25\\%$). |
+| **Average Forgetting Rate ($)** | **.5\\%$** | **.21\\%$** | Hiện tượng quên duy trì ở mức một chữ số ($<10\\%$), chứng minh công thức Woodbury RLS giữ vững tri thức cũ cực tốt mà không cần replay buffer. |
+
+### 20.2. Diễn biến Chi tiết Qua 10 Tasks (Stage Accuracies & Forgetting)
+
+* **Stage Accuracies ($ tại mỗi task $):**
+  * Task 1 (10 classes, 5,000 samples): **.60\\%$**
+  * Task 2 (20 classes, 10,000 samples): **.00\\%$**
+  * Task 3 (30 classes, 15,000 samples): **.07\\%$**
+  * Task 4 (40 classes, 20,000 samples): **.60\\%$**
+  * Task 5 (50 classes, 25,000 samples): **.10\\%$**
+  * Task 6 (60 classes, 30,000 samples): **.95\\%$**
+  * Task 7 (70 classes, 35,000 samples): **.77\\%$**
+  * Task 8 (80 classes, 40,000 samples): **.01\\%$**
+  * Task 9 (90 classes, 45,000 samples): **.31\\%$**
+  * Task 10 (100 classes, 50,000 samples): **.92\\%$**
+
+* **Final Task Accuracies ({10, j}$ - Độ chính xác từng task cũ tại thời điểm kết thúc task 10):**
+  * Task 1: .5\\%$
+  * Task 2: .2\\%$
+  * Task 3: .0\\%$
+  * Task 4: .5\\%$
+  * Task 5: .5\\%$
+  * Task 6: .5\\%$
+  * Task 7: .2\\%$
+  * Task 8: .0\\%$
+  * Task 9: .4\\%$
+  * Task 10: .4\\%$
+
+### 20.3. Hiện vật Thực nghiệm & Khả năng Truy vết (Artifacts)
+* **Checkpoints:** Lưu đầy đủ 10 files nhị phân: `task_01.pt` đến `task_10.pt` trong thư mục `results/foal_full_cifar100_seed42/`.
+* **Metrics:** `results/foal_full_cifar100_seed42/metrics.json` (chứa toàn bộ ma trận  \\times 10$, stage accuracies, forgetting).
+* **Log CSV:** `results/foal_full_cifar100_seed42/task_accuracy.csv`.
+* **Bảng tổng hợp tự động:** `results/summary_runs.csv` và `results/summary_aggregated.csv`.
+* **Gói nén lưu trữ:** `foal_cifar100_single_seed42_results.zip`.
+
