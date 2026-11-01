@@ -62,6 +62,23 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     backbone = model_cfg.get('backbone', 'unknown')
     projection_dim = model_cfg.get('projection_dim', 1000)
     gamma = model_cfg.get('gamma', 1.0)
+    rls_dtype = model_cfg.get('rls_dtype', 'float64')
+    ff = model_cfg.get('feature_fusion', meta.get('feature_fusion', True))
+    sp = model_cfg.get('smooth_projection', meta.get('smooth_projection', True))
+
+    seeds = meta.get('seeds', {})
+    base_seed = seeds.get('base', meta.get('config', {}).get('seed'))
+    class_order_seed = seeds.get('class_order', base_seed)
+    projection_seed = seeds.get('projection', base_seed)
+    stream_seed = seeds.get('stream', base_seed)
+
+    if class_order_seed == base_seed and projection_seed == base_seed and stream_seed == base_seed:
+        seed_coupling = 'coupled'
+    else:
+        seed_coupling = f'c{class_order_seed}_p{projection_seed}_s{stream_seed}'
+
+    class_order = meta.get('class_order')
+    class_order_mode = 'custom_order' if (class_order is not None and class_order_seed is None) else 'seeded_order'
 
     # Completeness verification:
     # 1. Must contain all required metric fields
@@ -83,12 +100,17 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     protocol_sig = (
         method,
         exp_type,
+        bool(ff),
+        bool(sp),
         int(expected_tasks),
         limit_train,
         limit_test,
         str(backbone),
         int(projection_dim),
-        float(gamma)
+        float(gamma),
+        str(rls_dtype),
+        str(seed_coupling),
+        str(class_order_mode)
     )
 
     return {
@@ -138,11 +160,20 @@ def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
 
 def format_protocol_description(sig: tuple) -> str:
     """Format protocol signature into human-readable label."""
-    method, exp_type, tasks, lim_train, lim_test, backbone, p_dim, gamma = sig
+    method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode = sig
     data_desc = 'full data'
     if lim_train or lim_test:
         data_desc = f"train<={lim_train or 'all'}, test<={lim_test or 'all'}"
-    return f"{method} | {exp_type} | {tasks} tasks ({data_desc}, D={p_dim}, gamma={gamma})"
+    desc = f"{method} | {exp_type} | {tasks} tasks ({data_desc}, D={p_dim}, gamma={gamma}, {dtype})"
+    if not ff:
+        desc += " [no_fusion]"
+    if not sp:
+        desc += " [no_proj]"
+    if seed_coup != 'coupled':
+        desc += f" [seeds: {seed_coup}]"
+    if order_mode != 'seeded_order':
+        desc += f" [{order_mode}]"
+    return desc
 
 
 def summarize_results(results_dir: str = 'results', output_dir: str | None = None,

@@ -650,5 +650,33 @@ python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_1
      * Cung cấp luồng chuẩn hóa: Hardware Check (`nvidia-smi`, PyTorch CUDA check) -> Dependency Setup -> Preflight PyTest Suite -> Single-Seed Full F-OAL (Seed 42, 10 tasks $\times$ 10 classes, batch size 10, one-pass) -> Independent Checkpoint Evaluation -> Results Summarizer -> Multi-Seed Orchestration -> Download Zip.
 * **Trạng thái A01 và A04:** Tiếp tục duy trì **PARTIAL** do chưa có sha256 checksum weights của checkpoint private từ tác giả paper (A01) và mảng permutation private của CIFAR-100 trong Bảng 2 paper (A04).
 
+---
 
+## 19. Báo cáo kiểm toán & chuẩn bị thực thi P1.2 — First GPU Execution & Single-Seed Full F-OAL Reproduction
+
+* **Thời điểm kiểm toán:** 01/11/2026.
+* **Tổng số kiểm thử đạt chuẩn:** **32/32 passed** trong 47s (`python -m pytest -v`).
+* **Trạng thái môi trường phần cứng máy cục bộ:**
+  * **Hệ điều hành:** Windows 11.
+  * **GPU:** `Intel(R) Arc(TM) Graphics` (Không có card NVIDIA CUDA rời).
+  * **CUDA Available:** `False` (`torch.cuda.is_available() == False`, `torch.cuda.device_count() == 0`).
+  * **Định hướng thực nghiệm:** Tuyệt đối không giả lập kết quả hoặc chạy full reproduction trên CPU (vi phạm thời gian và cấu hình thực nghiệm chuẩn). Giai đoạn P1.2 chỉ được đánh dấu **PASS** khi toàn bộ quá trình full training và independent evaluation hoàn tất thành công trên môi trường GPU thật (Google Colab / Kaggle).
+* **Kết quả xử lý các nguy cơ làm sai lệch kết quả thực nghiệm:**
+  1. **Khắc phục triệt để Protocol Signature trong `scripts/summarize_runs.py`:**
+     * Bổ sung đầy đủ 13 thành phần vào `protocol_sig`: `(method, exp_type, bool(ff), bool(sp), expected_tasks, limit_train, limit_test, backbone, projection_dim, gamma, rls_dtype, seed_coupling, class_order_mode)`.
+     * Bảo đảm các run khác nhau về Feature Fusion (True/False), Smooth Projection (True/False), RLS dtype (float64/float32), hoặc sử dụng seeds phân tách (decoupled projection/class_order seeds) tuyệt đối không bị gom nhóm nhầm lẫn với các run chuẩn.
+     * Xác minh qua unit test: `test_summarize_runs_hyperparameter_and_seed_isolation` trong `tests/test_summarize_runs.py`.
+  2. **Thắt chặt rào chắn `--skip-completed` trong `scripts/run_seeds.py`:**
+     * Nâng cấp `is_run_completed` để đối chiếu toàn diện: `seed`, `class_order_seed`, `projection_seed`, `stream_seed`, `max_tasks`, `limit_train_per_task`, `limit_test_per_task`, `feature_fusion`, `smooth_projection`, `backbone`, `projection_dim`, `gamma`, `rls_dtype`, và `batch_size`.
+     * Nếu bất kỳ tham số nào trong checkpoint cũ không khớp với cấu hình hiện tại, hàm sẽ trả về `False`, buộc hệ thống huấn luyện lại từ đầu thay vì tái sử dụng checkpoint không tương thích.
+     * Xác minh qua unit test: `tests/test_multi_seed_infrastructure.py`.
+  3. **Minh bạch hóa trạng thái kiểm thử Weights & Biases (W&B):**
+     * Đã cài đặt `wandb==0.31.0`.
+     * Luồng Offline Logging: Đã kiểm chứng thành công việc khởi tạo `wandb.init(mode='offline')`, ghi step metrics, summary metrics và upload file artifacts (`metrics.json`, `metadata.json`, `task_accuracy.csv`) vào thư mục local.
+     * Ghi nhận lỗi môi trường: Trên hệ thống Windows với đường dẫn chứa ký tự tiếng Việt có dấu (`D:\Nhập môn ML\Paper`), logger mặc định của wandb có thể gặp lỗi `charmap` codec nếu thiếu `PYTHONIOENCODING=utf-8` / `PYTHONUTF8=1`.
+     * Báo cáo trung thực: Việc đồng bộ trực tuyến lên cloud W&B **chưa được kiểm chứng** do máy cục bộ chưa có `WANDB_API_KEY`.
+  4. **Kiểm tra và chuẩn hóa Notebook Single-Seed (`notebooks/foal_cifar100_full_reproduction.ipynb`):**
+     * Đã điều chỉnh để notebook mặc định **chỉ thực thi Single-Seed (Seed 42)** theo đúng phạm vi P1.2.
+     * Section 7 (Multi-seed 3 seeds) đã được chủ động comment out và chuyển thành tùy chọn cho giai đoạn P1.3, ngăn chặn việc tự động chạy multi-seed ngoài ý muốn khi nhấn 'Run All'.
+     * Mọi lệnh trong notebook đều khớp chính xác với CLI interface của `scripts.train`, `scripts.evaluate`, và `scripts.summarize_runs`.
 

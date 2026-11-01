@@ -57,11 +57,17 @@ def is_run_completed(run_dir: Path, expected_protocol: dict[str, Any] | None = N
         # 4. If expected_protocol is given, verify strict parameter matching
         if expected_protocol is not None:
             # Seed match
+            seeds = metadata.get('seeds', {})
             req_seed = expected_protocol.get('seed')
             if req_seed is not None:
-                recorded_seed = metadata.get('seeds', {}).get('base', metadata.get('config', {}).get('seed'))
+                recorded_seed = seeds.get('base', metadata.get('config', {}).get('seed'))
                 if recorded_seed != req_seed:
                     return False
+            for seed_key in ['class_order_seed', 'projection_seed', 'stream_seed']:
+                if seed_key in expected_protocol:
+                    field = seed_key.replace('_seed', '')
+                    if seeds.get(field) != expected_protocol[seed_key]:
+                        return False
             
             # Protocol match
             proto = metadata.get('training_protocol', {})
@@ -71,6 +77,9 @@ def is_run_completed(run_dir: Path, expected_protocol: dict[str, Any] | None = N
             if 'limit_test_per_task' in expected_protocol:
                 if proto.get('limit_test_per_task') != expected_protocol['limit_test_per_task']:
                     return False
+            if 'batch_size' in expected_protocol:
+                if proto.get('batch_size') != expected_protocol['batch_size']:
+                    return False
 
             # Model config match
             model_cfg = metadata.get('model_config', {})
@@ -79,6 +88,18 @@ def is_run_completed(run_dir: Path, expected_protocol: dict[str, Any] | None = N
                     return False
             if 'smooth_projection' in expected_protocol:
                 if model_cfg.get('smooth_projection') != expected_protocol['smooth_projection']:
+                    return False
+            if 'backbone' in expected_protocol:
+                if model_cfg.get('backbone') != expected_protocol['backbone']:
+                    return False
+            if 'projection_dim' in expected_protocol:
+                if model_cfg.get('projection_dim') != expected_protocol['projection_dim']:
+                    return False
+            if 'gamma' in expected_protocol:
+                if model_cfg.get('gamma') != expected_protocol['gamma']:
+                    return False
+            if 'rls_dtype' in expected_protocol:
+                if model_cfg.get('rls_dtype') != expected_protocol['rls_dtype']:
                     return False
 
         return True
@@ -112,11 +133,19 @@ def run_multi_seed(args: argparse.Namespace) -> dict[str, Any]:
 
         expected_protocol = {
             'seed': seed,
+            'class_order_seed': args.class_order_seed if args.class_order_seed is not None else seed,
+            'projection_seed': args.projection_seed if args.projection_seed is not None else seed,
+            'stream_seed': args.stream_seed if args.stream_seed is not None else seed,
             'max_tasks': expected_tasks,
             'limit_train_per_task': args.limit_train_per_task,
             'limit_test_per_task': args.limit_test_per_task,
             'feature_fusion': bool(cfg.get('model', {}).get('feature_fusion', True)) and not args.no_feature_fusion,
             'smooth_projection': bool(cfg.get('model', {}).get('smooth_projection', True)) and not args.no_projection,
+            'backbone': cfg.get('model', {}).get('backbone', 'vit_base_patch16_224.augreg_in1k'),
+            'projection_dim': int(cfg.get('model', {}).get('projection_dim', 1000)),
+            'gamma': float(cfg.get('model', {}).get('gamma', 1.0)),
+            'rls_dtype': cfg.get('model', {}).get('rls_dtype', 'float64'),
+            'batch_size': int(cfg.get('training', {}).get('batch_size', 10)),
         }
 
         if args.skip_completed and is_run_completed(run_dir, expected_protocol=expected_protocol):

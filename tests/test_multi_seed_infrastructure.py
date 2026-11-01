@@ -85,3 +85,10 @@ def test_is_run_completed_logic():
 
         # Should FAIL if requested limit is different (e.g. full data instead of 100)
         assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'limit_train_per_task': None})
+
+        # Should FAIL if requested model config differs (e.g. feature_fusion=False)
+        assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'feature_fusion': False})
+
+        # Should FAIL if projection_seed or class_order_seed is different
+        assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'projection_seed': 999})
+
