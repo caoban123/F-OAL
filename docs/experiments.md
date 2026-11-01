@@ -110,8 +110,10 @@ python -m scripts.summarize_runs --results-dir results
 ### 4.2. Kết quả Single-Seed Full Reproduction trên GPU (P1.2 — CIFAR-100, 10 Tasks, Seed 42)
 
 > **Ghi chú Sửa lỗi Tài liệu & Trạng thái Bằng chứng (01/11/2026):**
-> 1. Các số liệu dưới đây được khôi phục chính xác từ nội dung nguyên bản của `results/foal_full_cifar100_seed42/metrics.json` do người dùng trích xuất trực tiếp sau khi chạy xong trên Google Colab GPU (NVIDIA T4), khắc phục lỗi mất chữ số đầu do nội suy biến `$` của PowerShell trong commit `c74b0de`.
-> 2. **Trạng thái hiện vật (`PENDING RAW ARTIFACT VERIFICATION` trên đĩa cục bộ):** Toàn bộ ma trận $10 \times 10$ và thời gian chạy (`1735.3s`) đã được xác minh toán học từ bản chụp `metrics.json` trong phiên làm việc, nhưng thư mục `results/foal_full_cifar100_seed42/` chưa có mặt vật lý trong kho lưu trữ cục bộ (tệp `foal_cifar100_single_seed42_results.zip` tải về có kích thước 326 bytes chỉ chứa `results/.gitkeep` do lệnh nén chạy ở thư mục cha trên Colab).
+> 1. Các số liệu dưới đây được khôi phục chính xác từ [`results/foal_full_cifar100_seed42/metrics.json`](../results/foal_full_cifar100_seed42/metrics.json), khắc phục lỗi mất chữ số đầu do nội suy biến `$` của PowerShell trong commit `c74b0de`.
+> 2. **Trạng thái hiện vật (`VERIFIED` trên đĩa cục bộ & Git):** Gói kết quả [`foal_cifar100_single_seed42_results.zip`](../foal_cifar100_single_seed42_results.zip) ($109.8\text{ MB}$) đã được giải nén và kiểm chứng đầy đủ:
+>    * Các tệp kết quả nhẹ ([`metrics.json`](../results/foal_full_cifar100_seed42/metrics.json), [`metadata.json`](../results/foal_full_cifar100_seed42/metadata.json), [`task_accuracy.csv`](../results/foal_full_cifar100_seed42/task_accuracy.csv), [`summary_runs.csv`](../results/summary_runs.csv), [`summary_aggregated.csv`](../results/summary_aggregated.csv)) được lưu trực tiếp trên Git.
+>    * 10 tệp checkpoint nhị phân `task_01.pt` .. `task_10.pt` ($\approx 11.5\text{ MB}$/tệp; đã kiểm chứng `task_10.pt` có $\|R - R^\top\|_{\max} = 0.0$, `all_finite = True`) và gói W&B offline `wandb/offline-run-20261101_084136-2cdeiptv/run-2cdeiptv.wandb` ($188\text{ KB}$) được lưu trên đĩa cục bộ (loại khỏi Git để tránh giới hạn $100\text{ MB}$/tệp của GitHub).
 
 #### A. Cấu hình Thực thi Chính xác (`configs/cifar100.yaml`)
 * **Thiết bị:** Google Colab GPU — NVIDIA T4 (`device = cuda`).

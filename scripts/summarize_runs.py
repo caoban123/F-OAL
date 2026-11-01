@@ -226,6 +226,10 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
     for r in all_runs:
         groups[r['protocol_sig']].append(r)
 
+    def _sig_sort_key(item: tuple[tuple, list[dict[str, Any]]]) -> tuple:
+        sig = item[0]
+        return tuple(-1 if v is None else v for v in sig)
+
     # Write aggregated summary CSV
     aggregated_csv = out_path / 'summary_aggregated.csv'
     with aggregated_csv.open('w', newline='', encoding='utf-8') as f:
@@ -234,11 +238,13 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
             'protocol_label', 'method', 'experiment_type', 'num_tasks', 'limit_train', 'limit_test',
             'completed_runs', 'total_runs', 'avg_inc_acc_mean_std', 'last_acc_mean_std', 'forgetting_mean_std'
         ])
-        for sig, run_list in sorted(groups.items()):
+        for sig, run_list in sorted(groups.items(), key=_sig_sort_key):
             stats = compute_group_stats(run_list)
             label = format_protocol_description(sig)
             writer.writerow([
-                label, sig[0], sig[1], sig[2], sig[3] or 'full', sig[4] or 'full',
+                label, sig[0], sig[1], sig[4],
+                sig[5] if sig[5] is not None else 'full',
+                sig[6] if sig[6] is not None else 'full',
                 stats['count'], stats['total_runs'],
                 stats.get('average_incremental_accuracy_display', 'N/A'),
                 stats.get('last_accuracy_display', 'N/A'),
@@ -266,7 +272,7 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
     print('=' * 100)
     print(f"{'Protocol / Group':<55} {'Runs':<8} {'Avg Incr Acc':<20} {'Last Acc':<18}")
     print('-' * 100)
-    for sig, run_list in sorted(groups.items()):
+    for sig, run_list in sorted(groups.items(), key=_sig_sort_key):
         stats = compute_group_stats(run_list)
         label = format_protocol_description(sig)
         run_count_str = f"{stats['count']}/{stats['total_runs']}"
