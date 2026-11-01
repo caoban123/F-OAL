@@ -22,6 +22,9 @@
 # ==============================================================================
 
 seed: 42
+class_order_seed: null   # Seed for class order permutation (defaults to seed if null)
+projection_seed: null    # Seed for Gaussian random projection matrix (defaults to seed if null)
+stream_seed: null        # Seed for batch stream shuffling & sampling (defaults to seed if null)
 
 dataset:
   name: uoft-cs/cifar100

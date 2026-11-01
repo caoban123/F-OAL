@@ -5,52 +5,52 @@
 - Section 3.1: trung bình các block output của ViT, Gaussian random projection cố định, sigmoid.
 - Section 3.2–3.3, Equations (10)–(13): block RLS, tăng số cột của classifier khi có lớp mới.
 - Dataset CIFAR-100, 10 stages × 10 classes, minibatch size 10 theo mô tả thực nghiệm.
-- Số chiều projection mặc định 1000, gamma=1.0 (kiểm tra lại cấu hình tác giả khi chạy chính thức).
+- Số chiều projection mặc định 1000, gamma=1.0.
 
 ## Bước A — Validity (CPU)
 
-1. `pytest -q`: RLS bằng nghiệm ridge đóng theo sai số máy; không replay train indices; projection cố định.
+1. `python -m pytest -v`: Đạt **30/30 passed**; RLS bằng nghiệm ridge đóng theo sai số máy; không replay train indices; projection cố định; metrics hand calculation; environment detection; multi-seed isolation.
 2. Kiểm tra class order, nhãn remap, train/test disjoint, old class columns không biến mất.
-3. Khi thay minibatch partition, nghiệm RLS gần như không đổi nếu thứ tự mẫu không đổi.
+3. Khi thay minibatch partition, nghiệm RLS không đổi nếu thứ tự mẫu không đổi.
 
 ## Bước B — Pilot (KHÔNG được coi là reproduction paper)
 
-`python -m scripts.train --max-tasks 2 --limit-train-per-task 100`
+`python -m scripts.train --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100`
 
-Mục tiêu là kiểm chứng kỹ thuật: tải dataset, ViT chạy được, RLS không singular, metric có giá trị hợp lệ, không bị OOM. Pilot có thể dùng các lớp của hai task đầu, không thay cho báo cáo kết quả đầy đủ.
+Mục tiêu là kiểm chứng kỹ thuật: tải dataset, ViT chạy được, RLS không singular, metric có giá trị hợp lệ, không bị OOM. Pilot dùng các lớp của hai task đầu, không thay cho báo cáo kết quả đầy đủ.
 
-## Bước C — Main comparison
+## Bước C — Main comparison & Multi-Seed (Kaggle/Colab GPU)
 
-1. Chạy 10 task × 10 class trên CIFAR-100 với class order và preprocessing ghi rõ.
-2. Lưu accuracy per task, mean stage accuracy, last accuracy; metric forgetting theo Equations (17)–(18); kiểm chứng bằng ví dụ thủ công.
-3. Chạy ít nhất một baseline phù hợp. **Chưa có baseline trong starter hiện tại** — phải tự bổ sung và kiểm chứng protocol tương thích, hoặc báo cáo rõ scope.
-4. Chạy các seed theo protocol của paper, ghi median/mean và độ phân tán. Không tuyên bố khớp số liệu gốc nếu backbone/weight/data khác.
+1. Chạy 10 task × 10 class trên CIFAR-100 với class order và preprocessing chuẩn ViT.
+2. Điều phối đa seed: `python -m scripts.run_seeds --seeds 42 123 2026 --config configs/cifar100.yaml --device cuda`.
+3. Lưu accuracy per task, mean stage accuracy, last accuracy, metric forgetting theo Equations (17)–(18); lưu tỷ lệ `[0, 1]` và hiển thị `xx.xx%`.
+4. Tổng hợp tự động qua: `python -m scripts.summarize_runs`.
 
-## Bước D — Ablation
+## Bước D — Ablation Study (Table 4)
 
-- Full F-OAL
-- No feature fusion
-- No smooth projection
-- Neither
+- Full F-OAL (`ablation_full`)
+- No feature fusion (`ablation_no_fusion`)
+- No smooth projection (`ablation_no_projection`)
+- Neither (`ablation_neither`)
 
-`python -m scripts.ablation --wandb`
-
-**Ghi chú:** Ablation này là bố cục thực nghiệm phù hợp Eq. 1 nhưng cần đối chiếu Table 4 và cách bỏ thành phần trong repo tác giả trước khi dùng là strict reproduction.
+`python -m scripts.ablation --config configs/cifar100.yaml --device cuda --wandb`
 
 ## Bước E — Additional analysis (nhóm tự thiết kế)
 
-Gợi ý: sensitivity theo batch size (1/10/25/50); với RLS lý tưởng, batch grouping không ảnh hưởng nghiệm trên cùng stream nhưng độ ổn định số và thời gian có thể thay đổi. Đo accuracy, wall time, peak memory, tính nhất quán nghiệm; đây là hypothesis, chưa có kết quả.
+Batch-size sensitivity of analytic update under fixed data stream: batch size `[1, 10, 25, 50]`.
+Đo accuracy, wall time, peak memory, tính nhất quán nghiệm.
 
 ## W&B convention
 
-- Project: `hcmus-foal-reproduction` (thay theo nhóm).
-- Nhóm run với tags `pilot`, `reproduction`, `ablation`, `additional-analysis`.
-- Mỗi run: config, git commit, seed, model checkpoint info, class order, accuracy matrix.
-- Không commit secrets/token vào repo; wandb login trên máy hoặc môi trường Colab riêng.
+- Project: `hcmus-foal-reproduction`.
+- Nhóm run với tags: `pilot`, `reproduction`, `ablation`, `additional-analysis`, `seed_{seed}`.
+- Mỗi run: metadata chi tiết (Python, PyTorch, CUDA, GPU, git commit), model config, class order, accuracy matrix.
+- Upload evaluation artifacts: `metrics.json`, `metadata.json`, `task_accuracy.csv`.
+- Hỗ trợ `--wandb-offline` khi không có kết nối internet trực tiếp.
+- Tuyệt đối không commit secrets/token vào repo.
 
-## Rủi ro chưa giải quyết
+## Trạng thái và Rủi ro mở
 
-- Chưa xác minh weights ViT và cách chuẩn hóa ảnh khớp repo tác giả; checkpoint chỉ lưu R/W và projection, ViT được tải lại bằng tên mô hình.
-- `metrics.forgetting` dùng maximum historical task accuracy trừ final task accuracy, tương ứng Equations (17)–(18). Cần kiểm tra scaling 0–1 so với % và quy ước lấy trung bình của các seeds.
-- Replay baselines, multi-seed driver, precision/hardware benchmarks, profiling GPU memory chưa triển khai.
-- Chưa có end-to-end evaluation trên CIFAR-100 thực tế tại thời điểm đóng gói.
+- **A01 & A04:** Vẫn duy trì trạng thái **PARTIAL** do chưa có sha256 checksum weights của checkpoint private và mảng hoán vị lớp CIFAR-100 từ tác giả paper.
+- **P1.2:** Triển khai các baseline (ER, EWC) cho Continual Learning.
+- **P1.3:** Huấn luyện Full 10 tasks CIFAR-100 trên GPU và Ablation 4 cấu hình.

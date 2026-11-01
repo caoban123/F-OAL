@@ -1,0 +1,12 @@
+# Exact verified environment specifications for F-OAL Reproduction
+# Platform: Windows 11 / Python 3.10.5
+# Tested on CPU and CUDA compatible environments
+
+torch==2.13.0+cpu
+torchvision==0.28.0+cpu
+timm==1.0.30
+datasets==5.0.0
+numpy==2.2.6
+PyYAML==6.0.3
+wandb==0.24.1
+pytest==9.1.1

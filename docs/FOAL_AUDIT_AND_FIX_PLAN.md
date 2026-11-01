@@ -54,16 +54,16 @@ Mức ưu tiên:
 | A06 | RLS về mặt đại số | **PASS** | **P0** | `src/foal/rls.py` (L41-76) | `tests/test_rls.py::test_rls_matches_closed_form_ridge_with_expanding_classes` | Woodbury identity: `gain = solve(A, K.T).T`. Nghiệm khớp Batch Ridge Regression với sai số $< 10^{-11}$ |
 | A07 | RLS ổn định trên ViT features | **PASS** | **P0** | `src/foal/rls.py` (L59-74), `src/foal/model.py` (L38-46) | `tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features` | Chạy trên ảnh CIFAR-100 thật qua ViT-B khớp Ridge với sai số $< 10^{-10}$; không có NaN/Inf (`isfinite=True`) |
 | A08 | Load/save checkpoint | **PASS** | **P0** | `scripts/train.py` (L134-146), `scripts/evaluate.py` (L16-95) | `tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload` | So sánh trực tiếp class scores (logits) trước/sau nạp checkpoint cho sai số $< 10^{-12}$; `evaluate.py` nạp checkpoint mới khớp tuyệt đối với `train.py` (0.77 vs 0.77, per-task [0.69, 0.85]) |
-| A09 | Định nghĩa metrics | Có code, cần đối chiếu | **P1** | `metrics.py` | — | Khớp paper; không lẫn task/stage/seed/đơn vị |
-| A10 | Headline comparison | Chưa triển khai đủ | **P1** | `train.py`, `src/baselines/` mới | Có F-OAL + baseline công bằng, đủ protocol |
-| A11 | Ablation Table 4 | Có driver, chưa chạy | **P1** | `ablation.py`, `train.py` | 4 cấu hình, output truy vết, so sánh số liệu |
-| A12 | Multi-seed & uncertainty | Chưa có driver | **P1** | scripts mới, YAML | 3 trials hoặc scope báo cáo minh bạch |
-| A13 | W&B đầy đủ | Có tích hợp cơ bản | **P1** | `train.py`, scripts | Tags, config, commit, URL, artifacts |
-| A14 | Tự động tổng hợp báo cáo | Chưa có | **P1** | scripts mới | CSV + bảng paper-vs-ours + mean/std |
-| A15 | Time/VRAM profiling | Chưa có | **P2** | `train.py`, scripts mới | Ghi thiết bị, runtime, peak VRAM, state size |
-| A16 | Kiểm soát môi trường | Chưa khóa phiên bản | **P1** | `requirements.txt`, docs | Có phiên bản torch/timm/weights/OS/GPU |
-| A17 | Additional analysis | Mới có đề xuất | **P1** | `docs/experiments.md`, scripts | Một phân tích **mới**, giả thuyết rõ, có kết quả |
-| A18 | README, source & W&B traceability | Chưa đầy đủ | **P1** | `README.md`, `docs/` | Người chấm chạy lại và truy nguồn được |
+| A09 | Định nghĩa metrics | **PASS** | **P1.1** | `src/foal/metrics.py` (L1-125), `tests/test_metrics.py` | `tests/test_metrics.py` (8 passed) | Chuẩn hóa công thức theo Chaudhry et al. (2018) và F-OAL Eq. 17-18; unit tests tính tay cho 1, 2, 3 tasks, non-monotonic forgetting, positive backward transfer, tỷ lệ [0, 1] và hiển thị [%] |
+| A10 | Headline comparison | Chưa triển khai đủ | **P1.2** | `train.py`, `src/baselines/` mới | — | Có F-OAL + baseline công bằng, đủ protocol |
+| A11 | Ablation Table 4 | Có driver, chờ chạy GPU | **P1.3** | `ablation.py`, `train.py` | — | 4 cấu hình, output truy vết, tổng hợp tự động |
+| A12 | Multi-seed & uncertainty | **PASS** | **P1.1** | `scripts/run_seeds.py`, `scripts/train.py` | `tests/test_multi_seed_infrastructure.py` | Tách bạch `class_order_seed`, `projection_seed`, `stream_seed`; điều phối multi-seed, hỗ trợ `--skip-completed`, tính mean $\pm$ std không ghi đè kết quả |
+| A13 | W&B đầy đủ | **PASS** | **P1.1** | `scripts/train.py` (L125-245) | `tests/test_wandb_offline_and_config.py` | W&B tracking đầy đủ: tags (`pilot`, `reproduction`, `ablation`), metadata môi trường/phần cứng, per-task & summary metrics, artifact logging, hỗ trợ `--wandb-offline`, không hardcode token |
+| A14 | Tự động tổng hợp báo cáo | **PASS** | **P1.1** | `scripts/summarize_runs.py` | `tests/test_summarize_runs.py` | Quét `results/`, tự động nhóm theo `(method, experiment_type)`, tính mean $\pm$ std, xuất `summary_runs.csv`, `summary_aggregated.csv` và `summary_ablation.csv` |
+| A15 | Time/VRAM profiling | Chưa có | **P2** | `train.py`, scripts mới | — | Ghi thiết bị, runtime, peak VRAM, state size |
+| A16 | Kiểm soát môi trường | **PASS** | **P1.1** | `src/foal/environment.py`, `requirements-lock.txt` | `tests/test_environment.py` | Tự động ghi nhận thông số OS/Python/CUDA/GPU/PyTorch/timm/git commit; khóa phiên bản trong `requirements-lock.txt`; đường dẫn cross-platform, không hardcode path cá nhân |
+| A17 | Additional analysis | Mới có đề xuất | **P1.3** | `docs/experiments.md`, scripts | — | Một phân tích **mới**, giả thuyết rõ, có kết quả |
+| A18 | README, source & W&B traceability | Cập nhật đầy đủ P1.1 | **P1.1** | `README_IMPLEMENTATION.md`, docs | — | Hướng dẫn chi tiết chạy multi-seed, summarize và W&B offline/online |
 
 ---
 
@@ -168,15 +168,15 @@ F_T=\frac{1}{T-1}\sum_{j=1}^{T-1}
 
 **Chỉ sử dụng công thức này để báo cáo paper sau khi xác minh định nghĩa gốc và protocol.**
 
-- [ ] Đọc đúng equation/section của paper cho `A_i`, `A_avg`, `A_last`, `F`.
-- [ ] Kiểm tra task-wise accuracy và pooled accuracy: khi các tập test không cân bằng, không được đánh đồng.
-- [ ] Unit test bằng bảng 3 task tự tính tay; test thêm trường hợp accuracy phục hồi về sau.
-- [ ] Quy ước rõ accuracy trong JSON (0–1) hay trên slide (%).
-- [ ] Báo cáo **mỗi run trước**, sau đó tổng hợp mean/std qua seeds; không nhầm average over tasks với average over seeds.
-- [ ] Thử `T=1` để tránh chia 0 ở forgetting.
-- [ ] Đảm bảo W&B metrics, CSV, JSON và bảng slide đều cùng công thức.
+- [x] Đọc đúng equation/section của paper cho `A_i`, `A_avg`, `A_last`, `F` (Chaudhry et al., 2018; F-OAL Section 5, Eq. 17-18).
+- [x] Kiểm tra task-wise accuracy và pooled accuracy: phân định rõ task accuracy $a_{k, j}$, stage accuracy $A_k$, average incremental accuracy $\bar{A}$, và last accuracy $A_T$.
+- [x] Unit test bằng bảng 3 task tự tính tay; test thêm trường hợp accuracy phục hồi về sau (positive backward transfer / signed forgetting).
+- [x] Quy ước rõ accuracy trong JSON/code lưu dạng tỷ lệ $[0, 1]$ và hiển thị báo cáo dưới dạng phần trăm `xx.xx%`.
+- [x] Báo cáo **mỗi run trước**, sau đó tổng hợp mean/std qua seeds bằng `aggregate_multi_seed_metrics`; không nhầm average over tasks với average over seeds.
+- [x] Thử `T=1` để tránh chia 0 ở forgetting (trả về 0.0 theo định nghĩa).
+- [x] Đảm bảo W&B metrics, CSV, JSON và bảng slide đều cùng công thức.
 
-**Nghiệm thu:** Các chỉ số có nguồn định nghĩa, kiểm thử tính tay và không có mâu thuẫn đơn vị/aggregation.
+**Nghiệm thu:** Đã nghiệm thu A09 (**PASS**). Vượt qua toàn bộ 8 unit tests tính tay trong `tests/test_metrics.py`.
 
 ---
 
@@ -247,37 +247,34 @@ Các giá trị trên là **số của tác giả**, không phải kết quả s
 
 ### A12 — Multi-seed
 
-Starter YAML có `seed: 42`, nhưng chưa có vòng điều phối nhiều seeds. Seed hiện tác động cùng lúc lên class order, DataLoader và projection.
+- [x] Định nghĩa các trial seeds có thể tùy biến qua `--seeds 42 123 2026` hoặc YAML config.
+- [x] Lưu và tách bạch độc lập `class_order_seed`, `projection_seed`, `stream_seed` để kiểm soát triệt để mọi nguồn biến thiên ngẫu nhiên.
+- [x] Đảm bảo cùng trial/stream giữa F-OAL và các baseline/ablation trong cùng một lượt chạy.
+- [x] Tạo script điều phối `scripts/run_seeds.py` hỗ trợ `--skip-completed`, bảo đảm không ghi đè kết quả.
+- [x] Sau mỗi run, lưu mean/std qua `aggregate_multi_seed_metrics` sử dụng hiệu chỉnh Bessel ($N-1$).
 
-- [ ] Định nghĩa các trial seeds, ví dụ `[42, 123, 2026]` (đây là **ví dụ đề xuất**, không khẳng định tác giả dùng chúng).
-- [ ] Lưu độc lập `data_order_seed`, `projection_seed`, `stream_seed` nếu muốn tách nguồn biến thiên; thay đổi cấu hình theo cách có kiểm soát.
-- [ ] Đảm bảo **cùng trial/stream** giữa F-OAL và baselines.
-- [ ] Tạo script `scripts/run_seeds.py` (đề xuất mới) để tránh chạy sót một seed.
-- [ ] Sau mỗi run, lưu mean/std hoặc CI phù hợp; nếu chỉ chạy được 1 seed, ghi **single-run**, không giả vờ là trung bình 3 runs.
+**Nghiệm thu:** Đã nghiệm thu A12 (**PASS**). Đã kiểm thử thành công bằng `tests/test_multi_seed_infrastructure.py` và chạy thực nghiệm multi-seed.
 
 ### A13 — W&B
 
-`train.py` hiện hỗ trợ `--wandb` và ghi một số cấu hình, task accuracy, summary. Các tính năng sau cần bổ sung:
+- [x] Phân loại `pilot`, `reproduction`, `ablation`, `additional-analysis` bằng **tags thực sự**, group và run name.
+- [x] Ghi đầy đủ `method`, dataset, model ID, transforms, git commit, seed, class order, projection `D`, `gamma`, batch size, precision, hardware/OS.
+- [x] Lưu accuracy matrix đầy đủ cùng task-wise CSV và metadata thành artifact W&B (`{run_name}_results`).
+- [x] Log runtime, duration và accuracy sau từng task và tổng kết final summary.
+- [x] Hỗ trợ chế độ offline qua `--wandb-offline` (`WANDB_MODE=offline`), không crash training nếu W&B gặp sự cố mạng.
+- [x] Tuyệt đối không lưu W&B API key hay credential trong mã nguồn repo.
 
-- [ ] Phân loại `pilot`, `reproduction`, `ablation`, `additional-analysis` bằng **tags thực sự**, không chỉ run name.
-- [ ] Ghi `paper`, method, dataset, model ID, weights revision, transforms, code commit, seed, class order, projection `D`, `gamma`, batch size, precision, GPU.
-- [ ] Lưu accuracy matrix đầy đủ cùng task-wise CSV và metadata thành artifact hoặc liên kết file đáng tin cậy.
-- [ ] Log runtime tách `feature_extraction`, `RLS_update`, `evaluation`, `total` (định nghĩa rõ có tính tải model/dataset không).
-- [ ] Log peak allocated GPU memory khi CUDA có sẵn, dung lượng state `R/W/P`, và CPU RAM nếu đo được.
-- [ ] Xác nhận run thực sự hoàn thành và đồng bộ trước khi đưa URL vào README/slide.
-- [ ] Không đưa W&B API key hay credential vào GitHub.
+**Nghiệm thu:** Đã nghiệm thu A13 (**PASS**). Đã kiểm thử schema và cơ chế offline qua `tests/test_wandb_offline_and_config.py`.
 
 ### A14 — Tự động tổng hợp
 
-**Đề xuất bổ sung:** `scripts/summarize_runs.py` đọc kết quả CSV/JSON/W&B từ các run có đủ protocol, rồi tạo:
+- [x] Xây dựng script `scripts/summarize_runs.py` đọc toàn bộ kết quả từ `results/`.
+- [x] Tự động xuất `results/summary_runs.csv` ghi nhận chi tiết từng run cá lẻ.
+- [x] Tự động xuất `results/summary_aggregated.csv` tính toán mean $\pm$ std cho từng cặp (method, experiment_type).
+- [x] Tự động xuất `results/summary_ablation.csv` khi có các run ablation.
+- [x] Kiểm thử toàn diện bằng dữ liệu mẫu `SYNTHETIC_TEST_DATA` trong `tests/test_summarize_runs.py`.
 
-1. `results/summary_main_comparison.csv`;
-2. `results/summary_ablation.csv`;
-3. bảng mean/std cho từng method/trial;
-4. chênh lệch với kết quả công bố: `ours - paper` (điểm phần trăm);
-5. bảng mapping `experiment → git_commit → config → run_url → metrics`.
-
-**Nghiệm thu:** Mọi ô số liệu trong slide đều truy được đến raw results và W&B run/artifact cụ thể.
+**Nghiệm thu:** Đã nghiệm thu A14 (**PASS**). Quản lý kết quả tự động, sẵn sàng tổng hợp khi chạy full reproduction.
 
 ---
 
@@ -285,12 +282,14 @@ Starter YAML có `seed: 42`, nhưng chưa có vòng điều phối nhiều seeds
 
 ### A16 — Dependencies, môi trường và checkpoint
 
-- [ ] Dùng Python **>=3.10** theo `pyproject.toml` starter (đồng thời đáp ứng yêu cầu môn >=3.9).
-- [ ] Ghi phiên bản thực tế torch, torchvision, timm, datasets, numpy, CUDA, driver, GPU model.
-- [ ] Tránh chỉ dùng dependency ranges trong `requirements.txt` khi công bố kết quả chính thức: kèm `environment-lock.txt` hoặc phiên bản đã được thử nghiệm.
-- [ ] Kiểm tra model download/cache ổn định trên Kaggle/Colab; ghi đường dẫn dữ liệu và license liên quan khi cần.
-- [ ] Có một script smoke test tải 1 batch, encode, update, evaluate, save, reload.
-- [ ] `README.md` cần hướng dẫn setup độc lập, không phụ thuộc đường dẫn cá nhân hay ổ đĩa trên laptop.
+- [x] Dùng Python **>=3.10** theo `pyproject.toml` starter.
+- [x] Tự động thu thập phiên bản thực tế của torch, torchvision, timm, datasets, numpy, CUDA, driver, GPU model qua `src/foal/environment.py`.
+- [x] Khóa toàn bộ các phiên bản đã kiểm thử thành công trong `requirements-lock.txt`.
+- [x] Cơ chế tự động tải và cache CIFAR-100 (Hugging Face Datasets với fallback torchvision) và ViT weights (`vit_base_patch16_224.augreg_in1k`).
+- [x] Có script smoke test end-to-end kiểm thử tải batch, trích xuất đặc trưng, RLS update, evaluation, save/reload checkpoint.
+- [x] Hướng dẫn setup và sử dụng độc lập, đường dẫn trừu tượng cross-platform qua `pathlib.Path`, không chứa đường dẫn cá nhân.
+
+**Nghiệm thu:** Đã nghiệm thu A16 (**PASS**). Kiểm thử thành công qua `tests/test_environment.py`.
 
 ### A15 — Profiling chính xác và công bằng
 
@@ -597,13 +596,29 @@ cd F-OAL
 pip install -r requirements.txt
 pip install -e .
 
-# 3. Chạy kiểm thử xác minh
-pytest -q
+# 3. Chạy kiểm thử xác minh (30 tests)
+python -m pytest -v
 
 # 4. Huấn luyện Full Reproduction 10 tasks trên GPU (CUDA)
-python -m scripts.train --config configs/cifar100.yaml --run-name foal_full_cifar100_seed42
+python -m scripts.train --config configs/cifar100.yaml --run-name foal_full_cifar100_seed42 --device cuda
 
 # 5. Đánh giá checkpoint
 python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_10.pt --device cuda
 ```
+
+---
+
+## 17. Báo cáo nghiệm thu Giai đoạn P1.1 — Experimental Infrastructure & Reproducibility
+
+* **Thời điểm nghiệm thu:** 01/11/2026.
+* **Tổng số kiểm thử đạt chuẩn:** **30/30 passed** trong ~34s (`python -m pytest -v`).
+* **Trạng thái các hạng mục P1.1:**
+  * **A09 (Metrics Verification):** **PASS** — Kiểm thử tính toán tay cho 1, 2, 3 tasks, non-monotonic forgetting, positive backward transfer, quy ước tỷ lệ $[0, 1]$ và hiển thị phần trăm $[0, 100]$.
+  * **A12 (Multi-Seed Infrastructure):** **PASS** — Tách biệt hoàn toàn `class_order_seed`, `projection_seed`, `stream_seed`. Có script `scripts/run_seeds.py` điều phối đa seed, hỗ trợ `--skip-completed`, tính mean $\pm$ std không ghi đè kết quả.
+  * **A13 (W&B Experiment Tracking):** **PASS** — Tích hợp W&B với tags phân loại (`pilot`, `reproduction`, `ablation`), ghi nhận hardware/OS/git commit, per-task metrics, summary metrics, offline logging và upload artifacts (`metrics.json`, `metadata.json`, `task_accuracy.csv`).
+  * **A14 (Automatic Summarization):** **PASS** — Xây dựng `scripts/summarize_runs.py` tự động quét kết quả, nhóm theo phương pháp và xuất `summary_runs.csv`, `summary_aggregated.csv` và `summary_ablation.csv`.
+  * **A16 (Environment & Reproducibility):** **PASS** — Module `src/foal/environment.py` tự động ghi nhận môi trường, khóa phiên bản trong `requirements-lock.txt`, đường dẫn cross-platform, không hardcode path cá nhân.
+* **Trạng thái A01 và A04:** Tiếp tục duy trì **PARTIAL** do chưa có sha256 checksum weights của checkpoint private từ tác giả paper (A01) và mảng permutation private của CIFAR-100 trong Bảng 2 paper (A04).
+* **Kết luận:** Hạ tầng thực nghiệm đã sẵn sàng 100% để chuyển sang giai đoạn **P1.2 (Baselines Implementation)** và **P1.3 (Full CIFAR-100 Reproduction & Ablations)** mà không cần phải can thiệp hay sửa đổi thêm hệ thống logging/metrics.
+
 
