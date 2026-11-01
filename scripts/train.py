@@ -58,17 +58,23 @@ def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
     return correct / total if total else float('nan')
 
 
+def resolve_seed(cli_value: Any, config_value: Any, default_seed: int) -> int:
+    """Resolve random seed with strict precedence: CLI arg > Config value > Default."""
+    if cli_value is not None:
+        return int(cli_value)
+    if config_value is not None:
+        return int(config_value)
+    return int(default_seed)
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     cfg = yaml.safe_load(Path(args.config).read_text(encoding='utf-8'))
     
-    # Granular seed management (A12)
-    base_seed = int(args.seed if args.seed is not None else cfg.get('seed', 42))
-    class_order_seed = int(args.class_order_seed if args.class_order_seed is not None
-                           else cfg.get('class_order_seed', base_seed))
-    projection_seed = int(args.projection_seed if args.projection_seed is not None
-                          else cfg.get('projection_seed', base_seed))
-    stream_seed = int(args.stream_seed if args.stream_seed is not None
-                      else cfg.get('stream_seed', base_seed))
+    # Granular seed management with safe fallback (A12)
+    base_seed = resolve_seed(args.seed, cfg.get('seed'), 42)
+    class_order_seed = resolve_seed(args.class_order_seed, cfg.get('class_order_seed'), base_seed)
+    projection_seed = resolve_seed(args.projection_seed, cfg.get('projection_seed'), base_seed)
+    stream_seed = resolve_seed(args.stream_seed, cfg.get('stream_seed'), base_seed)
 
     # Seed random generators
     random.seed(base_seed)
