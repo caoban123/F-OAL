@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e .
 
-# Chạy toàn bộ 31 unit tests xác minh
+# Chạy toàn bộ 33 unit tests xác minh
 python -m pytest -v
 ```
 
@@ -109,9 +109,16 @@ cd F-OAL
 pip install -r requirements.txt
 pip install -e .
 
-# 3. Chạy 30 unit tests
+# 3. Chạy 33 unit tests
 python -m pytest -v
 
 # 4. Huấn luyện Full CIFAR-100 trên GPU
 python -m scripts.train --config configs/cifar100.yaml --device cuda --wandb --run-name foal_full_cifar100_seed42
 ```
+
+---
+
+## 5. Tài liệu Kiểm toán & Báo cáo Thực nghiệm (Checkpoint 3 Compliance)
+
+* **Báo cáo Kiểm toán Kỹ thuật & Kế hoạch Khắc phục Toàn diện (`A01`–`A22`):** [`docs/FOAL_AUDIT_AND_FIX_PLAN.md`](docs/FOAL_AUDIT_AND_FIX_PLAN.md)
+* **Kế hoạch Thực nghiệm, Core Scope & Bảng Đối chiếu Kết quả (`Paper vs Original vs Ours`):** [`docs/experiments.md`](docs/experiments.md)

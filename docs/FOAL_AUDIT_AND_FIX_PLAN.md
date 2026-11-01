@@ -9,7 +9,61 @@
 > **Hạn slide giữa kỳ:** 21/11/2026, 23:59  
 > **Hạn poster cuối kỳ:** 05/12/2026, 23:59
 
-## 0. Mục đích, phạm vi và cách đọc
+---
+
+## Trạng thái Hiện tại của Dự án (Current Project Status — Cập nhật 01/11/2026)
+
+> **Lưu ý về cấu trúc lịch sử tài liệu:** Các Mục 0 đến Mục 19 bên dưới được giữ nguyên để bảo toàn biên bản kiểm toán lịch sử qua từng giai đoạn (**Initial Audit**, **P0 Remediation**, **P1.1 Multi-Seed & W&B Infrastructure**, **P1.2 GPU Preflight**). Do đó, những con số lịch sử như *"9 passed"*, *"14 passed"*, *"15 passed"*, *"30 passed"* hay các ghi chú *"chưa có `scripts/run_seeds.py`"* ở các mục đầu phản ánh trạng thái tại thời điểm ghi biên bản đó. **Mục này và các Mục 20–23 ở cuối tài liệu là nguồn tham chiếu chuẩn xác nhất về trạng thái hiện tại của dự án.**
+
+### 1. Phân loại trạng thái chuẩn hóa (Status Taxonomy)
+Để tránh nhầm lẫn giữa việc *"đã viết code"* và *"đã xác minh kết quả khoa học"*, toàn bộ các hạng mục trong dự án được phân loại theo 6 mức độ nghiêm ngặt:
+* **`IMPLEMENTED`**: Đã hiện thực mã nguồn trong repository.
+* **`UNIT TESTED`**: Đã có unit test tự động kiểm tra tính đúng đắn của logic (hiện tại bộ test đạt **33/33 PASS** trên CPU).
+* **`EXECUTED`**: Đã chạy thực nghiệm thực tế (trên CPU cho smoke test hoặc trên GPU cho full benchmark).
+* **`VERIFIED`**: Đã có đầy đủ raw artifacts (`metrics.json`, `metadata.json`, `task_accuracy.csv`, checkpoints) lưu trữ hợp lệ trong repository và đối chiếu độc lập thành công.
+* **`PARTIAL`**: Đã hoàn thành một phần (ví dụ: đã có code/test hoặc kết quả báo cáo từ Colab, nhưng thiếu raw artifact vật lý trên đĩa cục bộ hoặc chưa đối chiếu với repo gốc của tác giả).
+* **`PENDING`**: Chưa thực hiện.
+
+### 2. Bảng Tổng hợp Trạng thái Kiểm toán Hiện tại (Master Audit Matrix A01–A22)
+
+| Mã | Hạng mục Kiểm toán | Ưu tiên | Trạng thái hiện tại | Bằng chứng & Ghi chú xác minh |
+|:---|:---|:---:|:---:|:---|
+| **A01** | Pre-trained ViT Backbone & Exact Checkpoint Provenance | P0 | **`PARTIAL`** | **`IMPLEMENTED` & `UNIT TESTED`**: Đã đóng băng `timm/vit_base_patch16_224.augreg_in1k` (`src/foal/backbone.py`), ghi nhận vào `configs/cifar100.yaml` và `metadata.json`. **Chưa `VERIFIED`**: Chưa đối chiếu trực tiếp với code gốc của tác giả (`liuyuchen-cz/F-OAL`) để xác nhận chính xác biến thể trọng số ViT-B/16 mà tác giả nạp (xem **A19**, **A20**). |
+| **A02** | Feature Fusion across ViT Blocks + Final LayerNorm | P0 | **`VERIFIED`** | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`**: Lấy trung bình cộng CLS token của toàn bộ 12 blocks và áp dụng `network.norm` cuối (`src/foal/backbone.py`, `src/foal/feature_fusion.py`, `tests/test_vit_transforms.py`). Vẫn sẽ đối chiếu thêm thứ tự phép toán với code gốc tác giả trong **A20**. |
+| **A03** | Smooth Projection ($D=1000$, Fixed Random Gaussian + Sigmoid) | P0 | **`PARTIAL`** | **`IMPLEMENTED` & `UNIT TESTED`**: Khởi tạo ma trận Gaussian cố định lưu vào `register_buffer` + hàm kích hoạt $\sigma(\cdot)$ (`src/foal/projection.py`). **Cần điều tra thêm (`A20`)**: Hiện tại `gaussian_std=1.0` không chuẩn hóa theo $1/\sqrt{d_{\text{in}}}=1/\sqrt{768}$, khiến tích vô hướng trước Sigmoid có độ lệch chuẩn $\approx 27.7$ (có nguy cơ làm bão hòa hàm $\sigma$). |
+| **A04** | Class Incremental Task Splitting, Bijective Label Mapping & Class Order | P0 | **`PARTIAL`** | **`IMPLEMENTED` & `UNIT TESTED`**: Ánh xạ nhãn song ánh `label_to_incremental`, tách `class_order_seed`, lưu `class_order` trong `metadata.json` và checkpoint (`src/foal/datasets.py`, `scripts/train.py`). **Chưa `VERIFIED`**: Chưa xác nhận thứ tự lớp (class permutation) mặc định trong repo gốc của tác giả. |
+| **A05** | Recursive Least Squares (RLS) & Woodbury Numerical Stability | P0 | **`VERIFIED`** | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`**: Cập nhật Woodbury trên `float64` với hệ số regularization $\gamma = 1.0$ ($R_0 = \gamma^{-1} I$), giải hệ tuyến tính bằng `torch.linalg.solve` (fallback `lstsq`), đối xứng hóa $R_t \leftarrow \frac{1}{2}(R_t + R_t^\top)$, sai số so với nghiệm Ridge toàn cục $< 10^{-10}$ trên đặc trưng ViT thật (`src/foal/rls.py`, `tests/test_rls_real_features.py`). |
+| **A06** | One-Pass Online Stream & Zero-Replay Enforcement | P0 | **`VERIFIED`** | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`**: Luồng dữ liệu 1 epoch duy nhất (`batch_size=10`), kiểm tra giao tập hợp rỗng giữa các task, tách `stream_seed` (`src/foal/datasets.py`, `scripts/train.py`, `tests/test_dataset.py`). |
+| **A07** | Continual Learning Metrics ($\bar{A}$, $A_{\text{last}}$, $F$) | P0 | **`VERIFIED`** | **`IMPLEMENTED` & `UNIT TESTED`**: Ma trận tam giác dưới $R \in \mathbb{R}^{T \times T}$, tính chính xác $\bar{A}$, $A_T$, $F_T$ nhất quán giữa `scripts/train.py` và `scripts/evaluate.py` (`src/foal/metrics.py`, `tests/test_metrics_comprehensive.py`). |
+| **A08** | Dependency Pinning & Environment Logging | P1 | **`VERIFIED`** | **`IMPLEMENTED` & `UNIT TESTED`**: Đã khóa phiên bản trong `requirements-lock.txt`, tự động ghi nhận OS, Python, PyTorch, CUDA, GPU, Git commit trong `src/foal/environment.py` và `metadata.json`. |
+| **A09** | Automated Unit & Mathematical Equivalence Tests | P1 | **`VERIFIED`** | **`UNIT TESTED`**: **33/33 unit tests PASS** (`python -m pytest -q`), bao gồm cả kiểm thử xử lý `null` seed trong `resolve_seed()` (`tests/test_multi_seed_infrastructure.py`). |
+| **A10** | Full CIFAR-100 Single-Seed GPU Reproduction | P1 | **`PARTIAL`** | **`EXECUTED` (Colab T4, Seed 42)**: Đã chạy hoàn tất 10 tasks $\times$ 10 classes trên Google Colab GPU T4 (`1735.3s`), đạt $\bar{A}=79.33\%$, $A_{10}=70.92\%$, $F_{10}=9.21\%$ theo `metrics.json` do người dùng trích xuất. **Chưa `VERIFIED` hoàn toàn**: (1) Các file raw artifacts của run này chưa được chép vào `results/foal_full_cifar100_seed42/` trên đĩa cục bộ (`PENDING RAW ARTIFACT VERIFICATION`); (2) Kết quả còn thấp hơn paper $11.77\text{ pp}$ cần điều tra qua **A19** & **A20**. |
+| **A11** | Ablation Study (Feature Fusion $\times$ Smooth Projection) | P1 | **`IMPLEMENTED`** / **`UNIT TESTED`** | Đã hoàn thiện `scripts/ablation.py` và kiểm thử pilot trên CPU. **Chưa thực thi (`PENDING`)** lượt chạy 10-task đầy đủ trên GPU cho 4 cấu hình Ablation. |
+| **A12** | Multi-Seed Orchestration ($Mean \pm Std$) | P1 | **`IMPLEMENTED`** / **`UNIT TESTED`** | Đã hoàn thiện `scripts/run_seeds.py` với kiểm tra tương thích giao thức (`--skip-completed`) và unit tests (`tests/test_multi_seed_infrastructure.py`). **Chưa thực thi (`PENDING`)** đủ 3 seeds (`42, 123, 2026`) full 10-task trên GPU. |
+| **A13** | Experiment Tracking (Weights & Biases) | P1 | **`PARTIAL`** | Đã tích hợp `src/foal/wandb_utils.py` và kiểm thử qua unit tests, nhưng **chưa xác minh upload online** và **chưa có public W&B project link** (xem bảng chi tiết W&B tại Mục 3 bên dưới). |
+| **A14** | Automated Results Aggregation (`summarize_runs.py`) | P1 | **`VERIFIED`** | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`**: Tự động lọc các run theo `protocol_signature` 13 thành phần, tách biệt pilot/full/ablation và xuất CSV chuẩn (`tests/test_summarize_runs.py`). |
+| **A15** | Baseline 1: Backprop Fine-tuning / Linear Probe | P2 | **`PENDING`** | Chưa hiện thực và chưa chạy thực nghiệm trên cùng ViT backbone + task split. |
+| **A16** | Baseline 2: Offline / Linear Ridge Analytic Classifier | P2 | **`PENDING`** | Chưa chạy đối chiếu độc lập đầy đủ trên GPU. |
+| **A17** | Baseline 3: Experience Replay (ER) / Continual Learning Baseline | P2 | **`PENDING`** | Chưa hiện thực và chưa chạy thực nghiệm. |
+| **A18** | Efficiency Profiling (Training Time & Peak GPU VRAM) | P2 | **`PARTIAL`** | Đã ghi nhận `total_duration_seconds = 1735.3s` trên Colab T4 cho Seed 42, nhưng chưa ghi nhận `torch.cuda.max_memory_allocated()` chuẩn hóa để đối chiếu với Table 3 ($261\text{ s}$) và Figure 2 ($1.9\text{ GB}$). |
+| **A19** | **Original Code Reproduction (`liuyuchen-cz/F-OAL`)** | **P0 (CP3)** | **`PENDING`** | **Yêu cầu bắt buộc Checkpoint 3**: Chạy repository gốc của tác giả trong thư mục độc lập ngoài `src/`, thu thập kết quả `ORIGINAL_REPRODUCED` trên CIFAR-100 và đối chiếu với Paper & Ours. |
+| **A20** | **Pipeline Discrepancy Investigation (Ours vs Original)** | **P0 (CP3)** | **`PENDING`** | Điều tra có hệ thống nguyên nhân khoảng cách $-11.77\text{ pp}$ giữa Ours (`79.33%`) và Paper (`91.10%`) qua từng tầng xử lý (Dataset, Preprocessing, ViT Weights, Feature Fusion, Smooth Projection scaling, RLS, Evaluation). |
+| **A21** | **Public W&B Project & Evidence Traceability** | **P1 (CP3)** | **`PARTIAL`** | Cần tạo project W&B ở chế độ **Public** (truy cập không cần đăng nhập), đồng bộ các run chính thức và gắn link trực tiếp từng dòng kết quả trong README/docs tới W&B run. |
+| **A22** | **Core Scope Definition & 3-Way Comparison Table (`Paper vs Original vs Ours`)** | **P1 (CP3)** | **`PARTIAL`** | Đã bổ sung đề xuất **Core Scope** và khung bảng đối chiếu chuẩn gồm `PAPER_REPORTED`, `ORIGINAL_REPRODUCED`, `OUR_REPRODUCED`, $\Delta_{\text{pp}}$ và $\Delta_{\text{rel}}\%$ trong tài liệu này; chờ điền số liệu sau khi hoàn tất **A19**–**A21**. |
+
+### 3. Bảng Phân rã Trạng thái Weights & Biases (A13 & A21 Breakdown)
+
+| Thành phần kiểm tra W&B | Trạng thái | Chi tiết xác minh |
+|:---|:---:|:---|
+| **1. W&B Code Integration (`src/foal/wandb_utils.py`, `--wandb`, `--wandb-offline`)** | **`IMPLEMENTED`** & **`UNIT TESTED`** | Đã tích hợp đầy đủ vào `scripts/train.py` và kiểm thử logic gọi hàm/artifact bằng mock trong `tests/test_multi_seed_infrastructure.py`. |
+| **2. W&B Offline Logging CLI Execution** | **`PARTIAL`** | Trong bài kiểm thử unit test (`pytest`), cơ chế khởi tạo và ghi log hoạt động đúng. Tuy nhiên, khi chạy lệnh thực tế `python -m scripts.train ... --wandb --wandb-offline` trên Windows ở giai đoạn P1.1, tiến trình nền `wandb-core` bị treo ở bước kết thúc nên đã phải dừng cưỡng bức; chưa xác nhận gói `.wandb` offline hoàn chỉnh từ CLI trực tiếp. |
+| **3. W&B Online Upload Verification** | **`PENDING`** | Lượt chạy GPU Seed 42 trên Colab vừa qua không bật cờ `--wandb` với `WANDB_API_KEY`. Chưa có run nào được đẩy lên đám mây W&B. |
+| **4. Public W&B Project Link (No-Login Access)** | **`PENDING`** | Chưa khởi tạo hoặc kiểm chứng đường dẫn W&B project ở chế độ công khai (`Public`) không yêu cầu đăng nhập theo quy định Checkpoint 3. |
+| **5. README Result Table Linked to W&B Runs** | **`PENDING`** | Bảng kết quả trong tài liệu hiện đang ghi nhận trạng thái `NOT YET SYNCED TO PUBLIC W&B`; sẽ cập nhật URL trực tiếp của từng run sau khi thực hiện đồng bộ ở Stage C/D. |
+
+---
+
+## 0. Mục đích, phạm vi và cách đọc (Bản ghi lịch sử Initial Audit & P0)
 
 Tài liệu này là **checklist kỹ thuật có thể giao việc**, tập hợp các vấn đề phải kiểm tra, phần thiếu cần bổ sung, thứ tự ưu tiên và tiêu chí nghiệm thu để nhóm chuyển từ **starter implementation** sang **experimental reproduction** có thể kiểm chứng. Mục tiêu không phải sửa để có accuracy bằng tác giả bằng mọi giá; mục tiêu là **đúng thuật toán, đúng experimental protocol, đo lường trung thực, truy vết được kết quả và giải thích được sai lệch**.
 
@@ -682,56 +736,296 @@ python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_1
 
 ---
 
-## 20. Báo cáo Nghiệm thu Thực nghiệm GPU Chính thức: P1.2 — Single-Seed Full Reproduction on GPU
+## 20. Báo cáo Thực nghiệm GPU & Kiểm toán Sau Thực thi: P1.2 — Single-Seed Full Reproduction on GPU (Đã sửa lỗi dữ liệu & chuẩn hóa khoa học)
 
-* **Thời điểm hoàn thành:** 01/11/2026.
+> **Ghi chú Sửa lỗi Tài liệu (Post-GPU Audit Repair — 01/11/2026):** Trong commit `c74b0de`, Mục 20 được ghi thông qua chuỗi nháy kép PowerShell khiến các mẫu ký tự dạng `$91`, `$79`, `$A_`, `$D`, `$\lambda` bị trình thông dịch PowerShell hiểu nhầm là biến môi trường rỗng và cắt mất chữ số đầu (biến `$91.1\%$` thành `.1\%$`, `$A_{\text{avg}}$` thành `{\text{avg}}$`, `$D=1000$` thành `=1000`). Bản cập nhật dưới đây khôi phục chính xác 100% số liệu từ nội dung `metrics.json` gốc do người dùng trích xuất trực tiếp trên Google Colab, đồng thời chuẩn hóa các nhận định khoa học và trạng thái lưu trữ artifact.
+
+* **Thời điểm thực thi trên Colab:** 01/11/2026.
 * **Môi trường thực thi:** Google Colab GPU (NVIDIA T4).
-* **Trạng thái Giai đoạn P1.2:** **PASS** (Đã chạy thành công 100% 10 tasks, lưu đủ 10 checkpoints, trích xuất metrics và export archive).
-* **Thông số thực nghiệm:**
-  * **Dataset:** CIFAR-100 (100 classes, 50,000 train, 10,000 test).
-  * **Giao thức:** 10 tasks $\\times$ 10 classes, streaming batch size 10, **One-pass** (single epoch, zero-replay buffer).
-  * **Random Seed:** Seed 42 (coupled: base=42, class_order=42, projection=42, stream=42).
-  * **Mô hình:** Frozen ViT-B/16 (`vit_base_patch16_224.augreg_in1k`), Feature Fusion (12 blocks mean + LayerNorm), Smooth Projection (=1000, \\gamma=1.0$), RLS Woodbury update (float64, $\\lambda=0.1$).
-  * **Tổng thời gian chạy:** **1735.3 giây (~28.9 phút)** trên GPU T4.
+* **Trạng thái Giai đoạn P1.2:** **`EXECUTED` (Colab GPU) / `PENDING RAW ARTIFACT VERIFICATION` (Local Repo)** — Quá trình huấn luyện 10 tasks trên Colab đã chạy hoàn tất và xuất `metrics.json` hợp lệ (được người dùng cung cấp nguyên văn trong phiên làm việc), nhưng các tệp vật lý trong `results/foal_full_cifar100_seed42/` chưa được tải/giải nén đầy đủ vào kho lưu trữ cục bộ (xem Mục 20.4).
+* **Thông số cấu hình thực tế đã chạy (`configs/cifar100.yaml` + `scripts/train.py`):**
+  * **Dataset:** CIFAR-100 (`uoft-cs/cifar100`, 100 classes, 50,000 mẫu train, 10,000 mẫu test; resize bicubic $224 \times 224$, chuẩn hóa `mean=(0.5, 0.5, 0.5)`, `std=(0.5, 0.5, 0.5)`).
+  * **Giao thức:** 10 tasks $\times$ 10 classes, streaming `batch_size = 10`, **One-pass** (1 epoch duy nhất, zero-replay buffer, `limit_train_per_task = null`, `limit_test_per_task = null`).
+  * **Random Seed:** `seed = 42` (thông qua hàm `resolve_seed`: `class_order_seed = 42`, `projection_seed = 42`, `stream_seed = 42`).
+  * **Cấu hình Mô hình & Siêu tham số (Đã rà soát khớp 100% mã nguồn):**
+    * **Backbone (`src/foal/backbone.py`):** Frozen ViT-B/16 (`timm/vit_base_patch16_224.augreg_in1k`, $d_{\text{in}} = 768$, 12 blocks, `requires_grad = False`, giữ cố định ở `eval()` mode).
+    * **Feature Fusion (`src/foal/feature_fusion.py`):** Trung bình cộng đại số (`mean`) của 12 CLS tokens qua 12 transformer blocks, sau đó đi qua `network.norm` (final LayerNorm của ViT).
+    * **Smooth Projection (`src/foal/projection.py`):** Phép chiếu tuyến tính ngẫu nhiên cố định $W_{\text{proj}} \in \mathbb{R}^{768 \times 1000}$ khởi tạo từ phân phối chuẩn $\mathcal{N}(0, \sigma_{\text{init}}^2)$ với `projection_dim = 1000`, `gaussian_std = 1.0`, `seed = 42`, theo sau bởi hàm kích hoạt Sigmoid $z = \sigma(x W_{\text{proj}})$. *(Lưu ý đính chính: `SmoothProjection` không có tham số $\gamma$).*
+    * **Online Ridge RLS Classifier (`src/foal/rls.py`):** Cập nhật giải tích theo công thức Woodbury trên kiểu dữ liệu `rls_dtype = float64` với hệ số chính quy hóa L2 (Ridge regularization) **`gamma = 1.0`** ($R_0 = \gamma^{-1} I_{1000} = I_{1000}$). *(Đính chính: Trong bản ghi `c74b0de` trước đó đã ghi nhầm `Smooth Projection (gamma=1.0)` và `RLS (lambda=0.1)`; thực tế trong toàn bộ codebase và `configs/cifar100.yaml` chỉ có duy nhất tham số Ridge regularization `gamma = 1.0` truyền vào `OnlineRidgeRLS`, không tồn tại tham số `lambda = 0.1`).*
+  * **Tổng thời gian chạy (`total_duration_seconds`):** **1735.3 giây ($\approx 28.92$ phút)** trên GPU NVIDIA T4.
 
-### 20.1. Bảng Đối chiếu Kết quả Thực tế với Paper F-OAL (NeurIPS 2024 Table 2)
+---
 
-| Chỉ số Đánh giá | Mục tiêu Paper (Table 2, CIFAR-100 B0) | Kết quả GPU Thực tế (Seed 42) | Đánh giá & Phân tích Học thuật |
-| :--- | :---: | :---: | :--- |
-| **Average Incremental Accuracy ({\\text{avg}}$)** | **.1\\%$** (multi-seed mean) | **.33\\%$** | Xu hướng hội tụ chuẩn: Task 1 đạt **.60\\%$**, suy giảm mượt dần qua 10 tasks. Khoảng cách với Paper chủ yếu do Checkpoint Provenance (A01) và Class Permutation (A04). |
-| **Last Task Accuracy ({\\text{last}}$)** | **.5\\%$** | **.92\\%$** | Sau khi tích lũy cả 100 lớp, độ chính xác vẫn duy trì trên \\%$, vượt xa các baseline thông thường như Fine-tuning (~-25\\%$). |
-| **Average Forgetting Rate ($)** | **.5\\%$** | **.21\\%$** | Hiện tượng quên duy trì ở mức một chữ số ($<10\\%$), chứng minh công thức Woodbury RLS giữ vững tri thức cũ cực tốt mà không cần replay buffer. |
+### 20.1. Bảng Đối chiếu Kết quả với Paper F-OAL (NeurIPS 2024, Table 2 — CIFAR-100)
 
-### 20.2. Diễn biến Chi tiết Qua 10 Tasks (Stage Accuracies & Forgetting)
+Theo quy định báo cáo tái hiện thực nghiệm (Checkpoint 3), độ lệch giữa kết quả tái hiện (`Ours`) và kết quả công bố trong bài báo (`Paper`) được định lượng bằng cả hai đại lượng:
+1. **Chênh lệch tuyệt đối theo điểm phần trăm ($\Delta_{\text{pp}}$):**
+   $$\Delta_{\text{pp}} = \text{Ours} - \text{Paper}$$
+2. **Độ lệch tương đối ($\Delta_{\text{rel}}\%$):**
+   $$\Delta_{\text{rel}}(\%) = \frac{\text{Ours} - \text{Paper}}{\text{Paper}} \times 100\%$$
 
-* **Stage Accuracies ($ tại mỗi task $):**
-  * Task 1 (10 classes, 5,000 samples): **.60\\%$**
-  * Task 2 (20 classes, 10,000 samples): **.00\\%$**
-  * Task 3 (30 classes, 15,000 samples): **.07\\%$**
-  * Task 4 (40 classes, 20,000 samples): **.60\\%$**
-  * Task 5 (50 classes, 25,000 samples): **.10\\%$**
-  * Task 6 (60 classes, 30,000 samples): **.95\\%$**
-  * Task 7 (70 classes, 35,000 samples): **.77\\%$**
-  * Task 8 (80 classes, 40,000 samples): **.01\\%$**
-  * Task 9 (90 classes, 45,000 samples): **.31\\%$**
-  * Task 10 (100 classes, 50,000 samples): **.92\\%$**
+| Chỉ số Đánh giá (Metric) | Ký hiệu | Paper F-OAL (`PAPER_REPORTED`, 3-seed mean) | Original Code (`ORIGINAL_REPRODUCED`) | Kết quả Nhóm (`OUR_REPRODUCED`, Seed 42) | Chênh lệch tuyệt đối ($\Delta_{\text{pp}}$) | Độ lệch tương đối ($\Delta_{\text{rel}}\%$) | Chiều hướng tốt & Nhận xét |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Average Incremental Accuracy** | $\bar{A}$ ($A_{\text{avg}}$) | **91.10%** | `NOT RUN` *(xem A19)* | **79.33%** (`0.793332`) | **$-11.77\text{ pp}$** | **$-12.92\%$** | Cao hơn là tốt hơn ($\uparrow$). Kết quả hiện tại thấp hơn paper $11.77\text{ pp}$ (tương ứng lệch tương đối $-12.92\%$). |
+| **Last Task Accuracy** | $A_{10}$ ($A_{\text{last}}$) | **86.50%** | `NOT RUN` *(xem A19)* | **70.92%** (`0.709200`) | **$-15.58\text{ pp}$** | **$-18.01\%$** | Cao hơn là tốt hơn ($\uparrow$). Sau khi học đủ 100 lớp qua 10 tasks (one-pass), độ chính xác cuối đạt $70.92\%$, thấp hơn paper $15.58\text{ pp}$ ($-18.01\%$). |
+| **Average Forgetting Rate** | $F_{10}$ ($F$) | **5.50%** | `NOT RUN` *(xem A19)* | **9.21%** (`0.092111`) | **$+3.71\text{ pp}$** | **$+67.45\%$** | **Thấp hơn là tốt hơn ($\downarrow$)**. Dấu dương ($+3.71\text{ pp}$ / $+67.45\%$) biểu thị mô hình hiện tại có mức độ quên **cao hơn** (kém hơn) so với con số công bố trong paper. |
 
-* **Final Task Accuracies ({10, j}$ - Độ chính xác từng task cũ tại thời điểm kết thúc task 10):**
-  * Task 1: .5\\%$
-  * Task 2: .2\\%$
-  * Task 3: .0\\%$
-  * Task 4: .5\\%$
-  * Task 5: .5\\%$
-  * Task 6: .5\\%$
-  * Task 7: .2\\%$
-  * Task 8: .0\\%$
-  * Task 9: .4\\%$
-  * Task 10: .4\\%$
+---
 
-### 20.3. Hiện vật Thực nghiệm & Khả năng Truy vết (Artifacts)
-* **Checkpoints:** Lưu đầy đủ 10 files nhị phân: `task_01.pt` đến `task_10.pt` trong thư mục `results/foal_full_cifar100_seed42/`.
-* **Metrics:** `results/foal_full_cifar100_seed42/metrics.json` (chứa toàn bộ ma trận  \\times 10$, stage accuracies, forgetting).
-* **Log CSV:** `results/foal_full_cifar100_seed42/task_accuracy.csv`.
-* **Bảng tổng hợp tự động:** `results/summary_runs.csv` và `results/summary_aggregated.csv`.
-* **Gói nén lưu trữ:** `foal_cifar100_single_seed42_results.zip`.
+### 20.2. Ma trận Độ chính xác $10 \times 10$ Đầy đủ & Kiểm chứng Toán học Độc lập
 
+Dữ liệu nguyên gốc từ `metrics.json` (do người dùng xuất trực tiếp trên Colab sau khi kết thúc Task 10) cung cấp ma trận độ chính xác tam giác dưới $R \in \mathbb{R}^{10 \times 10}$, trong đó phần tử $a_{k, j}$ là độ chính xác kiểm thử trên tập test của Task $j$ sau khi hoàn tất huấn luyện Task $k$ ($1 \le j \le k \le 10$):
+
+| Giai đoạn (Sau Task $k$) | Task 1 ($a_{k,1}$) | Task 2 ($a_{k,2}$) | Task 3 ($a_{k,3}$) | Task 4 ($a_{k,4}$) | Task 5 ($a_{k,5}$) | Task 6 ($a_{k,6}$) | Task 7 ($a_{k,7}$) | Task 8 ($a_{k,8}$) | Task 9 ($a_{k,9}$) | Task 10 ($a_{k,10}$) | **Stage Accuracy $A_k = \frac{1}{k}\sum_{j=1}^k a_{k,j}$** |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Stage 1** | **89.60%** | — | — | — | — | — | — | — | — | — | **89.60%** (`0.896000`) |
+| **Stage 2** | 84.80% | **91.20%** | — | — | — | — | — | — | — | — | **88.00%** (`0.880000`) |
+| **Stage 3** | 82.10% | 88.50% | **84.60%** | — | — | — | — | — | — | — | **85.07%** (`0.850667`) |
+| **Stage 4** | 78.60% | 87.40% | 78.90% | **81.50%** | — | — | — | — | — | — | **81.60%** (`0.816000`) |
+| **Stage 5** | 76.60% | 84.40% | 76.60% | 80.10% | **77.80%** | — | — | — | — | — | **79.10%** (`0.791000`) |
+| **Stage 6** | 73.10% | 83.70% | 76.70% | 78.80% | 73.90% | **75.50%** | — | — | — | — | **76.95%** (`0.769500`) |
+| **Stage 7** | 70.60% | 82.10% | 75.70% | 77.70% | 73.20% | 73.60% | **77.50%** | — | — | — | **75.77%** (`0.757714`) |
+| **Stage 8** | 67.40% | 80.90% | 75.50% | 74.30% | 72.70% | 71.70% | 75.90% | **73.70%** | — | — | **74.01%** (`0.740125`) |
+| **Stage 9** | 64.70% | 78.60% | 74.80% | 73.80% | 71.30% | 71.10% | 75.60% | 71.60% | **69.30%** | — | **72.31%** (`0.723111`) |
+| **Stage 10** | 60.50% | 76.20% | 74.00% | 73.50% | 70.50% | 69.50% | 74.20% | 71.00% | 68.40% | **71.40%** | **70.92%** (`0.709200`) |
+| **Peak $\max_{\ell \in \{j..9\}} a_{\ell,j}$** | 89.60% | 91.20% | 84.60% | 81.50% | 77.80% | 75.50% | 77.50% | 73.70% | 69.30% | — | — |
+| **Task Forgetting $f_j^{10}$** | **29.10%** | **15.00%** | **10.60%** | **8.00%** | **7.30%** | **6.00%** | **3.30%** | **2.70%** | **0.90%** | — | **Mean $F_{10} = 9.21\%$** (`0.092111`) |
+
+#### Kiểm chứng toán học độc lập từ ma trận $10 \times 10$:
+1. **Last Accuracy ($A_{10}$):**
+   $$A_{10} = \frac{0.605 + 0.762 + 0.740 + 0.735 + 0.705 + 0.695 + 0.742 + 0.710 + 0.684 + 0.714}{10} = \frac{7.092}{10} = 0.7092 \quad (70.92\%)$$
+2. **Average Incremental Accuracy ($\bar{A}$):**
+   $$\bar{A} = \frac{1}{10} \sum_{k=1}^{10} A_k = \frac{0.8960000 + 0.8800000 + 0.8506667 + 0.8160000 + 0.7910000 + 0.7695000 + 0.7577143 + 0.7401250 + 0.7231111 + 0.7092000}{10} = 0.7933317 \quad (79.33\%)$$
+3. **Average Forgetting ($F_{10}$):**
+   $$F_{10} = \frac{1}{9} \sum_{j=1}^{9} f_j^{10} = \frac{0.291 + 0.150 + 0.106 + 0.080 + 0.073 + 0.060 + 0.033 + 0.027 + 0.009}{9} = \frac{0.829}{9} = 0.0921111 \quad (9.21\%)$$
+*Kết luận kiểm chứng số học:* Ba chỉ số tổng hợp trong `metrics.json` khớp tuyệt đối 100% với định nghĩa giải tích trong `src/foal/metrics.py`.
+
+---
+
+### 20.3. Kiểm toán Các Nhận định Khoa học & Phân tích Giả thuyết Sai lệch (Scientific Claim Audit)
+
+Trong báo cáo sơ bộ tại commit `c74b0de`, một số nhận định về nguyên nhân sai lệch và hiệu năng thuật toán đã được viết quá mức chứng minh (*overclaimed*). Dưới góc độ kiểm toán khoa học, nhóm thực hiện điều chỉnh chuẩn xác như sau:
+
+1. **Đính chính nhận định về độ ổn định và hiệu năng của thuật toán:**
+   * *Nhận định cũ (loại bỏ):* Khẳng định thuật toán *"hoạt động hoàn hảo"* và *"vượt xa các baseline thông thường như Fine-tuning (~15–25%)"*.
+   * *Nhận định chuẩn hóa:*
+     * Pipeline huấn luyện của nhóm đã **chạy hoàn tất end-to-end qua 10 tasks trên dữ liệu CIFAR-100 thật bằng GPU**, không xảy ra lỗi tràn bộ nhớ hay suy biến số học (`NaN`/`Inf`) trong ma trận $R_t \in \mathbb{R}^{1000 \times 1000}$ khi tính toán bằng `float64`.
+     * Nhóm **chưa chạy thực nghiệm baseline Fine-tuning (`A15`) trên cùng giao thức** nên không đưa ra con số tự ước lượng `~15–25%`. Nếu trích dẫn tài liệu tham khảo, chỉ trích dẫn số liệu do chính tác giả báo cáo trong Paper (Section 5.3 / Bảng phân tích Analytic Classifier vs Backprop FC Classifier trên CIFAR-100: cấu hình thay Analytic Classifier bằng Fully Connected Classifier huấn luyện bằng Backpropagation đạt $32.4\%$ Average Accuracy so với $91.1\%$ của F-OAL).
+     * Khoảng cách giữa kết quả hiện tại của nhóm ($\bar{A} = 79.33\%$, $A_{10} = 70.92\%$, $F_{10} = 9.21\%$) và kết quả công bố trong Paper ($\bar{A} = 91.10\%$, $A_{10} = 86.50\%$, $F_{10} = 5.50\%$) là **đáng kể ($-11.77\text{ pp}$ trên $\bar{A}$ và $-15.58\text{ pp}$ trên $A_{10}$)** và bắt buộc phải được điều tra có hệ thống thông qua việc chạy code gốc của tác giả (**A19**) và đối chiếu từng tầng pipeline (**A20**).
+
+2. **Bảng 9 Giả thuyết Khoa học về Nguyên nhân Chênh lệch Kết quả (`79.33%` vs `91.10%`):**
+   Thay vì kết luận sớm rằng khoảng cách chỉ do `A01` và `A04`, mọi yếu tố có khả năng gây sai lệch giữa `OUR_REPRODUCED` và `PAPER_REPORTED` đều được đặt làm **giả thuyết cần kiểm chứng thực nghiệm**:
+
+| Mã GT | Yếu tố / Thành phần Pipeline | Trạng thái trong Code Nhóm (`src/foal/`) | Giả thuyết Kỹ thuật & Cơ chế Gây Sai lệch Tiềm ẩn | Cách Kiểm chứng Thực nghiệm (`A19` / `A20`) |
+|:---:|:---|:---|:---|:---|
+| **H1** | **Pretrained ViT Weights (`A01`)** | `timm.create_model('vit_base_patch16_224.augreg_in1k', pretrained=True)` | Tác giả chỉ ghi *"ViT-B pre-trained on ImageNet-1K"*. Trong `timm` hoặc repo gốc, tác giả có thể sử dụng checkpoint được pre-train trên ImageNet-21K rồi fine-tune trên ImageNet-1K (`vit_base_patch16_224.augreg_in21k_ft_in1k` hoặc `vit_base_patch16_224` gốc). Vì CIFAR-100 có độ tương đồng cao với ImageNet-21K, khác biệt về chất lượng đặc trưng zero-shot của Frozen ViT có thể tạo ra chênh lệch $5\text{–}12\text{ pp}$. | Kiểm tra tên model/checkpoint tải trong repo gốc `liuyuchen-cz/F-OAL`; so sánh trực tiếp độ chính xác Task 1 (10 lớp đầu: nhóm đạt $89.6\%$, trong khi để trung bình 10 task đạt $91.1\%$ thì Task 1 của tác giả phải đạt $\approx 95\text{–}98\%$). |
+| **H2** | **Khởi tạo & Hệ số Tỷ lệ của Smooth Projection (`A03`)** | `weight = torch.randn(768, 1000) * 1.0`, sau đó `torch.sigmoid(x @ weight)` | **Giả thuyết kỹ thuật có xác suất rất cao:** Sau LayerNorm, vector $x \in \mathbb{R}^{768}$ có phương sai mỗi chiều $\approx 1$. Khi nhân với $W \sim \mathcal{N}(0, 1)^{768 \times 1000}$ (không chia cho $\sqrt{d_{\text{in}}} = \sqrt{768} \approx 27.71$), tích vô hướng $u = x W$ có độ lệch chuẩn $\text{std}(u) \approx 27.7$. Với $|u| \gg 5$, hàm $\sigma(u) = \frac{1}{1+e^{-u}}$ bị **bão hòa mạnh về 0 hoặc 1** (biến Smooth Projection thành hàm bước nhị phân cứng thay vì phép chiếu trơn), làm mất thông tin biên độ đặc trưng! | Kiểm tra cách khởi tạo ma trận chiếu trong `liuyuchen-cz/F-OAL` (ví dụ: `nn.Linear` mặc định dùng $\mathcal{U}(-1/\sqrt{d_{\text{in}}}, 1/\sqrt{d_{\text{in}}})$, hoặc chuẩn hóa $\mathcal{N}(0, 1/d_{\text{in}})$, hoặc chuẩn hóa L2 vector $x$ trước khi chiếu). |
+| **H3** | **Cơ chế Feature Fusion & Vị trí LayerNorm (`A02`)** | Lấy trung bình cộng `block_output[:, 0, :]` của 12 blocks rồi áp dụng `network.norm` một lần ở cuối. | Tác giả có thể: (a) áp dụng LayerNorm cho từng block trước khi lấy trung bình; (b) không áp dụng `network.norm` cuối; (c) chuẩn hóa L2 (`F.normalize`) vector đặc trưng sau mỗi block hoặc sau khi cộng gộp; hoặc (d) chỉ lấy một tập con các block. | Đặt câu lệnh in kích thước và chuẩn L2 của vector đặc trưng trung gian giữa code gốc tác giả và `FrozenViT.forward()` trên cùng một ảnh đầu vào. |
+| **H4** | **Tiền xử lý ảnh (Image Preprocessing)** | `Resize((224, 224), BICUBIC)` + `Normalize(mean=0.5, std=0.5)` | Repo tác giả (thường kế thừa từ PyCIL / LAMDA-PILOT) có thể dùng `Resize(256) -> CenterCrop(224)` hoặc `InterpolationMode.BILINEAR` hoặc chuẩn hóa ImageNet `mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)` kết hợp với cấu hình `timm` khác. | Đối chiếu trực tiếp transform pipeline trong code gốc của tác giả. |
+| **H5** | **Siêu tham số RLS & Quy ước Ma trận Gram (`A05`)** | $R_0 = \gamma^{-1} I$ với $\gamma = 1.0$, nhãn đích $Y \in \{0, 1\}^{B \times C}$ | Một số hiện thực Analytic Learning (như ACIL / DS-AL) dùng $\gamma$ nhân với ma trận đơn vị theo tỷ lệ số mẫu, hoặc khởi tạo $R_0 = \gamma I$ (nghịch đảo ký hiệu $\gamma \leftrightarrow 1/\gamma$), hoặc dùng nhãn đích $\{-1, +1\}$ thay vì $\{0, 1\}$. | Kiểm tra phương trình cập nhật $R_t$ và $W_t$ trong code gốc của tác giả; chạy thử $\gamma \in \{10^{-2}, 10^{-1}, 1, 10, 10^2, 10^3\}$. |
+| **H6** | **Thứ tự lớp (Class Permutation — `A04`)** | Sinh hoán vị bằng `np.random.default_rng(42).permutation(100)` | Thứ tự 10 lớp trong mỗi task ảnh hưởng đến độ khó của từng task (ví dụ Task 1 có nhiều lớp dễ hay khó) và quỹ đạo $\bar{A}$. Tuy nhiên, riêng hoán vị lớp thường chỉ gây dao động $\pm 1\text{–}2\%$ chứ hiếm khi gây chênh lệch tới $15.58\text{ pp}$ ở Last Accuracy $A_{10}$ (vì nghiệm RLS tại Task 10 là bất biến với thứ tự các lớp đã học nếu tập mẫu là như nhau!). | Nhận xét toán học quan trọng: Tại Task 10 (sau khi đã nhìn thấy toàn bộ 50.000 mẫu), nghiệm giải tích của Ridge Regression trên toàn bộ 100 lớp **không phụ thuộc vào thứ tự phân chia task hay thứ tự lớp**! Do đó, việc $A_{10}$ lệch tới $-15.58\text{ pp}$ ($70.92\%$ vs $86.50\%$) chứng minh chắc chắn rằng **nguyên nhân chính nằm ở biểu diễn đặc trưng / phép chiếu / tiền xử lý (H1, H2, H3, H4, H5)** chứ không phải chỉ do thứ tự lớp `A04`! |
+| **H7** | **Thứ tự luồng mẫu (Data Stream Order)** | `DataLoader(..., shuffle=True, generator=g)` với `stream_seed=42` | Do tính chất toán học của RLS (đã chứng minh qua unit test `test_batch_partition_does_not_change_exact_solution`), thứ tự mini-batch trong một task không làm thay đổi nghiệm cuối của task đó (trừ sai số dấu chấm động $< 10^{-10}$). | Đã loại trừ về mặt toán học; chỉ kiểm tra xem code tác giả có dùng data augmentation ngẫu nhiên (RandomHorizontalFlip / AutoAugment) trong luồng 1-pass hay không. |
+| **H8** | **Công thức tính Metrics (`A07`)** | $\bar{A} = \frac{1}{T}\sum_{k=1}^T A_k$, với $A_k = \frac{1}{k}\sum_{j=1}^k a_{k,j}$ | Trên CIFAR-100 với 10 lớp/task (mỗi lớp có đúng 100 mẫu test), trung bình các task đã học $A_k = \frac{1}{k}\sum_{j=1}^k a_{k,j}$ trùng khớp hoàn toàn với độ chính xác trên toàn bộ các mẫu test đã thấy (overall seen-sample accuracy). Riêng công thức Forgetting có thể khác nhau ở chỗ tính trung bình trên $T-1$ tasks hay $T$ tasks. | Đối chiếu hàm tính accuracy và forgetting trong repo gốc của tác giả. |
+| **H9** | **Phiên bản Thư viện (`A08`)** | `timm==1.0.30`, `torch` trên Colab | Khác biệt phiên bản `timm` có thể dẫn đến thay đổi URL trọng số mặc định khi gọi tên model ngắn gọn (ví dụ `vit_base_patch16_224`). | Kiểm tra `requirements.txt` hoặc môi trường trong repo tác giả. |
+
+> **Phát hiện kiểm toán quan trọng nhất từ Bảng Giả thuyết trên:** Nhờ tính chất bất biến theo thứ tự của nghiệm giải tích Ridge Regression tại thời điểm kết thúc toàn bộ 100 lớp (Task 10), việc **Last Accuracy $A_{10}$ của nhóm đạt $70.92\%$ so với $86.50\%$ của paper ($\Delta_{\text{pp}} = -15.58\text{ pp}$)** là bằng chứng toán học rõ ràng cho thấy khoảng cách này **không thể giải thích chỉ bằng thứ tự lớp (`A04`) hay thứ tự mẫu**, mà bắt nguồn từ **khác biệt trong không gian đặc trưng đầu vào của bộ phân loại RLS** (cụ thể là **H1: Pretrained ViT weight variant**, **H2: Độ lệch chuẩn khởi tạo của Smooth Projection gây bão hòa Sigmoid**, hoặc **H3/H4/H5**). Điều này đặt ưu tiên cao nhất cho hạng mục **A19** và **A20**.
+
+---
+
+### 20.4. Trạng thái Xác minh Hiện vật Thực nghiệm (Artifact Verification Status)
+
+Để đảm bảo tính trung thực tuyệt đối trong kiểm toán:
+
+| Hiện vật / Bằng chứng (Artifact) | Trạng thái trên Colab (Theo báo cáo & ảnh chụp của User) | Trạng thái Vật lý trong Repo Cục bộ (`d:\Nhập môn ML\Paper`) | Trạng thái Kiểm toán |
+|:---|:---:|:---:|:---:|
+| Nội dung JSON của `results/foal_full_cifar100_seed42/metrics.json` | Đã sinh đầy đủ và được người dùng dán nguyên văn vào phiên làm việc | Chưa được lưu thành tệp vật lý trong `results/foal_full_cifar100_seed42/` (không tự ý tạo giả tệp từ đoạn chat) | **`REPORTED BY USER / MATH VERIFIED`** |
+| Các tệp `metadata.json`, `task_accuracy.csv`, `task_01.pt` .. `task_10.pt` | Đã sinh trên ổ đĩa phiên Colab | **`NOT AVAILABLE` trên đĩa cục bộ** | **`PENDING RAW ARTIFACT VERIFICATION`** |
+| Gói nén `foal_cifar100_single_seed42_results.zip` ở thư mục gốc | Đã tải về máy cục bộ (`326 bytes`) | Chỉ chứa `['results/', 'results/.gitkeep']` (rỗng do lệnh `zip` trên Colab chạy ở thư mục cha ngoài repo) | **`INCOMPLETE ARCHIVE (326B EMPTY)`** |
+| Kết quả chạy độc lập `scripts/evaluate.py --checkpoint .../task_10.pt` | Chưa có log đầu ra chi tiết trong phiên | **`NOT AVAILABLE`** | **`PENDING`** |
+| Bảng tổng hợp `results/summary_runs.csv` & `summary_aggregated.csv` | Hiện chỉ chứa các run pilot CPU (`smoke_test_p0`, `smoke_test_post_fix`) | Chưa có dòng của `foal_full_cifar100_seed42` | **`PENDING RAW ARTIFACT VERIFICATION`** |
+
+---
+
+## 21. Kiểm toán Tuân thủ Quy định Đồ án Tái hiện — Checkpoint 3 Compliance
+
+Mục này rà soát toàn diện dự án dựa trên quy định chính thức của môn Nhập môn Machine Learning (HCMUS) tại:  
+`https://hcmus-cs-ta.github.io/lab-book/intro-ml/project/statement/reproduction/`
+
+### 21.1. Phạm vi Thực nghiệm (Experimental Scope: Full Scope vs Core Scope Proposal)
+
+#### A. Kiểm kê Toàn bộ Thực nghiệm trong Paper gốc (Full Scope Inventory)
+Bài báo F-OAL (NeurIPS 2024) thực hiện khối lượng thực nghiệm rất lớn gồm:
+1. **6 Bộ dữ liệu (Datasets):** CIFAR-100 ($10 \text{ tasks} \times 10 \text{ classes}$), CORe50, FGVCAircraft, DTD, Tiny-ImageNet, Country211.
+2. **Hơn 14 Phương pháp Đối sánh (Baselines trong Table 2):** ER, iCaRL, GDumb, DER++, Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL và F-OAL, chạy lặp lại **3 lần (3 random runs)** cho mỗi phương pháp trên mỗi bộ dữ liệu.
+3. **Đánh giá Hiệu năng Tính toán (Table 3 & Figure 2):** Đo tổng thời gian huấn luyện (Training Time, tính bằng giây) và mức tiêu thụ bộ nhớ GPU đỉnh (Peak GPU Memory, tính bằng GB) trên CIFAR-100, FGVCAircraft, DTD, Tiny-ImageNet.
+4. **Nghiên cứu Cắt bỏ Thành phần (Ablation Study — Table 4 & Section 5.3):**
+   * Đánh giá 4 tổ hợp bật/tắt **Feature Fusion (FF)** và **Smooth Projection (SP)**.
+   * So sánh trực tiếp **Analytic Classifier (RLS)** với **Fully Connected Classifier huấn luyện bằng Backpropagation** trên cùng kiến trúc đặc trưng.
+5. **Phân tích Bổ sung (Additional / Sensitivity Analysis):** Khảo sát ảnh hưởng của kích thước mini-batch (Batch size $B$), số chiều chiếu ($D$) và hệ số chính quy hóa ($\gamma$).
+
+#### B. Lý do Không Thực hiện Full Scope và Đề xuất Core Scope (Pending Group/Instructor Confirmation)
+* **Rào cản tài nguyên của Full Scope:** Việc chạy đủ 6 bộ dữ liệu (đặc biệt là Country211, Tiny-ImageNet, CORe50) nhân với $>10$ phương pháp baseline và 3 seeds đòi hỏi hàng trăm giờ GPU chuyên dụng, vượt quá giới hạn phiên chạy miễn phí của Google Colab / Kaggle T4 (mỗi lượt chạy F-OAL 10 tasks trên CIFAR-100 với T4 đã mất $\approx 29$ phút).
+* **Đề xuất Core Scope (Phạm vi Cốt lõi có cơ sở khoa học — Đề xuất để nhóm xác nhận):**
+  Theo đúng quy định môn học, khi thu hẹp về **Core Scope**, dự án vẫn phải bảo toàn đầy đủ **3 trụ cột thực nghiệm bắt buộc**:
+
+| Trụ cột Thực nghiệm (Core Scope Pillar) | Nội dung Thực nghiệm Cụ thể trong Core Scope | Tập dữ liệu & Quy mô | Mục tiêu Kiểm chứng Khoa học | Trạng thái Hiện tại |
+|:---|:---|:---|:---|:---:|
+| **1. Headline Comparison (So sánh Chính — Table 2, Table 3, Figure 2)** | So sánh 3 nguồn của **F-OAL** (`PAPER_REPORTED` vs `ORIGINAL_REPRODUCED` vs `OUR_REPRODUCED`, **3 seeds `[42, 123, 2026]`**) cùng các baseline đại diện chạy trên cùng backbone ViT-B/16 và cùng chia tách task:<br>• **Baseline 1 (`A15`):** Frozen ViT + Feature Fusion + Smooth Projection + **Linear Classifier huấn luyện bằng Backpropagation (SGD/Adam, 1-pass)** (tái hiện trực tiếp thí nghiệm Section 5.3 của paper).<br>• **Baseline 2 (`A16`):** Frozen ViT + **Linear Ridge Analytic Classifier** (không dùng Smooth Projection phi tuyến).<br>• **Baseline 3 (`A17`):** Frozen ViT + **Experience Replay (ER)** với bộ nhớ đệm nhỏ.<br>• Kèm đo đạc **Training Time (s)** và **Peak GPU VRAM (GB)** (`A18`). | **CIFAR-100** (10 tasks $\times$ 10 classes, 50.000 train, 10.000 test, batch size 10, 1-pass). *(Tùy chọn mở rộng sang **DTD** — bộ dữ liệu nhỏ chỉ mất ~1 phút/run trên GPU — nếu thời gian cho phép).* | Kiểm chứng đóng góp trung tâm của F-OAL: khả năng chống quên thảm khốc (Catastrophic Forgetting) vượt trội so với Backpropagation 1-pass mà không cần lưu mẫu cũ (Zero-Replay), đồng thời tiết kiệm thời gian và VRAM. | **`PARTIAL`** (Đã có 1-seed `OUR_REPRODUCED`; đang triển khai `A19`, `A20`, 3-seed và `A15`–`A18`) |
+| **2. Ablation Study (Nghiên cứu Cắt bỏ — Table 4)** | Chạy đầy đủ **4 cấu hình tổ hợp** qua `scripts/ablation.py` (3 seeds hoặc 1 seed chuẩn cố định kèm kiểm chứng):<br>1. **Full F-OAL:** `FF = True`, `SP = True`<br>2. **w/o Feature Fusion:** `FF = False` (chỉ lấy block cuối), `SP = True`<br>3. **w/o Smooth Projection:** `FF = True`, `SP = False` ($D=768$ trực tiếp vào RLS)<br>4. **w/o Both:** `FF = False`, `SP = False` | **CIFAR-100** (10 tasks $\times$ 10 classes, full protocol) và/hoặc **DTD** (bộ dữ liệu gốc được dùng trong Table 4 của paper). | Định lượng đóng góp độc lập và hiệu ứng cộng hưởng của **Feature Fusion** (tổng hợp đa tầng ViT) và **Smooth Projection** (mở rộng không gian đặc trưng phi tuyến qua Sigmoid). | **`IMPLEMENTED` & `UNIT TESTED`** (`scripts/ablation.py` đã sẵn sàng; chờ chạy full GPU) |
+| **3. Additional Analysis (Phân tích Bổ sung & Kiểm chứng Lý thuyết)** | Thực hiện 2 khảo sát chuyên sâu trên CIFAR-100:<br>• **Analysis 3A — Batch Size Invariance Verification:** Chạy F-OAL với $B \in \{5, 10, 25, 50, 100\}$ trên cùng `stream_seed` và `projection_seed` để kiểm chứng thực nghiệm định lý toán học của bài báo: nghiệm cập nhật tuần tự Woodbury RLS là **bất biến theo kích thước mini-batch $B$** (độ chính xác giữ nguyên trong khi thời gian chạy thay đổi).<br>• **Analysis 3B — Sensitivity to Projection Scaling ($\sigma_{\text{init}}$), Dimension ($D \in \{500, 1000, 2000\}$) & Ridge Regularization ($\gamma \in \{0.1, 1.0, 10.0\}$):** Làm rõ hiện tượng bão hòa Sigmoid và độ nhạy siêu tham số. | **CIFAR-100** (10 tasks $\times$ 10 classes). | Vượt lên trên việc chỉ chạy lại lệnh có sẵn: chứng minh thực nghiệm tính chất toán học cốt lõi của thuật toán (Batch-size invariance) và giải thích cơ chế hoạt động của Smooth Projection. | **`PENDING`** (Đã có unit test kiểm chứng bất biến batch size ở mức nhỏ; chờ chạy GPU full) |
+
+---
+
+### 21.2. Tự Hiện thực Thành phần Cốt lõi (Independent Core Implementation Verification)
+
+Quy định môn học yêu cầu nhóm phải **tự hiện thực các thành phần cốt lõi của thuật toán** thay vì chỉ sao chép mã nguồn của tác giả. Bảng dưới đây xác nhận quyền sở hữu mã nguồn trong `src/foal/`:
+
+| Thành phần Cốt lõi | Tệp Mã nguồn của Nhóm | Trạng thái Tự Hiện thực & Kiểm thử | Ghi chú Ranh giới với Code Gốc Tác giả |
+|:---|:---|:---:|:---|
+| **1. Frozen ViT & Hook-based Feature Extraction** | `src/foal/backbone.py` | **100% Nhóm tự viết** (`FrozenViT`, forward hooks thu thập 12 blocks, ép `eval()`, khóa gradient) | Không sao chép từ repo tác giả. Sử dụng trực tiếp thư viện chuẩn `timm` và `torch`. |
+| **2. Multi-Block CLS Feature Fusion** | `src/foal/feature_fusion.py` | **100% Nhóm tự viết** (`fuse_cls_features`, kiểm tra chiều tensor chặt chẽ) | Được kiểm chứng bằng unit test `test_feature_fusion_applies_final_layernorm_both_branches`. |
+| **3. Smooth Random Projection** | `src/foal/projection.py` | **100% Nhóm tự viết** (`SmoothProjection`, quản lý `torch.Generator` độc lập, lưu `register_buffer`) | Được kiểm chứng bằng `test_projection_is_fixed_and_seeded`. |
+| **4. Online Recursive Least Squares (Woodbury RLS)** | `src/foal/rls.py` | **100% Nhóm tự viết** (`OnlineRidgeRLS`, mở rộng lớp động `ensure_classes`, giải hệ tuyến tính ổn định bằng `torch.linalg.solve` + đối xứng hóa $R_t$) | Được kiểm chứng tương đương nghiệm giải tích Ridge toàn cục với sai số $< 10^{-10}$ trên đặc trưng ViT thật (`test_rls_real_features.py`). |
+| **5. Incremental Task Stream & Zero-Replay Dataset** | `src/foal/datasets.py` | **100% Nhóm tự viết** (`TaskSpec`, `make_class_order`, `make_task_specs`, `IndexedImageDataset`, kiểm tra chống rò rỉ nhãn tương lai) | Được kiểm chứng bằng `test_task_partition_no_train_replay_and_no_future_test`. |
+| **6. Continual Learning Metrics & Multi-Seed Aggregation** | `src/foal/metrics.py` | **100% Nhóm tự viết** ($\bar{A}$, $A_T$, $F_T$, Bessel's correction $N-1$ cho multi-seed std) | Được kiểm chứng bằng 11 bài test trong `test_metrics_comprehensive.py`. |
+
+> **Quy tắc Cách ly Nghiêm ngặt khi Thực hiện A19 (Original Code Reproduction):** Khi tải repository gốc của tác giả (`https://github.com/liuyuchen-cz/F-OAL`) để chạy đối chiếu theo yêu cầu Checkpoint 3, mã nguồn của tác giả **bắt buộc phải được đặt trong thư mục cách ly độc lập** (ví dụ: `external/official_foal/` hoặc một nhánh/thư mục ngoài `src/foal/`), tuyệt đối không trộn lẫn hay ghi đè lên phần tự hiện thực trong `src/foal/`.
+
+---
+
+### 21.3. Tính Tái lập của Tập dữ liệu (Dataset Reproducibility)
+
+* **Tự động tải dữ liệu:** Hàm `load_cifar100()` trong `src/foal/datasets.py` tự động tải bộ dữ liệu chuẩn CIFAR-100 từ Hugging Face (`uoft-cs/cifar100`) và tự động chuyển đổi dự phòng (fallback) sang `torchvision.datasets.CIFAR100(download=True)` nếu môi trường không có Hugging Face. Không yêu cầu tải thủ công bất kỳ tệp dữ liệu cá nhân nào.
+* **Chia tách Task tất định (Deterministic Task Partitioning):** Thứ tự 100 lớp được sinh hoàn toàn tất định bởi `class_order_seed` (`np.random.default_rng(class_order_seed).permutation(100)`) hoặc danh sách `class_order` tường minh trong YAML, và được lưu trực tiếp vào cả `metadata.json` lẫn từng tệp checkpoint `task_XX.pt`.
+* **Chống rò rỉ dữ liệu (Data Leakage Prevention):** Hàm `make_task_specs()` thực thi kiểm tra bất biến `if any(i in all_train_indices for i in train_ids): raise AssertionError('A training sample would be replayed')`, đồng thời tập test tại giai đoạn $k$ chỉ lấy các mẫu thuộc tập lớp đã thấy `seen` ($10 \times k$ lớp đầu), tuyệt đối không để lộ nhãn của các task tương lai.
+
+---
+
+### 21.4. Kế hoạch Chạy Code Gốc của Tác giả (`A19` — Original Code Reproduction Plan)
+
+Theo quy định Checkpoint 3 của môn học, khi bài báo có công bố mã nguồn chính thức (`https://github.com/liuyuchen-cz/F-OAL`), nhóm **bắt buộc phải chạy lại code gốc của tác giả** để có cột số liệu `ORIGINAL_REPRODUCED`, từ đó phân biệt rõ:
+* Sai lệch giữa `PAPER_REPORTED` và `ORIGINAL_REPRODUCED` (do khác biệt phần cứng GPU RTX 4070 Ti vs Colab T4, phiên bản PyTorch/timm).
+* Sai lệch giữa `ORIGINAL_REPRODUCED` và `OUR_REPRODUCED` (do khác biệt chi tiết cài đặt trong pipeline của nhóm).
+
+**Quy trình thực hiện `A19` (Chuẩn bị cho lượt chạy GPU tiếp theo):**
+1. **Cách ly mã nguồn:** Clone `https://github.com/liuyuchen-cz/F-OAL.git` vào thư mục `external/official_foal` (thêm `external/` vào `.gitignore` hoặc lưu script bọc thực thi tại `scripts/run_official_foal.py`).
+2. **Kiểm tra cấu hình gốc của tác giả:** Đọc các tệp cấu hình/script của tác giả cho CIFAR-100 để trích xuất chính xác:
+   * Tên checkpoint ViT trong `timm` mà tác giả gọi.
+   * Quy trình tiền xử lý ảnh (`transforms`).
+   * Cách khởi tạo ma trận chiếu ngẫu nhiên $P$ và hàm kích hoạt trong Smooth Projection.
+   * Giá trị hệ số chính quy hóa $\gamma$ và kiểu dữ liệu (`float32` hay `float64`) trong cập nhật RLS.
+   * Danh sách thứ tự lớp (`class_order`) và random seeds mà tác giả sử dụng.
+3. **Thực thi trên cùng GPU Colab T4:** Chạy code gốc của tác giả trên CIFAR-100 (10 tasks $\times$ 10 classes, batch size 10), ghi nhận đầy đủ:
+   * Ma trận độ chính xác $10 \times 10$.
+   * Ba chỉ số chính: $\bar{A}$ (`Average Incremental Accuracy`), $A_{10}$ (`Last Accuracy`), $F_{10}$ (`Forgetting Rate`).
+   * Thời gian chạy (`Training Time`) và mức tiêu thụ bộ nhớ đỉnh (`Peak GPU VRAM`).
+4. **Lưu trữ hiện vật:** Lưu toàn bộ log đầu ra và metrics của code gốc vào `results/official_foal_cifar100/` và đồng bộ lên project W&B công khai với tag `original_code`.
+
+---
+
+### 21.5. Quy trình Điều tra Chênh lệch Kết quả (`A20` — Step-by-Step Pipeline Discrepancy Investigation)
+
+Để giải quyết triệt để khoảng cách $-11.77\text{ pp}$ trên $\bar{A}$ ($79.33\%$ vs $91.10\%$) và $-15.58\text{ pp}$ trên $A_{10}$ ($70.92\%$ vs $86.50\%$), nhóm thiết lập quy trình đối chiếu 7 bước tuần tự giữa `external/official_foal` (Original) và `src/foal` (Ours):
+
+```
+[Bước 1: Dataset & Class Order] 
+   │  So sánh danh sách 10 lớp của Task 1..10 và số mẫu/task (5.000 train, 1.000 test).
+   ▼
+[Bước 2: Image Preprocessing]
+   │  Đưa cùng 1 ảnh CIFAR-100 qua transform của Original và Ours; kiểm tra shape, min, max, mean, std.
+   ▼
+[Bước 3: Pretrained ViT Backbone Weights]
+   │  So sánh tên model timm, state_dict checksum và đầu ra từng block h_1..h_12 trên cùng tensor ảnh.
+   ▼
+[Bước 4: Feature Fusion & LayerNorm]
+   │  So sánh vector h_fusion (chuẩn L2, mean, std, cosine similarity giữa Original và Ours).
+   ▼
+[Bước 5: Smooth Projection (Trọng tâm nghi vấn H2)]
+   │  Kiểm tra phân phối trọng số W_proj (std = 1.0 hay 1/sqrt(768)) và phân phối đầu ra sau Sigmoid z = sigma(h_fusion @ W_proj).
+   │  Đo tỷ lệ phần tử bị bão hòa (z < 0.01 hoặc z > 0.99).
+   ▼
+[Bước 6: Online RLS Update]
+   │  Đưa cùng ma trận đặc trưng Z và nhãn Y vào RLS của Original và Ours; kiểm tra chuẩn Frobenius ||W_orig - W_ours||_F.
+   ▼
+[Bước 7: Evaluation & Metrics Formula]
+      Đưa cùng ma trận kết quả 10x10 vào hàm tính metric của Original và Ours để xác nhận công thức A_avg, A_last, F.
+```
+
+> **Nguyên tắc học thuật:** Mọi phát hiện từ quy trình 7 bước trên đều phải được ghi thành biên bản thực nghiệm rõ ràng. Nếu phát hiện lỗi hoặc khác biệt cấu hình (ví dụ: hệ số tỷ lệ khởi tạo Smooth Projection hay tên trọng số ViT), nhóm sẽ ghi nhận kết quả **trước khi sửa** (`v1 — Pre-alignment: 79.33%`) và **sau khi căn chỉnh giao thức** (`v2 — Protocol-aligned`), tuyệt đối không xóa bỏ lịch sử thực nghiệm cũ.
+
+---
+
+### 21.6. Truy vết Thực nghiệm Công khai qua W&B (`A21`) & Bảng So sánh Chuẩn 3 Nguồn (`A22`)
+
+#### A. Yêu cầu Public W&B Project (`A21`)
+Theo quy định Checkpoint 3:
+1. Project W&B (`hcmus-foal-reproduction`) phải được cấu hình ở chế độ **Public (Open Access — bất kỳ ai có đường dẫn đều xem được charts, config, logs, system metrics và artifacts mà không cần đăng nhập tài khoản W&B)**.
+2. Mọi lượt chạy được báo cáo trong bảng kết quả chính thức (`ORIGINAL_REPRODUCED`, `OUR_REPRODUCED`, `Ablation`, `Baselines`, `Sensitivity Analysis`) đều phải được đồng bộ lên project W&B này (hoặc chạy trực tiếp với `--wandb`, hoặc đồng bộ từ thư mục offline bằng lệnh `wandb sync`).
+3. Mỗi dòng kết quả trong báo cáo và `README_IMPLEMENTATION.md` / `docs/experiments.md` phải đính kèm đường dẫn trực tiếp (`https://wandb.ai/<entity>/hcmus-foal-reproduction/runs/<run_id>`) khớp với `git_commit` trong `metadata.json`.
+
+#### B. Khung Bảng Đối chiếu Chuẩn 3 Nguồn (`A22`: Paper vs Original vs Ours)
+Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên để sử dụng thống nhất trong `docs/experiments.md`, báo cáo giữa kỳ và README:
+
+| Phương pháp / Nguồn Kết quả | Phân loại Nguồn | Seeds / Số lần chạy | $\bar{A}$ ($A_{\text{avg}}$, $\uparrow$) | $A_{10}$ ($A_{\text{last}}$, $\uparrow$) | $F_{10}$ ($F$, $\downarrow$) | $\Delta_{\text{pp}}(\bar{A})$ so với Paper | $\Delta_{\text{rel}}(\bar{A})$ so với Paper | Thời gian chạy (s) | Peak VRAM (GB) | Đường dẫn W&B Công khai & Ghi chú Giao thức |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| **F-OAL (Paper Table 2, 3, Fig. 2)** | `PAPER_REPORTED` | 3 runs (Mean) | **91.10%** | **86.50%** | **5.50%** | $0.00\text{ pp}$ | $0.00\%$ | $261\text{ s}$ (RTX 4070 Ti) | $1.9\text{ GB}$ | Số liệu tham chiếu từ bài báo NeurIPS 2024 (Section 5.2, Table 2 & 3). |
+| **F-OAL (Author Repo `liuyuchen-cz/F-OAL`)** | `ORIGINAL_REPRODUCED` | `PENDING` (Stage B) | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Sẽ thực thi tại Stage B (**A19**) trên Colab T4. |
+| **F-OAL (Nhóm tự hiện thực — Bản chạy GPU đầu tiên `c74b0de`)** | `OUR_REPRODUCED` *(Single-seed v1)* | 1 seed (`42`) | **79.33%** | **70.92%** | **9.21%** | **$-11.77\text{ pp}$** | **$-12.92\%$** | $1735.3\text{ s}$ (Colab T4) | `NOT LOGGED` | `NOT YET SYNCED` (`PENDING RAW ARTIFACT VERIFICATION` trên đĩa cục bộ; dùng `vit_base_patch16_224.augreg_in1k`, `gaussian_std=1.0`, `gamma=1.0`). |
+| **F-OAL (Nhóm tự hiện thực — Sau điều tra A20 & Multi-Seed)** | `OUR_REPRODUCED` *(3-seed Official)* | 3 seeds (`42, 123, 2026`) | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Sẽ thực thi tại Stage C/D sau khi hoàn tất đối chiếu **A20**. |
+| **Baseline 1: Frozen ViT + Backprop FC Classifier (1-pass)** | `PAPER_REPORTED` / `OUR_REPRODUCED` | Paper: $32.40\%$ / Ours: `PENDING` | Paper: **32.40%** / Ours: `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | Thí nghiệm đối chứng vai trò của RLS so với SGD/Adam 1-pass (Paper Section 5.3 / **A15**). |
+| **Baseline 2: Frozen ViT + Linear Ridge (w/o Smooth Projection)** | `OUR_REPRODUCED` | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | Thí nghiệm đối chứng vai trò của Smooth Projection (**A16** / Ablation cấu hình 3). |
+| **Baseline 3: Frozen ViT + Experience Replay (ER)** | `PAPER_REPORTED` / `OUR_REPRODUCED` | Paper: $87.90\%$ / Ours: `PENDING` | Paper: **87.90%** / Ours: `NOT RUN` | Paper: **81.20%** / Ours: `NOT RUN` | Paper: **9.30%** / Ours: `NOT RUN` | `PENDING` | `PENDING` | Paper: $652\text{ s}$ | Paper: $6.3\text{ GB}$ | Đối chứng phương pháp Replay truyền thống (**A17**). |
+
+---
+
+## 22. Đặc tả Chi tiết Các Hạng mục Kiểm toán Mới (`A19`–`A22`) & Tiêu chí Nghiệm thu
+
+### A19 — Original Code Reproduction (`https://github.com/liuyuchen-cz/F-OAL`)
+* **Mức ưu tiên:** **P0 (Bắt buộc cho Checkpoint 3)**
+* **Trạng thái hiện tại:** **`PENDING`**
+* **Mô tả:** Tải và chạy mã nguồn chính thức do tác giả công bố trên bộ dữ liệu CIFAR-100 trong một thư mục cách ly (`external/official_foal/`), không can thiệp vào mã nguồn tự hiện thực trong `src/foal/`.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  1. Ghi nhận đầy đủ lệnh chạy, môi trường, phiên bản thư viện và biến thể pretrained ViT mà repo gốc sử dụng.
+  2. Thu được ma trận độ chính xác $10 \times 10$ và 3 chỉ số $\bar{A}$, $A_{10}$, $F_{10}$ của `ORIGINAL_REPRODUCED` trên GPU.
+  3. Lưu trữ toàn bộ log và kết quả vào `results/official_foal_cifar100/` và đẩy lên project W&B công khai.
+
+### A20 — Pipeline Discrepancy Investigation (Điều tra Nguyên nhân Sai lệch Ours vs Original/Paper)
+* **Mức ưu tiên:** **P0 (Bắt buộc cho Checkpoint 3)**
+* **Trạng thái hiện tại:** **`PENDING`**
+* **Mô tả:** Thực hiện quy trình đối chiếu 7 bước (Mục 21.5) giữa `external/official_foal/` và `src/foal/` để xác định chính xác nguyên nhân gây ra khoảng cách $-11.77\text{ pp}$ trên $\bar{A}$ và $-15.58\text{ pp}$ trên $A_{10}$.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  1. Xác minh từng giả thuyết từ **H1** đến **H9** (đặc biệt là **H1: Pretrained ViT checkpoint** và **H2: Độ lệch chuẩn khởi tạo của Smooth Projection gây bão hòa Sigmoid**).
+  2. Có bảng đối chiếu định lượng đầu ra trung gian của từng tầng giữa hai pipeline trên cùng một batch dữ liệu CIFAR-100.
+  3. Nếu cập nhật cấu hình/code để khớp giao thức tác giả, phải giữ lại kết quả cũ (`79.33%`) làm đối chứng lịch sử và báo cáo rõ mức cải thiện của từng thay đổi.
+
+### A21 — Public W&B Tracking & Evidence Traceability
+* **Mức ưu tiên:** **P1 (Bắt buộc cho Checkpoint 3)**
+* **Trạng thái hiện tại:** **`PARTIAL`** (Đã có code tích hợp `src/foal/wandb_utils.py`, chưa có public cloud runs)
+* **Mô tả:** Đồng bộ hóa toàn bộ các lượt chạy thực nghiệm chính thức lên một project Weights & Biases ở chế độ công khai (`Public`) và liên kết từng kết quả trong báo cáo tới W&B run tương ứng.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  1. Đường dẫn project W&B mở được trực tiếp trong trình duyệt ẩn danh (Incognito) mà không cần đăng nhập.
+  2. Mỗi run trên W&B lưu đầy đủ `config`, `git_commit`, `metrics.json`, `metadata.json` và `task_accuracy.csv`.
+  3. Bảng kết quả trong `docs/experiments.md` và `README_IMPLEMENTATION.md` có cột link trực tiếp tới từng W&B run.
+
+### A22 — Core Scope Alignment & Standardized Relative Deviation Reporting
+* **Mức ưu tiên:** **P1 (Bắt buộc cho Checkpoint 3)**
+* **Trạng thái hiện tại:** **`PARTIAL`** (Đã thiết lập khung bảng và công thức trong tài liệu; chờ hoàn tất số liệu thực nghiệm)
+* **Mô tả:** Thống nhất phạm vi thực nghiệm **Core Scope** (Headline Comparison + Ablation Study + Batch-size/Hyperparameter Additional Analysis) và trình bày mọi kết quả so sánh theo đúng 3 nguồn (`PAPER_REPORTED`, `ORIGINAL_REPRODUCED`, `OUR_REPRODUCED`) kèm cả $\Delta_{\text{pp}}$ và $\Delta_{\text{rel}}\%$.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  1. Nhóm xác nhận phạm vi Core Scope đề xuất tại Mục 21.1.
+  2. Mọi bảng so sánh trong tài liệu và slide báo cáo đều tính đúng $\Delta_{\text{pp}}$ và $\Delta_{\text{rel}} = \frac{\text{Ours}-\text{Paper}}{\text{Paper}} \times 100\%$, kèm chú thích rõ chiều hướng tốt ($\uparrow$ cho Accuracy, $\downarrow$ cho Forgetting).
+
+---
+
+## 23. Lộ trình Thực nghiệm Cập nhật đến Báo cáo Giữa kỳ (Updated Roadmap Stages A–F)
+
+Để đảm bảo hoàn thành toàn bộ yêu cầu kỹ thuật và học thuật trước hạn nộp URL GitHub (**07/11/2026**) và hạn nộp Slide Giữa kỳ (**21/11/2026**), lộ trình thực hiện được cấu trúc lại thành 6 giai đoạn rõ ràng:
+
+| Giai đoạn (Stage) | Thời gian Mục tiêu | Hạng mục Công việc Cụ thể | Sản phẩm Bàn giao & Bằng chứng Nghiệm thu (Deliverables) |
+|:---|:---:|:---|:---|
+| **Stage A — Evidence Verification & Artifact Recovery** | **01–03/11/2026** | 1. Thu hồi đầy đủ thư mục `results/foal_full_cifar100_seed42/` (`metrics.json`, `metadata.json`, `task_accuracy.csv`, `task_10.pt`) từ Colab hoặc chạy lại có bật `--wandb`.<br>2. Chạy độc lập `scripts/evaluate.py --checkpoint .../task_10.pt` để xác nhận độ khớp 100% với `train.py`.<br>3. Bổ sung ghi nhận `peak_gpu_memory_mb` (`torch.cuda.max_memory_allocated()`) vào `scripts/train.py` (`A18`). | • Thư mục `results/foal_full_cifar100_seed42/` hợp lệ trên repo.<br>• Log xác nhận của `evaluate.py`.<br>• Trạng thái `A10` chuyển từ `PENDING RAW ARTIFACT VERIFICATION` sang `VERIFIED`. |
+| **Stage B — Original Code Reproduction (`A19`)** | **03–05/11/2026** | 1. Clone `https://github.com/liuyuchen-cz/F-OAL` vào `external/official_foal/` trên phiên GPU Colab.<br>2. Kiểm tra toàn bộ cấu hình gốc (backbone weights, transforms, projection scaling, RLS $\gamma$).<br>3. Chạy code gốc trên CIFAR-100 và thu thập số liệu `ORIGINAL_REPRODUCED`. | • Kết quả `ORIGINAL_REPRODUCED` ($\bar{A}, A_{10}, F_{10}$, Time, VRAM).<br>• Log & W&B run của code gốc tác giả.<br>• Hoàn tất nghiệm thu **A19**. |
+| **Stage C — Discrepancy Investigation & Protocol Alignment (`A20`)** | **05–08/11/2026** | 1. Thực hiện quy trình đối chiếu 7 bước (Mục 21.5) giữa code gốc tác giả và `src/foal/`.<br>2. Kiểm chứng các giả thuyết trọng tâm (**H1** ViT weights, **H2** Smooth Projection scaling $1/\sqrt{768}$, **H3** Feature Fusion norm).<br>3. Căn chỉnh cấu hình/pipeline (nếu phát hiện lệch giao thức) và lưu rõ kết quả trước/sau căn chỉnh.<br>4. Đẩy code hoàn chỉnh lên GitHub trước hạn **07/11/2026**. | • Biên bản kết luận nguyên nhân khoảng cách $-11.77\text{ pp}$ (**A20**).<br>• Commit GitHub sạch, có đầy đủ tài liệu nộp đúng hạn 07/11/2026. |
+| **Stage D — Multi-Seed Reproduction & Public W&B (`A12`, `A21`)** | **08–12/11/2026** | 1. Chạy `scripts/run_seeds.py --seeds 42 123 2026` cho cấu hình F-OAL chuẩn trên GPU.<br>2. Bật `--wandb` đồng bộ toàn bộ các run lên project W&B ở chế độ **Public**.<br>3. Chạy `scripts/summarize_runs.py` xuất bảng $Mean \pm Std$ chính thức. | • Bảng kết quả 3-seed $Mean \pm Std$ cho `OUR_REPRODUCED`.<br>• Link project W&B công khai truy cập không cần login (**A21**). |
+| **Stage E — Ablation, Baselines & Additional Analysis (`A11`, `A15`–`A18`, `A22`)** | **12–17/11/2026** | 1. Chạy 4 cấu hình Ablation (`scripts/ablation.py`) trên GPU (**A11**).<br>2. Chạy các baseline trong Core Scope (`A15` Backprop FC 1-pass, `A16` Linear Ridge, `A17` ER) trên cùng task split.<br>3. Chạy Additional Analysis: kiểm chứng tính bất biến theo Batch size $B \in \{5, 10, 25, 50, 100\}$ và độ nhạy $D, \gamma$. | • Bảng kết quả Ablation đầy đủ (tái hiện Table 4).<br>• Bảng Headline Comparison 3 nguồn + Baselines + Time/VRAM.<br>• Biểu đồ phân tích độ nhạy Batch size / $D$ / $\gamma$. |
+| **Stage F — Final Audit & Midterm Presentation (`ID.pptx`)** | **17–21/11/2026** | 1. Rà soát chéo toàn bộ bảng số liệu, công thức $\Delta_{\text{pp}}$, $\Delta_{\text{rel}}\%$ và link W&B.<br>2. Thiết kế bộ slide 20–40 trang theo chuẩn IEEE citation, tự vẽ lại toàn bộ biểu đồ từ số liệu thực.<br>3. Nộp `ID.pptx` trước hạn **21/11/2026, 23:59**. | • Bộ slide báo cáo giữa kỳ `ID.pptx` (< 20 MB).<br>• Kho lưu trữ GitHub và trang W&B công khai hoàn chỉnh. |
