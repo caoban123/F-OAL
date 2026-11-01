@@ -7,6 +7,12 @@ __pycache__/
 wandb/
 results/*
 !results/.gitkeep
+!results/summary_runs.csv
+!results/summary_aggregated.csv
+!results/summary_ablation.csv
+!results/foal_full_cifar100_seed42/
+results/foal_full_cifar100_seed42/*.pt
+*.zip
 data/
 *.ckpt
 *.pth

@@ -633,3 +633,21 @@ Tuy nhiên, phương pháp vẫn phụ thuộc mạnh vào chất lượng của
 [3] Liu, Y., et al. *F-OAL: Official Implementation*. [GitHub Repository](https://github.com/liuyuchen-cz/F-OAL).
 
 [4] ICORE Conference Portal. *Advances in Neural Information Processing Systems (NeurIPS)*. ICORE2026 Rank A*. [Official Conference Ranking](https://portal.core.edu.au/conf-ranks/98/).
+
+
+---
+
+## 14. Bảng Ánh xạ Bằng chứng Thực nghiệm (README Evidence Mapping — Checkpoint 3)
+
+| Experiment | Source | Dataset | Seeds | $\bar{A}$ | $A_{10}$ | $F_{10}$ | Git Commit | Local Artifact | W&B Run | Status |
+|---|---|---|---:|---:|---:|---:|---|---|---|---|
+| **Paper F-OAL** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% | — | — | — | `PAPER_REPORTED` |
+| **Original F-OAL** | Author Repo (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `73e4ac1` | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | `NOT YET SYNCED` | `PREPARED` (`A19`) |
+| **Our F-OAL (Single-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | 79.33% | 70.92% | 9.21% | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | `offline-run-2cdeiptv` (`PENDING_USER_AUTH`) | `VERIFIED_LOCAL` |
+| **Our F-OAL (Multi-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
+| **Ablation Study (4 configs)** | Our Repo (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
+
+* **Hướng dẫn triển khai & thực nghiệm chi tiết:** [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)
+* **Kế hoạch thực nghiệm & kết quả tái hiện:** [`docs/experiments.md`](docs/experiments.md)
+* **Báo cáo kiểm toán kỹ thuật & tuân thủ Checkpoint 3:** [`docs/FOAL_AUDIT_AND_FIX_PLAN.md`](docs/FOAL_AUDIT_AND_FIX_PLAN.md)
+* **Đối chiếu giao thức Code gốc tác giả vs. Code nhóm (`A19`/`A20`):** [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md)

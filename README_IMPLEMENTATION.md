@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e .
 
-# Chạy toàn bộ 31 unit tests xác minh
+# Chạy toàn bộ 33 unit tests xác minh
 python -m pytest -v
 ```
 
@@ -109,9 +109,42 @@ cd F-OAL
 pip install -r requirements.txt
 pip install -e .
 
-# 3. Chạy 30 unit tests
+# 3. Chạy 33 unit tests
 python -m pytest -v
 
 # 4. Huấn luyện Full CIFAR-100 trên GPU
 python -m scripts.train --config configs/cifar100.yaml --device cuda --wandb --run-name foal_full_cifar100_seed42
 ```
+
+---
+
+## 5. Tài liệu Kiểm toán & Báo cáo Thực nghiệm (Checkpoint 3 Compliance)
+
+* **Báo cáo Kiểm toán Kỹ thuật & Kế hoạch Khắc phục Toàn diện (`A01`–`A22`):** [`docs/FOAL_AUDIT_AND_FIX_PLAN.md`](docs/FOAL_AUDIT_AND_FIX_PLAN.md)
+* **Kế hoạch Thực nghiệm, Core Scope & Bảng Đối chiếu Kết quả (`Paper vs Original vs Ours`):** [`docs/experiments.md`](docs/experiments.md)
+* **Đối chiếu Giao thức Code Gốc Tác giả (`liuyuchen-cz/F-OAL @ 73e4ac1`) vs. Code Nhóm (`src/foal @ aad7500`):** [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md)
+* **Notebook Chạy Code Gốc Tác giả trên GPU (`A19`):** [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb)
+
+---
+
+## 6. Bảng Ánh xạ Bằng chứng Thực nghiệm (README Evidence Mapping)
+
+| Experiment | Source | Dataset | Seeds | $\bar{A}$ | $A_{10}$ | $F_{10}$ | Git Commit | Local Artifact | W&B Run | Status |
+|---|---|---|---:|---:|---:|---:|---|---|---|---|
+| **Paper F-OAL** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% | — | — | — | `PAPER_REPORTED` |
+| **Original F-OAL** | Author Repo (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `73e4ac1` | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | `NOT YET SYNCED` | `PREPARED` (`A19`) |
+| **Our F-OAL (Single-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | 79.33% | 70.92% | 9.21% | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | `offline-run-2cdeiptv` (`PENDING_USER_AUTH`) | `VERIFIED_LOCAL` |
+| **Our F-OAL (Multi-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
+| **Ablation Study (4 configs)** | Our Repo (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
+
+### Đồng bộ W&B Offline Run (`2cdeiptv`) lên Public Project (`hcmus-foal-reproduction`)
+Dữ liệu W&B offline của lượt chạy GPU (`commit aad7500`) đã được khôi phục tại `wandb/offline-run-20261101_084136-2cdeiptv/`. Để đồng bộ lên tài khoản W&B công khai:
+```bash
+# 1. Đăng nhập vào Weights & Biases (chỉ cần chạy 1 lần trên máy cá nhân)
+wandb login --relogin --host https://api.wandb.ai
+
+# 2. Đồng bộ gói offline run 2cdeiptv lên project hcmus-foal-reproduction
+wandb sync wandb/offline-run-20261101_084136-2cdeiptv --project hcmus-foal-reproduction
+```
+Sau khi đồng bộ, truy cập phần **Settings** của project `hcmus-foal-reproduction` trên `wandb.ai` và chuyển **Project Visibility** sang **Public (Open Access)**.
+

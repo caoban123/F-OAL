@@ -142,3 +142,12 @@ def test_aggregate_multi_seed_metrics():
     assert agg['last_accuracy_std'] == pytest.approx(0.02)
     assert agg['forgetting_mean'] == pytest.approx(0.07)
     assert agg['forgetting_std'] == pytest.approx(0.01)
+    assert agg['average_incremental_accuracy_display'] == '80.00 +/- 2.00% (n=3)'
+
+    # Single seed (n=1): sample std must be None / N/A, never +/- 0.00%
+    agg_single = aggregate_multi_seed_metrics([run1])
+    assert agg_single['num_seeds'] == 1
+    assert agg_single['average_incremental_accuracy_mean'] == pytest.approx(0.78)
+    assert agg_single['average_incremental_accuracy_std'] is None
+    assert agg_single['average_incremental_accuracy_display'] == '78.00% (n=1, std=N/A)'
+    assert '+/- 0.00%' not in agg_single['average_incremental_accuracy_display']

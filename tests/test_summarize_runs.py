@@ -1,4 +1,5 @@
 import json
+import math
 import tempfile
 from pathlib import Path
 import pytest
@@ -111,9 +112,16 @@ def test_load_and_summarize_runs_protocol_isolation():
         assert reproduction_group['average_incremental_accuracy_mean'] == pytest.approx(0.91)
         assert reproduction_group['last_accuracy_mean'] == pytest.approx(0.89)
 
-        # Pilot group must be completely separate with count=1
+        # Pilot group must be completely separate with count=1 and std=None (N/A)
         assert pilot_group['count'] == 1
         assert pilot_group['average_incremental_accuracy_mean'] == pytest.approx(0.775)
+        assert pilot_group['average_incremental_accuracy_std'] is None
+        assert pilot_group['average_incremental_accuracy_display'] == '77.50% (n=1, std=N/A)'
+        assert '+/- 0.00%' not in pilot_group['average_incremental_accuracy_display']
+
+        # Reproduction group has count=2 and valid sample std
+        assert reproduction_group['average_incremental_accuracy_std'] == pytest.approx(math.sqrt(0.0002))
+        assert '(n=2)' in reproduction_group['average_incremental_accuracy_display']
 
 
 def test_summarize_runs_hyperparameter_and_seed_isolation():
@@ -160,4 +168,41 @@ def test_summarize_runs_hyperparameter_and_seed_isolation():
 
         # All 5 runs must be in distinct groups because their protocols differ!
         assert len(out['groups']) == 5
+
+
+def test_summarize_runs_mixed_none_and_int_limits_and_csv_columns():
+    """Verify sorting when limit_test is None vs int, and check summary_aggregated.csv columns."""
+    import csv
+    with tempfile.TemporaryDirectory() as tmpdir:
+        base_dir = Path(tmpdir)
+        for name, lim_test in [('pilot_all_test', None), ('pilot_100_test', 100)]:
+            r = base_dir / name
+            r.mkdir()
+            (r / 'metadata.json').write_text(json.dumps({
+                'method': 'foal',
+                'experiment_type': 'PILOT',
+                'training_protocol': {'max_tasks': 2, 'limit_train_per_task': 100, 'limit_test_per_task': lim_test},
+                'model_config': {'backbone': 'vit_base_patch16_224.augreg_in1k', 'projection_dim': 1000, 'gamma': 1.0},
+                'seeds': {'base': 42},
+                'device': 'cpu'
+            }))
+            (r / 'metrics.json').write_text(json.dumps({
+                'num_tasks': 2,
+                'task_matrix': [[0.8], [0.7, 0.8]],
+                'average_incremental_accuracy': 0.775,
+                'last_accuracy': 0.75,
+                'forgetting': 0.10
+            }))
+            (r / 'task_02.pt').write_bytes(b'DUMMY_CKPT')
+
+        out = summarize_results(results_dir=str(base_dir), output_dir=str(base_dir))
+        assert len(out['groups']) == 2
+
+        with (base_dir / 'summary_aggregated.csv').open('r', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) == 2
+        assert rows[0]['num_tasks'] == '2'
+        assert rows[0]['limit_train'] == '100'
+        assert {rows[0]['limit_test'], rows[1]['limit_test']} == {'full', '100'}
+
 

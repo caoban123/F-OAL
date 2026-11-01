@@ -124,6 +124,7 @@ def aggregate_multi_seed_metrics(runs_metrics: Sequence[dict[str, Any]]) -> dict
     """Aggregate metric dictionaries across multiple independent seed runs.
     
     Computes sample mean and sample standard deviation (Bessel's correction, N-1).
+    When N == 1, sample standard deviation is undefined (None / 'N/A').
     """
     if not runs_metrics:
         raise ValueError('No run metrics provided for aggregation')
@@ -139,12 +140,14 @@ def aggregate_multi_seed_metrics(runs_metrics: Sequence[dict[str, Any]]) -> dict
         mean_val = sum(values) / n
         if n > 1:
             variance = sum((x - mean_val) ** 2 for x in values) / (n - 1)
-            std_val = math.sqrt(variance)
+            std_val: float | None = float(math.sqrt(variance))
+            display_str = f'{mean_val * 100:.2f} +/- {std_val * 100:.2f}% (n={n})'
         else:
-            std_val = 0.0
+            std_val = None
+            display_str = f'{mean_val * 100:.2f}% (n=1, std=N/A)'
         
         aggregated[f'{key}_mean'] = float(mean_val)
-        aggregated[f'{key}_std'] = float(std_val)
-        aggregated[f'{key}_display'] = f'{mean_val * 100:.2f} +/- {std_val * 100:.2f}%'
+        aggregated[f'{key}_std'] = std_val
+        aggregated[f'{key}_display'] = display_str
 
     return aggregated
