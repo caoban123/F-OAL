@@ -2,6 +2,9 @@
 
 The backbone parameters are strictly frozen (requires_grad=False) and kept
 in eval mode.
+Feature fusion averages the CLS tokens across all transformer blocks,
+and then applies the final LayerNorm (network.norm), matching the official
+ViT representation specification.
 """
 from __future__ import annotations
 from typing import Any, Dict
@@ -59,6 +62,13 @@ class FrozenViT(nn.Module):
         finally:
             for hook in hooks:
                 hook.remove()
-        # For ablation, take the last block at the same pre-normalization level
-        # as the full fusion; do not introduce a final layernorm confound.
-        return fuse_cls_features(collected if self.feature_fusion else collected[-1:])
+        
+        # When feature_fusion is True, average CLS tokens across all blocks.
+        # When False (ablation), take the last block's CLS token.
+        fused = fuse_cls_features(collected if self.feature_fusion else collected[-1:])
+        
+        # Apply the backbone's final LayerNorm to the fused representation
+        if hasattr(self.network, 'norm') and self.network.norm is not None:
+            fused = self.network.norm(fused)
+            
+        return fused

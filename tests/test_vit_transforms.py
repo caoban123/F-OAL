@@ -28,3 +28,17 @@ def test_frozen_vit_properties():
     feat = encoder(dummy)
     assert feat.shape == (2, 768)
     assert torch.all(torch.isfinite(feat))
+
+
+def test_feature_fusion_applies_final_layernorm():
+    # Regression test: verify that final LayerNorm (network.norm) is applied
+    enc_no_ff = FrozenViT(name='vit_base_patch16_224.augreg_in1k', pretrained=False, feature_fusion=False)
+    x = torch.randn(2, 3, 224, 224)
+    out_no_ff = enc_no_ff(x)
+    out_timm = enc_no_ff.network.forward_features(x)[:, 0, :]
+    torch.testing.assert_close(out_no_ff, out_timm, atol=1e-6, rtol=1e-6)
+
+    enc_ff = FrozenViT(name='vit_base_patch16_224.augreg_in1k', pretrained=False, feature_fusion=True)
+    out_ff = enc_ff(x)
+    assert out_ff.shape == (2, 768)
+    assert torch.all(torch.isfinite(out_ff))

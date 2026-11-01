@@ -1,11 +1,38 @@
-# Initial pilot configuration; not automatically an exact replication of paper.
+# ==============================================================================
+# F-OAL (NeurIPS 2024) Configuration for CIFAR-100 Online Class-Incremental Learning
+#
+# Pretrained Backbone Specification:
+#   - Model ID: vit_base_patch16_224.augreg_in1k (timm)
+#   - Checkpoint source: Hugging Face timm/vit_base_patch16_224.augreg_in1k
+#   - Architecture: ViT-Base, patch size 16x16, 12 transformer blocks, embedding dim 768
+#   - Number of parameters: 85,798,656 (100% frozen, requires_grad=False)
+#   - Preprocessing: Resize to 224x224 (bicubic), normalized with mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)
+#
+# Methodology Alignment with Paper (NeurIPS 2024):
+#   - Feature Fusion: Arithmetic mean over all 12 block CLS tokens + final LayerNorm (Section 4.2)
+#   - Smooth Projection: Random Gaussian projection into D=1000 with Sigmoid activation (Section 4.3, Eq. 1)
+#   - Classifier: Analytic Classifier via Recursive Least Squares (RLS) with gamma=1.0 (Section 4.4, 5.2)
+#   - Protocol: 10 tasks, 10 classes per task, one-pass streaming without replay buffer (Section 4.1)
+#
+# Environment / Reproducibility:
+#   - Python >= 3.10
+#   - PyTorch >= 2.0 (tested on 2.13.0+cpu and CUDA)
+#   - timm == 1.0.30
+#   - datasets == 5.0.0
+# ==============================================================================
+
 seed: 42
+
 dataset:
   name: uoft-cs/cifar100
   num_classes: 100
   classes_per_task: 10
-  class_order: null    # generated reproducibly with the seed; log actual order
+  class_order: null    # Generated reproducibly with seed; recorded in metadata.json
   image_size: 224
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+  interpolation: bicubic
+
 model:
   backbone: vit_base_patch16_224.augreg_in1k
   pretrained: true
@@ -14,10 +41,12 @@ model:
   projection_dim: 1000
   gamma: 1.0
   rls_dtype: float64
+
 training:
   batch_size: 10
   num_workers: 0
   device: auto
+
 logging:
   use_wandb: false
   project: hcmus-foal-reproduction

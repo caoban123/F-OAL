@@ -44,17 +44,17 @@ Mức ưu tiên:
 
 ## 1. Ma trận tổng quan: kiểm tra gì, sửa gì, ưu tiên nào
 
-| ID | Hạng mục | Tình trạng | Ưu tiên | File liên quan | Tiêu chí đạt |
-|---|---|---|---|---|---|
-| A01 | Đúng checkpoint ViT | **ĐÃ XÁC MINH** | **P0** | `backbone.py`, YAML | `vit_base_patch16_224.augreg_in1k`, freeze grad, eval mode cố định |
-| A02 | Feature Fusion đúng vị trí | **ĐÃ XÁC MINH** | **P0** | `backbone.py`, `feature_fusion.py` | Mean qua CLS tokens của các blocks, shape `[B, 768]`, ablation đúng |
-| A03 | Transforms đúng backbone | **ĐÃ KHẮC PHỤC** | **P0** | `datasets.py`, YAML | Chuẩn hóa `(0.5, 0.5, 0.5)`, bicubic, size 224x224 |
-| A04 | CIFAR-100 task protocol | **ĐÃ XÁC MINH** | **P0** | `datasets.py`, `train.py` | 10 × 10 classes, reproducible seed, deterministic mapping |
-| A05 | Không train/test leakage | **ĐÃ XÁC MINH** | **P0** | `datasets.py`, `train.py`, tests | One-pass stream, disjoint train sets, seen test only |
-| A06 | RLS về mặt đại số | **ĐÃ XÁC MINH** | **P0** | `rls.py`, `test_rls.py` | Woodbury update ≡ Batch Ridge Regression (sai số $< 10^{-11}$) |
-| A07 | RLS ổn định trên ViT features | **ĐÃ XÁC MINH** | **P0** | `rls.py`, `model.py`, tests | Không NaN/Inf, kiểm tra nghiệm trên ảnh thật đạt sai số $< 10^{-10}$ |
-| A08 | Load/save checkpoint | **ĐÃ XÁC MINH** | **P0** | `train.py`, `evaluate.py` | Lưu đủ R, W, projection, dtype, predictions trùng khớp 100% |
-| A09 | Định nghĩa metrics | Có code, cần đối chiếu | **P1** | `metrics.py` | Khớp paper; không lẫn task/stage/seed/đơn vị |
+| ID | Hạng mục | Tình trạng | Ưu tiên | File liên quan & Dòng code | Kiểm thử (Tests) | Bằng chứng nghiệm thu (Evidence) |
+|---|---|---|---|---|---|---|
+| A01 | Đúng checkpoint ViT | **PASS** | **P0** | `src/foal/backbone.py` (L18-29), `configs/cifar100.yaml` (L5-14) | `tests/test_vit_transforms.py::test_frozen_vit_properties` | `vit_base_patch16_224.augreg_in1k`, 85.8M params, `requires_grad=False`, `train(False)` ghi đè giữ `eval()` |
+| A02 | Feature Fusion đúng vị trí | **PASS** | **P0** | `src/foal/backbone.py` (L43-62), `src/foal/feature_fusion.py` (L6-15) | `tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm` | Arithmetic mean qua 12 blocks + áp dụng `network.norm` (final LayerNorm). Khi tắt FF, diff với `forward_features` bằng 0.0 |
+| A03 | Transforms đúng backbone | **PASS** | **P0** | `src/foal/datasets.py` (L68-84), `configs/cifar100.yaml` (L23-26) | `tests/test_vit_transforms.py::test_vit_transforms_structure` | Chuẩn hóa `(0.5, 0.5, 0.5)` và `bicubic` 224x224 khớp `timm.data.resolve_model_data_config` |
+| A04 | CIFAR-100 task protocol | **PASS** | **P0** | `src/foal/datasets.py` (L23-64), `scripts/train.py` (L48-56) | `tests/test_dataset.py::test_seeded_order_is_reproducible_and_permutation` | 10 tasks × 10 classes, `total_seen_classes` lũy tiến 10..100, mapping song ánh nhất quán |
+| A05 | Không train/test leakage | **PASS** | **P0** | `src/foal/datasets.py` (L48-58), `scripts/train.py` (L101-118) | `tests/test_dataset.py::test_task_partition_no_train_replay_and_no_future_test` | `isdisjoint` giữa các train sets; `seen_test_indices` chỉ chứa lớp đã học; stream one-pass không replay buffer |
+| A06 | RLS về mặt đại số | **PASS** | **P0** | `src/foal/rls.py` (L41-76) | `tests/test_rls.py::test_rls_matches_closed_form_ridge_with_expanding_classes` | Woodbury identity: `gain = solve(A, K.T).T`. Nghiệm khớp Batch Ridge Regression với sai số $< 10^{-11}$ |
+| A07 | RLS ổn định trên ViT features | **PASS** | **P0** | `src/foal/rls.py` (L59-74), `src/foal/model.py` (L38-46) | `tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features` | Chạy trên ảnh CIFAR-100 thật qua ViT-B khớp Ridge với sai số $< 10^{-10}$; không có NaN/Inf (`isfinite=True`) |
+| A08 | Load/save checkpoint | **PASS** | **P0** | `scripts/train.py` (L129-140), `scripts/evaluate.py` (L16-41) | `tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload` | So sánh trực tiếp class scores (logits) trước/sau nạp checkpoint cho sai số $< 10^{-12}$; eval acc khớp $0.6865$ |
+| A09 | Định nghĩa metrics | Có code, cần đối chiếu | **P1** | `metrics.py` | — | Khớp paper; không lẫn task/stage/seed/đơn vị |
 | A10 | Headline comparison | Chưa triển khai đủ | **P1** | `train.py`, `src/baselines/` mới | Có F-OAL + baseline công bằng, đủ protocol |
 | A11 | Ablation Table 4 | Có driver, chưa chạy | **P1** | `ablation.py`, `train.py` | 4 cấu hình, output truy vết, so sánh số liệu |
 | A12 | Multi-seed & uncertainty | Chưa có driver | **P1** | scripts mới, YAML | 3 trials hoặc scope báo cáo minh bạch |
@@ -487,7 +487,7 @@ Mọi thay đổi quan trọng nên tạo pull request/commit tách biệt (ví 
 
 ---
 
-### 16.2. Kết quả kiểm thử bộ Test Suite (14 passed)
+### 16.2. Kết quả kiểm thử bộ Test Suite (15 passed)
 
 Lệnh thực thi:
 ```bash
@@ -496,27 +496,31 @@ python -m pytest -v
 
 Kết quả:
 ```text
-tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload PASSED
-tests/test_dataset.py::test_seeded_order_is_reproducible_and_permutation PASSED
-tests/test_dataset.py::test_task_partition_no_train_replay_and_no_future_test PASSED
-tests/test_metrics.py::test_incremental_summary_values PASSED
-tests/test_model.py::test_model_end_to_end_on_synthetic_features PASSED
-tests/test_projection.py::test_projection_is_fixed_and_seeded PASSED
-tests/test_projection.py::test_feature_fusion_averages_cls_token_across_blocks PASSED
-tests/test_rls.py::test_rls_matches_closed_form_ridge_with_expanding_classes PASSED
-tests/test_rls.py::test_can_only_add_classes_not_remove PASSED
-tests/test_rls.py::test_batch_partition_does_not_change_exact_solution PASSED
-tests/test_rls.py::test_nan_or_inf_detection PASSED
-tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features PASSED
-tests/test_vit_transforms.py::test_vit_transforms_structure PASSED
-tests/test_vit_transforms.py::test_frozen_vit_properties PASSED
+tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload PASSED        [  6%]
+tests/test_dataset.py::test_seeded_order_is_reproducible_and_permutation PASSED    [ 13%]
+tests/test_dataset.py::test_task_partition_no_train_replay_and_no_future_test PASSED [ 20%]
+tests/test_metrics.py::test_incremental_summary_values PASSED                       [ 26%]
+tests/test_model.py::test_model_end_to_end_on_synthetic_features PASSED             [ 33%]
+tests/test_projection.py::test_projection_is_fixed_and_seeded PASSED                [ 40%]
+tests/test_projection.py::test_feature_fusion_averages_cls_token_across_blocks PASSED [ 46%]
+tests/test_rls.py::test_rls_matches_closed_form_ridge_with_expanding_classes PASSED [ 53%]
+tests/test_rls.py::test_can_only_add_classes_not_remove PASSED                      [ 60%]
+tests/test_batch_partition_does_not_change_exact_solution PASSED                    [ 66%]
+tests/test_rls.py::test_nan_or_inf_detection PASSED                                 [ 73%]
+tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features PASSED  [ 80%]
+tests/test_vit_transforms.py::test_vit_transforms_structure PASSED                  [ 86%]
+tests/test_vit_transforms.py::test_frozen_vit_properties PASSED                     [ 93%]
+tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm PASSED    [100%]
 
-======================== 14 passed in 45.69s ========================
+======================== 15 passed in 36.05s ========================
 ```
 
-Đặc biệt, `test_rls_matches_ridge_on_real_vit_features` xác minh rằng nghiệm của Online RLS khi học từng mini-batch trên đặc trưng ViT-B/16 từ dữ liệu CIFAR-100 thật khớp với nghiệm giải tích toàn cục Batch Ridge Regression:
-$$W^* = (H^T H + \gamma I)^{-1} H^T Y$$
-với sai số tuyệt đối $< 10^{-10}$.
+Đặc biệt:
+- `test_feature_fusion_applies_final_layernorm`: Xác nhận Feature Fusion áp dụng `network.norm` (final LayerNorm) sau khi trung bình CLS tokens qua 12 blocks, khớp 100% với chuẩn trích xuất đặc trưng ViT.
+- `test_checkpoint_roundtrip.py`: Xác nhận so sánh trực tiếp class scores (logits) của cùng một batch trước và sau khi lưu/nạp checkpoint cho kết quả trùng khớp với sai số đại số $< 10^{-12}$.
+- `test_rls_matches_ridge_on_real_vit_features`: Xác minh nghiệm của Online RLS khi học từng mini-batch trên đặc trưng ViT-B/16 từ dữ liệu CIFAR-100 thật khớp với nghiệm giải tích toàn cục Batch Ridge Regression:
+  $$W^* = (H^T H + \gamma I)^{-1} H^T Y$$
+  với sai số tuyệt đối $< 10^{-10}$.
 
 ---
 

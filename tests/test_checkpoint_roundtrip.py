@@ -19,9 +19,11 @@ def test_checkpoint_save_and_reload():
         dummy_y = torch.tensor([0, 1, 2, 0, 1, 2])
         model.partial_fit(dummy_x, dummy_y)
         
-        pred_before = model(dummy_x)
+        # Raw continuous class scores (logits) before saving
+        scores_before = model(dummy_x)
+        preds_before = scores_before.argmax(dim=1)
         
-        # Save checkpoint
+        # Save checkpoint exactly as done in scripts/train.py
         torch.save({
             'model_config': {
                 'backbone_name': 'vit_base_patch16_224.augreg_in1k',
@@ -39,7 +41,7 @@ def test_checkpoint_save_and_reload():
             'config': {'dataset': {'classes_per_task': 10, 'image_size': 224}, 'training': {'batch_size': 10}}
         }, ckpt_path)
         
-        # Reload checkpoint
+        # Reload checkpoint exactly as done in scripts/evaluate.py
         ckpt = torch.load(ckpt_path, map_location='cpu', weights_only=False)
         m = ckpt['model_config'].copy()
         model_reloaded = FOALModel(**m, pretrained=True)
@@ -47,6 +49,10 @@ def test_checkpoint_save_and_reload():
         model_reloaded.classifier.load_state_dict(ckpt['classifier_state'])
         model_reloaded.eval()
         
-        pred_after = model_reloaded(dummy_x)
+        # Raw continuous class scores after reloading
+        scores_after = model_reloaded(dummy_x)
+        preds_after = scores_after.argmax(dim=1)
         
-        torch.testing.assert_close(pred_before, pred_after, atol=1e-12, rtol=1e-12)
+        # Exact numerical comparison of scores (logits) and predictions
+        torch.testing.assert_close(scores_before, scores_after, atol=1e-12, rtol=1e-12)
+        torch.testing.assert_close(preds_before, preds_after)
