@@ -37,7 +37,7 @@ def test_seed_separation_projection():
 
 
 def test_is_run_completed_logic():
-    """Verify skip-completed detection logic."""
+    """Verify skip-completed detection logic requires metrics, final checkpoint, and matching protocol."""
     with tempfile.TemporaryDirectory() as tmpdir:
         run_dir = Path(tmpdir) / 'test_run'
         assert not is_run_completed(run_dir)
@@ -46,15 +46,42 @@ def test_is_run_completed_logic():
         assert not is_run_completed(run_dir)
 
         # Write invalid/partial files
-        (run_dir / 'metadata.json').write_text(json.dumps({'training_protocol': {'max_tasks': 2}}))
+        (run_dir / 'metadata.json').write_text(json.dumps({
+            'seeds': {'base': 42},
+            'training_protocol': {'max_tasks': 2, 'limit_train_per_task': 100, 'limit_test_per_task': 100},
+            'model_config': {'feature_fusion': True, 'smooth_projection': True}
+        }))
         assert not is_run_completed(run_dir)
 
-        # Write complete metrics and metadata
+        # Write metrics but WITHOUT final checkpoint
         (run_dir / 'metrics.json').write_text(json.dumps({
+            'task_matrix': [[0.78], [0.69, 0.85]],
             'average_incremental_accuracy': 0.775,
             'last_accuracy': 0.77,
             'forgetting': 0.09
         }))
-        assert is_run_completed(run_dir, expected_tasks=2)
-        # Should fail if expected_tasks doesn't match
-        assert not is_run_completed(run_dir, expected_tasks=5)
+        # Fails because task_02.pt does not exist
+        assert not is_run_completed(run_dir, expected_protocol={'max_tasks': 2, 'seed': 42})
+
+        # Add final checkpoint
+        (run_dir / 'task_02.pt').write_bytes(b'CHECKPOINT_DATA')
+
+        # Matches exact protocol
+        valid_proto = {
+            'max_tasks': 2,
+            'seed': 42,
+            'limit_train_per_task': 100,
+            'limit_test_per_task': 100,
+            'feature_fusion': True,
+            'smooth_projection': True
+        }
+        assert is_run_completed(run_dir, expected_protocol=valid_proto)
+
+        # Should FAIL if requested seed is different (e.g. 123 instead of 42)
+        assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'seed': 123})
+
+        # Should FAIL if requested tasks is different (e.g. 5 instead of 2)
+        assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'max_tasks': 5})
+
+        # Should FAIL if requested limit is different (e.g. full data instead of 100)
+        assert not is_run_completed(run_dir, expected_protocol={**valid_proto, 'limit_train_per_task': None})

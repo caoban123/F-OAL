@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e .
 
-# Chạy toàn bộ 30 unit tests xác minh
+# Chạy toàn bộ 31 unit tests xác minh
 python -m pytest -v
 ```
 
@@ -29,6 +29,12 @@ Phiên bản kiểm thử cố định được lưu tại `requirements-lock.tx
 ---
 
 ## 2. Hướng dẫn thực thi thí nghiệm
+
+### 2.0. Full Reproduction Notebook trên Kaggle / Google Colab (GPU)
+Để chạy toàn bộ benchmark CIFAR-100 (10 tasks $\times$ 10 classes, one-pass stream, batch size 10) trên môi trường GPU (T4, P100, V100, A100), sử dụng notebook:
+* [`notebooks/foal_cifar100_full_reproduction.ipynb`](notebooks/foal_cifar100_full_reproduction.ipynb)
+
+Notebook này bao gồm đầy đủ các bước kiểm tra phần cứng GPU, chạy preflight tests, chạy Single-Seed (Seed 42), đánh giá checkpoint độc lập, xuất bảng tổng hợp và điều phối Multi-Seed.
 
 ### 2.1. Pilot Smoke Test (Kiểm thử chức năng nhanh)
 Chạy trên 2 tasks với 100 mẫu train/task để kiểm tra luồng dữ liệu, ViT encoding và cập nhật RLS:

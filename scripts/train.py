@@ -26,10 +26,26 @@ from src.foal.metrics import summary_from_task_matrix, format_summary_percentage
 from src.foal.environment import get_environment_info
 
 
-def device_from_config(value: str) -> str:
-    if value != 'auto':
-        return value
-    return 'cuda' if torch.cuda.is_available() else 'cpu'
+def resolve_device(requested_device: str | None, config_device: str) -> str:
+    """Resolve compute device with strict validation against silent fallback.
+
+    If 'cuda' is explicitly requested (via CLI or config) but CUDA is unavailable,
+    raise RuntimeError immediately instead of silently executing on CPU.
+    """
+    target = (requested_device or config_device).lower()
+    if target == 'cuda' or target.startswith('cuda:'):
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                f"CUDA device '{target}' was explicitly requested, but torch.cuda.is_available() is False. "
+                "Aborting to prevent unintentional CPU execution on GPU workloads. "
+                "To run on CPU, specify --device cpu or set training.device: cpu in config."
+            )
+        return target
+    elif target == 'auto':
+        resolved = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f"Device set to 'auto'. Resolved to: {resolved.upper()}")
+        return resolved
+    return target
 
 
 def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
@@ -61,7 +77,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(base_seed)
 
-    device = args.device or device_from_config(cfg['training'].get('device', 'auto'))
+    device = resolve_device(args.device, cfg['training'].get('device', 'auto'))
     data_cfg = cfg['dataset']
     model_cfg = cfg['model']
 

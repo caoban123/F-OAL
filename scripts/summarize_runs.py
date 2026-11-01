@@ -1,8 +1,8 @@
 """Automatic experiment result aggregation and summarization.
 
-Scans the results directory for completed runs (containing metadata.json and metrics.json),
-aggregates runs by method and experiment type, computes mean +/- std across seeds,
-and exports structured CSV tables.
+Scans the results directory for runs, validates completeness (including final task checkpoint),
+and aggregates runs strictly by matching protocol to prevent mixing pilot, full reproduction,
+or incomplete runs.
 
 Usage:
     python -m scripts.summarize_runs --results-dir results
@@ -14,11 +14,14 @@ from collections import defaultdict
 import json
 import math
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def load_run(run_dir: Path) -> dict[str, Any] | None:
-    """Read and validate a single run's metadata.json and metrics.json."""
+    """Read and validate a single run's metadata.json and metrics.json.
+    
+    Verifies that the run is complete, including the presence of the final checkpoint.
+    """
     meta_path = run_dir / 'metadata.json'
     metrics_path = run_dir / 'metrics.json'
     if not (meta_path.exists() and metrics_path.exists()):
@@ -30,7 +33,7 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     except Exception:
         return None
 
-    # Handle both old and new metadata schemas
+    # Handle method extraction
     method = meta.get('method')
     if not method:
         ff = meta.get('feature_fusion', meta.get('model_config', {}).get('feature_fusion', True))
@@ -47,18 +50,65 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     if git_commit and len(git_commit) > 7:
         git_commit = git_commit[:7]
 
-    num_tasks = metrics.get('num_tasks', len(metrics.get('task_matrix', [])))
+    protocol = meta.get('training_protocol', {})
+    model_cfg = meta.get('model_config', meta.get('config', {}).get('model', {}))
+    
+    task_matrix = metrics.get('task_matrix', [])
+    num_tasks = metrics.get('num_tasks', len(task_matrix))
+    expected_tasks = protocol.get('max_tasks', num_tasks)
+
+    limit_train = protocol.get('limit_train_per_task', meta.get('limit_train_per_task'))
+    limit_test = protocol.get('limit_test_per_task', meta.get('limit_test_per_task'))
+    backbone = model_cfg.get('backbone', 'unknown')
+    projection_dim = model_cfg.get('projection_dim', 1000)
+    gamma = model_cfg.get('gamma', 1.0)
+
+    # Completeness verification:
+    # 1. Must contain all required metric fields
+    has_metrics = (
+        'average_incremental_accuracy' in metrics and
+        'last_accuracy' in metrics and
+        'forgetting' in metrics and
+        len(task_matrix) == expected_tasks
+    )
+
+    # 2. Must contain final checkpoint file
+    final_ckpt = run_dir / f'task_{expected_tasks:02d}.pt'
+    has_final_ckpt = final_ckpt.exists() and final_ckpt.stat().st_size > 0
+
+    is_complete = bool(has_metrics and has_final_ckpt)
+    status = 'COMPLETE' if is_complete else 'INCOMPLETE'
+
+    # Strict protocol signature prevents accidental cross-protocol aggregation
+    protocol_sig = (
+        method,
+        exp_type,
+        int(expected_tasks),
+        limit_train,
+        limit_test,
+        str(backbone),
+        int(projection_dim),
+        float(gamma)
+    )
 
     return {
         'run_name': run_dir.name,
         'run_dir': str(run_dir),
         'method': method,
         'experiment_type': exp_type,
+        'status': status,
+        'is_complete': is_complete,
         'seed': seed,
-        'num_tasks': num_tasks,
-        'average_incremental_accuracy': metrics.get('average_incremental_accuracy'),
-        'last_accuracy': metrics.get('last_accuracy'),
-        'forgetting': metrics.get('forgetting'),
+        'num_tasks': expected_tasks,
+        'limit_train_per_task': limit_train,
+        'limit_test_per_task': limit_test,
+        'backbone': backbone,
+        'projection_dim': projection_dim,
+        'gamma': gamma,
+        'protocol_sig': protocol_sig,
+        'average_incremental_accuracy': metrics.get('average_incremental_accuracy') if is_complete else None,
+        'last_accuracy': metrics.get('last_accuracy') if is_complete else None,
+        'forgetting': metrics.get('forgetting') if is_complete else None,
         'total_duration_seconds': metrics.get('total_duration_seconds'),
         'git_commit': git_commit,
         'device': device,
@@ -66,11 +116,12 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
 
 
 def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
-    """Calculate mean and standard deviation for a group of runs."""
-    n = len(runs)
-    stats: dict[str, Any] = {'count': n}
+    """Calculate mean and standard deviation for a group of completed runs."""
+    completed = [r for r in runs if r.get('is_complete')]
+    n = len(completed)
+    stats: dict[str, Any] = {'count': n, 'total_runs': len(runs), 'incomplete_count': len(runs) - n}
     for metric_name in ['average_incremental_accuracy', 'last_accuracy', 'forgetting']:
-        vals = [r[metric_name] for r in runs if r.get(metric_name) is not None]
+        vals = [r[metric_name] for r in completed if r.get(metric_name) is not None]
         if not vals:
             continue
         mean_v = sum(vals) / len(vals)
@@ -83,6 +134,15 @@ def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
         stats[f'{metric_name}_std'] = std_v
         stats[f'{metric_name}_display'] = f'{mean_v * 100:.2f} +/- {std_v * 100:.2f}%'
     return stats
+
+
+def format_protocol_description(sig: tuple) -> str:
+    """Format protocol signature into human-readable label."""
+    method, exp_type, tasks, lim_train, lim_test, backbone, p_dim, gamma = sig
+    data_desc = 'full data'
+    if lim_train or lim_test:
+        data_desc = f"train<={lim_train or 'all'}, test<={lim_test or 'all'}"
+    return f"{method} | {exp_type} | {tasks} tasks ({data_desc}, D={p_dim}, gamma={gamma})"
 
 
 def summarize_results(results_dir: str = 'results', output_dir: str | None = None,
@@ -100,12 +160,12 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
         if item.is_dir():
             run_data = load_run(item)
             if run_data is not None:
-                if filter_type and run_data['experiment_type'] != filter_type:
+                if filter_type and run_data['experiment_type'] != filter_type.upper():
                     continue
                 all_runs.append(run_data)
 
     if not all_runs:
-        print(f'No completed runs found under {base_path}')
+        print(f'No valid runs found under {base_path}')
         return {'individual_runs': [], 'groups': {}}
 
     # Write individual runs CSV
@@ -113,71 +173,83 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
     with individual_csv.open('w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'run_name', 'method', 'experiment_type', 'seed', 'num_tasks',
-            'avg_inc_acc', 'last_acc', 'forgetting', 'duration_s', 'git_commit', 'device'
+            'run_name', 'method', 'experiment_type', 'status', 'seed', 'num_tasks',
+            'limit_train', 'limit_test', 'avg_inc_acc', 'last_acc', 'forgetting',
+            'duration_s', 'git_commit', 'device'
         ])
         for r in all_runs:
             writer.writerow([
-                r['run_name'], r['method'], r['experiment_type'], r['seed'], r['num_tasks'],
-                f"{r['average_incremental_accuracy']:.4f}" if r['average_incremental_accuracy'] is not None else '',
-                f"{r['last_accuracy']:.4f}" if r['last_accuracy'] is not None else '',
-                f"{r['forgetting']:.4f}" if r['forgetting'] is not None else '',
+                r['run_name'], r['method'], r['experiment_type'], r['status'], r['seed'], r['num_tasks'],
+                r['limit_train_per_task'] if r['limit_train_per_task'] is not None else 'full',
+                r['limit_test_per_task'] if r['limit_test_per_task'] is not None else 'full',
+                f"{r['average_incremental_accuracy']:.4f}" if r['average_incremental_accuracy'] is not None else 'N/A',
+                f"{r['last_accuracy']:.4f}" if r['last_accuracy'] is not None else 'N/A',
+                f"{r['forgetting']:.4f}" if r['forgetting'] is not None else 'N/A',
                 r['total_duration_seconds'] or '',
                 r['git_commit'] or '',
                 r['device'] or ''
             ])
 
-    # Group by (method, experiment_type)
+    # Group runs strictly by exact protocol signature
     groups = defaultdict(list)
     for r in all_runs:
-        group_key = (r['method'], r['experiment_type'])
-        groups[group_key].append(r)
+        groups[r['protocol_sig']].append(r)
 
     # Write aggregated summary CSV
     aggregated_csv = out_path / 'summary_aggregated.csv'
     with aggregated_csv.open('w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['method', 'experiment_type', 'num_runs', 'avg_inc_acc_mean_std', 'last_acc_mean_std', 'forgetting_mean_std'])
-        for (m, exp), run_list in sorted(groups.items()):
+        writer.writerow([
+            'protocol_label', 'method', 'experiment_type', 'num_tasks', 'limit_train', 'limit_test',
+            'completed_runs', 'total_runs', 'avg_inc_acc_mean_std', 'last_acc_mean_std', 'forgetting_mean_std'
+        ])
+        for sig, run_list in sorted(groups.items()):
             stats = compute_group_stats(run_list)
+            label = format_protocol_description(sig)
             writer.writerow([
-                m, exp, stats['count'],
+                label, sig[0], sig[1], sig[2], sig[3] or 'full', sig[4] or 'full',
+                stats['count'], stats['total_runs'],
                 stats.get('average_incremental_accuracy_display', 'N/A'),
                 stats.get('last_accuracy_display', 'N/A'),
                 stats.get('forgetting_display', 'N/A')
             ])
 
-    # Check for ablation runs and export specialized summary if present
-    ablation_runs = [r for r in all_runs if 'ablation' in r['run_name'] or r['experiment_type'] == 'ablation']
+    # Specialized summary for ablation runs if present
+    ablation_runs = [r for r in all_runs if 'ablation' in r['run_name'] or r['experiment_type'] == 'ABLATION']
     if ablation_runs:
         ablation_csv = out_path / 'summary_ablation.csv'
         with ablation_csv.open('w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerow(['run_name', 'method', 'seed', 'avg_inc_acc', 'last_acc', 'forgetting'])
+            writer.writerow(['run_name', 'method', 'status', 'seed', 'avg_inc_acc', 'last_acc', 'forgetting'])
             for r in ablation_runs:
                 writer.writerow([
-                    r['run_name'], r['method'], r['seed'],
-                    f"{r['average_incremental_accuracy'] * 100:.2f}%" if r['average_incremental_accuracy'] is not None else '',
-                    f"{r['last_accuracy'] * 100:.2f}%" if r['last_accuracy'] is not None else '',
-                    f"{r['forgetting'] * 100:.2f}%" if r['forgetting'] is not None else ''
+                    r['run_name'], r['method'], r['status'], r['seed'],
+                    f"{r['average_incremental_accuracy'] * 100:.2f}%" if r['average_incremental_accuracy'] is not None else 'N/A',
+                    f"{r['last_accuracy'] * 100:.2f}%" if r['last_accuracy'] is not None else 'N/A',
+                    f"{r['forgetting'] * 100:.2f}%" if r['forgetting'] is not None else 'N/A'
                 ])
 
     # Print summary table
-    print('\n' + '=' * 85)
-    print(f'EXPERIMENT SUMMARY REPORT ({len(all_runs)} runs found)')
-    print('=' * 85)
-    print(f"{'Method':<20} {'Type':<15} {'Runs':<6} {'Avg Incr Acc':<22} {'Last Acc':<20}")
-    print('-' * 85)
-    for (m, exp), run_list in sorted(groups.items()):
+    print('\n' + '=' * 100)
+    print(f'EXPERIMENT SUMMARY REPORT ({len(all_runs)} runs found, strictly grouped by protocol)')
+    print('=' * 100)
+    print(f"{'Protocol / Group':<55} {'Runs':<8} {'Avg Incr Acc':<20} {'Last Acc':<18}")
+    print('-' * 100)
+    for sig, run_list in sorted(groups.items()):
         stats = compute_group_stats(run_list)
-        print(f"{m:<20} {exp:<15} {stats['count']:<6} "
-              f"{stats.get('average_incremental_accuracy_display', 'N/A'):<22} "
-              f"{stats.get('last_accuracy_display', 'N/A'):<20}")
-    print('=' * 85)
+        label = format_protocol_description(sig)
+        run_count_str = f"{stats['count']}/{stats['total_runs']}"
+        print(f"{label:<55} {run_count_str:<8} "
+              f"{stats.get('average_incremental_accuracy_display', 'N/A'):<20} "
+              f"{stats.get('last_accuracy_display', 'N/A'):<18}")
+    print('=' * 100)
     print(f'Saved run details to:  {individual_csv}')
     print(f'Saved aggregation to:  {aggregated_csv}\n')
 
-    return {'individual_runs': all_runs, 'groups': {f'{k[0]}@{k[1]}': compute_group_stats(v) for k, v in groups.items()}}
+    return {
+        'individual_runs': all_runs,
+        'groups': {format_protocol_description(k): compute_group_stats(v) for k, v in groups.items()}
+    }
 
 
 def main():

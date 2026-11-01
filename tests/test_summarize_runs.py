@@ -5,58 +5,112 @@ import pytest
 from scripts.summarize_runs import load_run, compute_group_stats, summarize_results
 
 
-def test_load_and_summarize_runs():
+def test_load_and_summarize_runs_protocol_isolation():
+    """Verify that pilot, full reproduction, and incomplete runs are strictly separated."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base_dir = Path(tmpdir)
-        run1 = base_dir / 'foal_seed42'
-        run2 = base_dir / 'foal_seed123'
-        run1.mkdir(); run2.mkdir()
+        run_full_42 = base_dir / 'foal_seed42_full'
+        run_full_123 = base_dir / 'foal_seed123_full'
+        run_pilot = base_dir / 'foal_seed42_pilot'
+        run_incomplete = base_dir / 'foal_seed999_broken'
+        for r in [run_full_42, run_full_123, run_pilot, run_incomplete]:
+            r.mkdir()
 
-        # Seed 42 run (tagged SYNTHETIC_TEST_DATA)
-        (run1 / 'metadata.json').write_text(json.dumps({
+        # 1. Full Reproduction run (Seed 42, 10 tasks, full data)
+        (run_full_42 / 'metadata.json').write_text(json.dumps({
             'method': 'foal',
-            'experiment_type': 'SYNTHETIC_TEST_DATA',
+            'experiment_type': 'REPRODUCTION',
+            'training_protocol': {'max_tasks': 10, 'limit_train_per_task': None, 'limit_test_per_task': None},
+            'model_config': {'backbone': 'vit_base_patch16_224.augreg_in1k', 'projection_dim': 1000, 'gamma': 1.0},
             'seeds': {'base': 42},
-            'device': 'cpu',
-            'git_commit': 'abc123456789'
+            'device': 'cuda'
         }))
-        (run1 / 'metrics.json').write_text(json.dumps({
+        (run_full_42 / 'metrics.json').write_text(json.dumps({
             'num_tasks': 10,
-            'average_incremental_accuracy': 0.78,
-            'last_accuracy': 0.76,
-            'forgetting': 0.08,
-            'total_duration_seconds': 120.5
+            'task_matrix': [[0.9] * (i + 1) for i in range(10)],
+            'average_incremental_accuracy': 0.90,
+            'last_accuracy': 0.88,
+            'forgetting': 0.05
         }))
+        (run_full_42 / 'task_10.pt').write_bytes(b'DUMMY_CKPT')
 
-        # Seed 123 run (tagged SYNTHETIC_TEST_DATA)
-        (run2 / 'metadata.json').write_text(json.dumps({
+        # 2. Full Reproduction run (Seed 123, 10 tasks, full data)
+        (run_full_123 / 'metadata.json').write_text(json.dumps({
             'method': 'foal',
-            'experiment_type': 'SYNTHETIC_TEST_DATA',
+            'experiment_type': 'REPRODUCTION',
+            'training_protocol': {'max_tasks': 10, 'limit_train_per_task': None, 'limit_test_per_task': None},
+            'model_config': {'backbone': 'vit_base_patch16_224.augreg_in1k', 'projection_dim': 1000, 'gamma': 1.0},
             'seeds': {'base': 123},
-            'device': 'cpu',
-            'git_commit': 'abc123456789'
+            'device': 'cuda'
         }))
-        (run2 / 'metrics.json').write_text(json.dumps({
+        (run_full_123 / 'metrics.json').write_text(json.dumps({
             'num_tasks': 10,
-            'average_incremental_accuracy': 0.82,
-            'last_accuracy': 0.80,
-            'forgetting': 0.06,
-            'total_duration_seconds': 122.0
+            'task_matrix': [[0.92] * (i + 1) for i in range(10)],
+            'average_incremental_accuracy': 0.92,
+            'last_accuracy': 0.90,
+            'forgetting': 0.04
         }))
+        (run_full_123 / 'task_10.pt').write_bytes(b'DUMMY_CKPT')
+
+        # 3. Pilot run (Seed 42, 2 tasks, 100 samples)
+        (run_pilot / 'metadata.json').write_text(json.dumps({
+            'method': 'foal',
+            'experiment_type': 'PILOT',
+            'training_protocol': {'max_tasks': 2, 'limit_train_per_task': 100, 'limit_test_per_task': 100},
+            'model_config': {'backbone': 'vit_base_patch16_224.augreg_in1k', 'projection_dim': 1000, 'gamma': 1.0},
+            'seeds': {'base': 42},
+            'device': 'cpu'
+        }))
+        (run_pilot / 'metrics.json').write_text(json.dumps({
+            'num_tasks': 2,
+            'task_matrix': [[0.78], [0.69, 0.85]],
+            'average_incremental_accuracy': 0.775,
+            'last_accuracy': 0.77,
+            'forgetting': 0.09
+        }))
+        (run_pilot / 'task_02.pt').write_bytes(b'DUMMY_CKPT')
+
+        # 4. Incomplete run (missing final checkpoint!)
+        (run_incomplete / 'metadata.json').write_text(json.dumps({
+            'method': 'foal',
+            'experiment_type': 'REPRODUCTION',
+            'training_protocol': {'max_tasks': 10, 'limit_train_per_task': None, 'limit_test_per_task': None},
+            'model_config': {'backbone': 'vit_base_patch16_224.augreg_in1k', 'projection_dim': 1000, 'gamma': 1.0},
+            'seeds': {'base': 999},
+            'device': 'cuda'
+        }))
+        (run_incomplete / 'metrics.json').write_text(json.dumps({
+            'num_tasks': 10,
+            'task_matrix': [[0.5] * (i + 1) for i in range(10)],
+            'average_incremental_accuracy': 0.50,
+            'last_accuracy': 0.50,
+            'forgetting': 0.10
+        }))
+        # Intentionally NO task_10.pt
 
         # Run summarizer
         out = summarize_results(results_dir=str(base_dir), output_dir=str(base_dir))
-        assert len(out['individual_runs']) == 2
+        assert len(out['individual_runs']) == 4
 
-        # Check aggregated stats for group
-        group_key = 'foal@SYNTHETIC_TEST_DATA'
-        assert group_key in out['groups']
-        stats = out['groups'][group_key]
-        assert stats['count'] == 2
-        assert stats['average_incremental_accuracy_mean'] == pytest.approx(0.80)
-        assert stats['last_accuracy_mean'] == pytest.approx(0.78)
-        assert stats['forgetting_mean'] == pytest.approx(0.07)
+        # Check incomplete status
+        incomplete_run = [r for r in out['individual_runs'] if r['run_name'] == 'foal_seed999_broken'][0]
+        assert incomplete_run['is_complete'] is False
+        assert incomplete_run['status'] == 'INCOMPLETE'
+        assert incomplete_run['average_incremental_accuracy'] is None
 
-        # Check that CSV files were generated
-        assert (base_dir / 'summary_runs.csv').exists()
-        assert (base_dir / 'summary_aggregated.csv').exists()
+        # Verify groups are strictly isolated!
+        groups = out['groups']
+        # Must have separate group for Reproduction (10 tasks) vs Pilot (2 tasks)
+        reproduction_group = [g for name, g in groups.items() if 'REPRODUCTION' in name and '10 tasks' in name][0]
+        pilot_group = [g for name, g in groups.items() if 'PILOT' in name and '2 tasks' in name][0]
+
+        # Incomplete run must NOT be included in reproduction completed count
+        assert reproduction_group['count'] == 2  # Only seed 42 and 123
+        assert reproduction_group['total_runs'] == 3  # 2 complete + 1 incomplete
+        assert reproduction_group['incomplete_count'] == 1
+        assert reproduction_group['average_incremental_accuracy_mean'] == pytest.approx(0.91)
+        assert reproduction_group['last_accuracy_mean'] == pytest.approx(0.89)
+
+        # Pilot group must be completely separate with count=1
+        assert pilot_group['count'] == 1
+        assert pilot_group['average_incremental_accuracy_mean'] == pytest.approx(0.775)

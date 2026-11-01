@@ -18,8 +18,8 @@ from src.foal.metrics import aggregate_multi_seed_metrics, format_percentage
 from scripts.train import run as train_run
 
 
-def is_run_completed(run_dir: Path, expected_tasks: int | None = None) -> bool:
-    """Check if a run directory contains valid and complete metrics."""
+def is_run_completed(run_dir: Path, expected_protocol: dict[str, Any] | None = None) -> bool:
+    """Check if a run directory contains valid metrics, final checkpoint, and matching protocol."""
     metrics_file = run_dir / 'metrics.json'
     metadata_file = run_dir / 'metadata.json'
     if not (metrics_file.exists() and metadata_file.exists()):
@@ -27,12 +27,60 @@ def is_run_completed(run_dir: Path, expected_tasks: int | None = None) -> bool:
     try:
         metrics = json.loads(metrics_file.read_text(encoding='utf-8'))
         metadata = json.loads(metadata_file.read_text(encoding='utf-8'))
-        if 'average_incremental_accuracy' not in metrics:
+        
+        # 1. Required metric keys
+        if ('average_incremental_accuracy' not in metrics or
+                'last_accuracy' not in metrics or
+                'forgetting' not in metrics):
             return False
+            
+        task_matrix = metrics.get('task_matrix', [])
+        if not task_matrix:
+            return False
+
+        # 2. Number of tasks
+        expected_tasks = expected_protocol.get('max_tasks') if expected_protocol else None
         if expected_tasks is not None:
+            if len(task_matrix) != expected_tasks:
+                return False
             recorded_tasks = metadata.get('training_protocol', {}).get('max_tasks')
             if recorded_tasks != expected_tasks:
                 return False
+        else:
+            expected_tasks = len(task_matrix)
+
+        # 3. Final checkpoint must exist and be non-empty
+        final_ckpt = run_dir / f'task_{expected_tasks:02d}.pt'
+        if not (final_ckpt.exists() and final_ckpt.stat().st_size > 0):
+            return False
+
+        # 4. If expected_protocol is given, verify strict parameter matching
+        if expected_protocol is not None:
+            # Seed match
+            req_seed = expected_protocol.get('seed')
+            if req_seed is not None:
+                recorded_seed = metadata.get('seeds', {}).get('base', metadata.get('config', {}).get('seed'))
+                if recorded_seed != req_seed:
+                    return False
+            
+            # Protocol match
+            proto = metadata.get('training_protocol', {})
+            if 'limit_train_per_task' in expected_protocol:
+                if proto.get('limit_train_per_task') != expected_protocol['limit_train_per_task']:
+                    return False
+            if 'limit_test_per_task' in expected_protocol:
+                if proto.get('limit_test_per_task') != expected_protocol['limit_test_per_task']:
+                    return False
+
+            # Model config match
+            model_cfg = metadata.get('model_config', {})
+            if 'feature_fusion' in expected_protocol:
+                if model_cfg.get('feature_fusion') != expected_protocol['feature_fusion']:
+                    return False
+            if 'smooth_projection' in expected_protocol:
+                if model_cfg.get('smooth_projection') != expected_protocol['smooth_projection']:
+                    return False
+
         return True
     except Exception:
         return False
@@ -58,7 +106,20 @@ def run_multi_seed(args: argparse.Namespace) -> dict[str, Any]:
         run_dir = results_base / run_name
         print(f"\n[{idx}/{len(seeds)}] Preparing run for seed={seed}: '{run_name}'")
 
-        if args.skip_completed and is_run_completed(run_dir, expected_tasks=args.max_tasks):
+        num_classes = int(cfg.get('dataset', {}).get('num_classes', 100))
+        classes_per_task = int(cfg.get('dataset', {}).get('classes_per_task', 10))
+        expected_tasks = args.max_tasks or (num_classes // classes_per_task)
+
+        expected_protocol = {
+            'seed': seed,
+            'max_tasks': expected_tasks,
+            'limit_train_per_task': args.limit_train_per_task,
+            'limit_test_per_task': args.limit_test_per_task,
+            'feature_fusion': bool(cfg.get('model', {}).get('feature_fusion', True)) and not args.no_feature_fusion,
+            'smooth_projection': bool(cfg.get('model', {}).get('smooth_projection', True)) and not args.no_projection,
+        }
+
+        if args.skip_completed and is_run_completed(run_dir, expected_protocol=expected_protocol):
             print(f"Skipping already completed run: '{run_dir}'")
             saved_metrics = json.loads((run_dir / 'metrics.json').read_text(encoding='utf-8'))
             runs_results.append({

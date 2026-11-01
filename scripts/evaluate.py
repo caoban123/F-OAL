@@ -13,6 +13,13 @@ from src.foal.model import FOALModel
 
 def evaluate_checkpoint(checkpoint_path: str, device: str = 'cpu',
                         limit_per_task: int | None = None) -> dict:
+    target_device = device.lower()
+    if target_device == 'cuda' or target_device.startswith('cuda:'):
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                f"CUDA device '{device}' was requested for evaluation, but torch.cuda.is_available() is False. "
+                "Aborting to avoid unintentional CPU evaluation."
+            )
     ckpt = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
     m = ckpt['model_config'].copy()
     m['device'] = device

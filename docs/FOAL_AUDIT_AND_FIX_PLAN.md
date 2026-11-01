@@ -621,4 +621,34 @@ python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_1
 * **Trạng thái A01 và A04:** Tiếp tục duy trì **PARTIAL** do chưa có sha256 checksum weights của checkpoint private từ tác giả paper (A01) và mảng permutation private của CIFAR-100 trong Bảng 2 paper (A04).
 * **Kết luận:** Hạ tầng thực nghiệm đã sẵn sàng 100% để chuyển sang giai đoạn **P1.2 (Baselines Implementation)** và **P1.3 (Full CIFAR-100 Reproduction & Ablations)** mà không cần phải can thiệp hay sửa đổi thêm hệ thống logging/metrics.
 
+---
+
+## 18. Báo cáo nghiệm thu Giai đoạn GPU Preflight & Single-Seed Full Reproduction Preparation
+
+* **Thời điểm nghiệm thu:** 01/11/2026.
+* **Tổng số kiểm thử đạt chuẩn:** **31/31 passed** trong 101s (`python -m pytest -v`).
+* **Trạng thái phần cứng môi trường cục bộ:**
+  * **Hệ điều hành:** Windows 11.
+  * **CPU:** Intel Core Ultra 5 125H (14 cores, 18 threads).
+  * **CUDA Available:** `False` (`torch.cuda.is_available() == False`).
+  * **Chính sách thực nghiệm:** Nghiêm cấm giả lập kết quả hoặc khai báo đã chạy xong full reproduction trên máy cục bộ khi không có GPU.
+* **Các cải tiến kỹ thuật hoàn thiện trong giai đoạn:**
+  1. **CUDA Fail-Fast Safeguard:** Hàm `resolve_device()` trong `scripts/train.py` và `scripts/evaluate.py` bảo đảm khi người dùng hoặc config chỉ định `--device cuda` mà không có GPU, chương trình lập tức báo lỗi `RuntimeError` rõ ràng, ngăn chặn hoàn toàn việc âm thầm chạy trên CPU.
+  2. **Cách ly Protocol & Kiểm tra tính hoàn tất trong `scripts/summarize_runs.py`:**
+     * Nâng cấp khóa gom nhóm từ `(method, exp_type)` thành Protocol Signature đầy đủ: `(method, exp_type, expected_tasks, limit_train, limit_test, backbone, projection_dim, gamma)`. Ngăn chặn triệt để việc tính trung bình lẫn lộn giữa pilot (2 tasks, limit 100) và full reproduction (10 tasks, no limits).
+     * Kiểm tra tính toàn vẹn vật lý của run: bắt buộc có đủ các khóa metrics và tồn tại file checkpoint cuối `task_{expected_tasks:02d}.pt` với dung lượng > 0 bytes. Run bị ngắt giữa chừng được đánh dấu `status: 'INCOMPLETE'` và loại khỏi bảng tổng hợp.
+     * Kiểm thử xác minh: `tests/test_summarize_runs.py` (`test_load_and_summarize_runs_protocol_isolation`).
+  3. **Bảo vệ `--skip-completed` trong `scripts/run_seeds.py`:**
+     * Kiểm tra đa tầng: `metrics.json` hợp lệ, checkpoint cuối `task_XX.pt` tồn tại, và toàn bộ tham số trong `metadata.json` (`seed`, `max_tasks`, `limit_train_per_task`, `limit_test_per_task`, `feature_fusion`, `smooth_projection`) phải khớp hoàn toàn với cấu hình yêu cầu.
+     * Kiểm thử xác minh: `tests/test_multi_seed_infrastructure.py` (`test_is_run_completed_logic`).
+  4. **Kiểm chứng Weights & Biases (W&B):**
+     * Đã cài đặt `wandb==0.31.0` vào môi trường Python 3.10.
+     * Xác minh quy trình offline bằng run thực tế và unit test: `wandb.init()` offline, ghi step metrics, summary metrics, và artifact upload (`metrics.json`, `metadata.json`, `task_accuracy.csv`) ghi nhận đầy đủ vào thư mục local mà không phát sinh lỗi mạng.
+     * Xác nhận rõ: Việc upload trực tuyến lên cloud W&B chưa kiểm chứng do chưa có W&B API Key của người dùng (sẽ được kích hoạt trên Kaggle/Colab qua biến môi trường `WANDB_API_KEY`).
+  5. **Chuẩn bị Notebook thực nghiệm Full Reproduction:**
+     * Tạo file notebook hoàn chỉnh: `notebooks/foal_cifar100_full_reproduction.ipynb`.
+     * Cung cấp luồng chuẩn hóa: Hardware Check (`nvidia-smi`, PyTorch CUDA check) -> Dependency Setup -> Preflight PyTest Suite -> Single-Seed Full F-OAL (Seed 42, 10 tasks $\times$ 10 classes, batch size 10, one-pass) -> Independent Checkpoint Evaluation -> Results Summarizer -> Multi-Seed Orchestration -> Download Zip.
+* **Trạng thái A01 và A04:** Tiếp tục duy trì **PARTIAL** do chưa có sha256 checksum weights của checkpoint private từ tác giả paper (A01) và mảng permutation private của CIFAR-100 trong Bảng 2 paper (A04).
+
+
 
