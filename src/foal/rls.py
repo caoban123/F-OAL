@@ -1,10 +1,18 @@
 """Block Recursive Least Squares for F-OAL (paper Equations 10–13).
 
 The method retains sufficient statistics via R and W without replaying samples.
-This is a clean-room implementation based on the published equations.
+Sequential Ridge Regression solution:
+    R_t = (gamma * I + sum_{i=1}^t H_i.T @ H_i)^(-1)
+    W_t = R_t @ sum_{i=1}^t H_i.T @ Y_i
+
+Using Woodbury Matrix Identity on mini-batch (H, Y):
+    K = R_{t-1} @ H.T
+    A = I + H @ K
+    gain = solve(A, K.T).T  # equals R_t @ H.T
+    W_t = W_{t-1} + gain @ (Y - H @ W_{t-1})
+    R_t = R_{t-1} - gain @ K.T
 """
 from __future__ import annotations
-
 import torch
 
 
@@ -40,10 +48,9 @@ class OnlineRidgeRLS:
         if total_classes < self.num_classes:
             raise ValueError('Cannot remove previously seen classes')
         new = total_classes - self.num_classes
-        if new:
-            self.W = torch.cat((self.W, torch.zeros(
-                (self.feature_dim, new), device=self.device, dtype=self.dtype
-            )), dim=1)
+        if new > 0:
+            new_cols = torch.zeros((self.feature_dim, new), device=self.device, dtype=self.dtype)
+            self.W = torch.cat((self.W, new_cols), dim=1)
 
     @torch.no_grad()
     def update(self, features: torch.Tensor, labels: torch.Tensor) -> None:
@@ -56,25 +63,38 @@ class OnlineRidgeRLS:
             raise ValueError('Expected non-empty labels [batch]')
         if self.num_classes == 0 or y.min() < 0 or y.max() >= self.num_classes:
             raise ValueError('Call expand_classes before updating with new labels')
+        if not torch.all(torch.isfinite(H)):
+            raise ValueError('Input features contain NaN or Inf values')
 
-        # K = R_old H.T; A = I + H R_old H.T  (batch-sized solve).
+        # K = R_old @ H.T: shape (D, B)
         K = self.R @ H.T
+        # A = I_B + H @ K: shape (B, B)
         A = torch.eye(H.shape[0], device=self.device, dtype=self.dtype) + H @ K
-        # torch.linalg.solve avoids explicitly constructing A^(-1).
+        # gain = solve(A, K.T).T: shape (D, B), exactly equals R_new @ H.T
         gain = torch.linalg.solve(A, K.T).T
+        
+        # One-hot encoded ground truth
         Y = torch.nn.functional.one_hot(y, num_classes=self.num_classes).to(self.dtype)
-        # Using the equivalent form gain = R_new H.T.
+        
+        # Prediction error residual: (B, C)
         residual = Y - H @ self.W
+        
+        # Update weights and inverse autocorrelation matrix
         self.W = self.W + gain @ residual
         self.R = self.R - gain @ K.T
-        self.R = 0.5 * (self.R + self.R.T)  # reduce FP roundoff asymmetry
+        self.R = 0.5 * (self.R + self.R.T)  # enforce numerical symmetry
+        
+        if not (torch.all(torch.isfinite(self.W)) and torch.all(torch.isfinite(self.R))):
+            raise RuntimeError('RLS update resulted in NaN or Inf in weight or correlation matrix')
+            
         self.samples_seen += H.shape[0]
 
     @torch.no_grad()
     def scores(self, features: torch.Tensor) -> torch.Tensor:
         if self.num_classes == 0:
             raise RuntimeError('No classes have been seen yet')
-        return features.to(device=self.device, dtype=self.dtype) @ self.W
+        H = features.to(device=self.device, dtype=self.dtype)
+        return H @ self.W
 
     @torch.no_grad()
     def predict(self, features: torch.Tensor) -> torch.Tensor:
@@ -82,7 +102,9 @@ class OnlineRidgeRLS:
 
     def state_dict(self) -> dict:
         return dict(feature_dim=self.feature_dim, gamma=self.gamma,
-                    R=self.R, W=self.W, samples_seen=self.samples_seen)
+                    R=self.R.clone(), W=self.W.clone(),
+                    samples_seen=self.samples_seen,
+                    dtype=str(self.dtype))
 
     def load_state_dict(self, state: dict) -> None:
         if int(state['feature_dim']) != self.feature_dim:

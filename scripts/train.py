@@ -54,18 +54,26 @@ def run(args: argparse.Namespace):
     if not 1 <= max_tasks <= len(specs):
         raise ValueError('max-tasks is out of range')
     mapping = {original: i for i, original in enumerate(order)}
-    trans = cifar100_transforms(int(data_cfg['image_size']))
+    
+    # ViT transforms: (0.5, 0.5, 0.5) normalization and bicubic interpolation
+    trans = cifar100_transforms(size=int(data_cfg['image_size']),
+                               mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5),
+                               interpolation='bicubic')
+    
     use_fusion = bool(model_cfg['feature_fusion']) and not args.no_feature_fusion
     use_projection = bool(model_cfg['smooth_projection']) and not args.no_projection
+    rls_dtype = model_cfg.get('rls_dtype', 'float64')
+
     model = FOALModel(backbone_name=model_cfg['backbone'],
-            pretrained=bool(model_cfg['pretrained']), feature_fusion=use_fusion,
-            smooth_projection=use_projection, projection_dim=int(model_cfg['projection_dim']),
-            projection_seed=seed, gamma=float(model_cfg['gamma']), device=device)
+                      pretrained=bool(model_cfg['pretrained']),
+                      feature_fusion=use_fusion,
+                      smooth_projection=use_projection,
+                      projection_dim=int(model_cfg['projection_dim']),
+                      projection_seed=seed,
+                      gamma=float(model_cfg['gamma']),
+                      rls_dtype=rls_dtype,
+                      device=device)
     model.eval()
-    if cfg['model'].get('rls_dtype', 'float64') == 'float32':
-        model.classifier.R = model.classifier.R.float()
-        model.classifier.W = model.classifier.W.float()
-        model.classifier.dtype = torch.float32
 
     run_name = args.run_name or f'foal_seed{seed}_{"noff" if not use_fusion else "ff"}_{"nosp" if not use_projection else "sp"}'
     outdir = Path(cfg['logging']['results_dir']) / run_name
@@ -123,16 +131,19 @@ def run(args: argparse.Namespace):
                 wandb_run.log({f'task_acc/{i+1}': v for i,v in enumerate(per_task)} |
                               {'task': spec.task_id+1, 'avg_seen_accuracy': acc,
                                'samples_seen': model.classifier.samples_seen})
-            # Each checkpoint records exact state and class order at this task.
+            # Checkpoint contains full configuration to reproduce evaluation exactly
             torch.save(dict(model_config=dict(backbone_name=model_cfg['backbone'],
-                         feature_fusion=use_fusion, smooth_projection=use_projection,
-                         projection_dim=int(model_cfg['projection_dim']), projection_seed=seed),
-                         # Do not duplicate ~350 MB frozen ViT weights in each task checkpoint.
-                         # Evaluation re-fetches the same pretrained model by timm name.
-                         projection_state=model.projection.state_dict() if model.projection else None,
-                         classifier_state=model.classifier.state_dict(),
-                         class_order=order, task_number=spec.task_id+1,
-                         config=cfg), outdir / f'task_{spec.task_id+1:02d}.pt')
+                                              feature_fusion=use_fusion,
+                                              smooth_projection=use_projection,
+                                              projection_dim=int(model_cfg['projection_dim']),
+                                              projection_seed=seed,
+                                              gamma=float(model_cfg['gamma']),
+                                              rls_dtype=rls_dtype),
+                            projection_state=model.projection.state_dict() if model.projection else None,
+                            classifier_state=model.classifier.state_dict(),
+                            class_order=order,
+                            task_number=spec.task_id+1,
+                            config=cfg), outdir / f'task_{spec.task_id+1:02d}.pt')
         metrics = summary_from_task_matrix(matrix)
         (outdir / 'metrics.json').write_text(json.dumps(dict(task_matrix=matrix, **metrics), indent=2), encoding='utf-8')
         with (outdir / 'task_accuracy.csv').open('w', newline='', encoding='utf-8') as f:

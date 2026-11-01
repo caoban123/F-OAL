@@ -1,4 +1,4 @@
-"""CIFAR-100 task stream from Hugging Face; no training data replay.
+"""CIFAR-100 task stream from Hugging Face or torchvision; no training data replay.
 
 Only use *training* samples from the active task. Evaluation can use test
 samples from all seen classes; unseen test labels are never exposed.
@@ -6,7 +6,9 @@ samples from all seen classes; unseen test labels are never exposed.
 from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Sequence
+from typing import Tuple, Sequence as SeqType, Any, Dict
 import numpy as np
+import torch
 
 
 @dataclass(frozen=True)
@@ -58,23 +60,52 @@ def make_task_specs(train_labels: Sequence[int], test_labels: Sequence[int],
     return specs
 
 
-def load_cifar100():
-    """Download via Hugging Face Datasets; cached by datasets library."""
+def load_cifar100(root: str = './data'):
+    """Download and load CIFAR-100 dataset.
+    
+    Primary source is Hugging Face Datasets ('uoft-cs/cifar100').
+    Falls back gracefully to torchvision.datasets.CIFAR100 if unavailable.
+    """
     try:
         from datasets import load_dataset
-    except ImportError as exc:
-        raise ImportError('pip install datasets') from exc
-    data = load_dataset('uoft-cs/cifar100')
-    return data['train'], data['test']
+        data = load_dataset('uoft-cs/cifar100')
+        return data['train'], data['test']
+    except Exception as exc:
+        # Fallback to torchvision
+        from torchvision.datasets import CIFAR100
+        tv_train = CIFAR100(root=root, train=True, download=True)
+        tv_test = CIFAR100(root=root, train=False, download=True)
+        
+        class TorchvisionCIFAR100Adapter:
+            def __init__(self, tv_dataset):
+                self.dataset = tv_dataset
+                self.fine_label = list(tv_dataset.targets)
+            def __len__(self):
+                return len(self.dataset)
+            def __getitem__(self, idx):
+                img, target = self.dataset[idx]
+                return {'img': img, 'fine_label': target}
+        
+        return TorchvisionCIFAR100Adapter(tv_train), TorchvisionCIFAR100Adapter(tv_test)
 
 
-def cifar100_transforms(size: int = 224):
+def cifar100_transforms(size: int = 224,
+                       mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+                       std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
+                       interpolation: str = 'bicubic'):
+    """Preprocessing transforms compatible with ViT backbone.
+    
+    Default normalization is (0.5, 0.5, 0.5) matching pre-trained Vision Transformers
+    (such as timm vit_base_patch16_224).
+    """
     from torchvision import transforms
     from torchvision.transforms import InterpolationMode
+    
+    interp_mode = InterpolationMode.BICUBIC if interpolation.lower() == 'bicubic' else InterpolationMode.BILINEAR
     return transforms.Compose([
-        transforms.Resize((size, size), interpolation=InterpolationMode.BICUBIC),
+        transforms.Resize((size, size), interpolation=interp_mode),
         transforms.ToTensor(),
-        transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        transforms.Normalize(mean=mean, std=std),
     ])
 
 

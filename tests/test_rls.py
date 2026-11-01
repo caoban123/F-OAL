@@ -39,3 +39,12 @@ def test_batch_partition_does_not_change_exact_solution():
     a.update(x, y)
     for i in range(0, len(y), 5): b.update(x[i:i+5], y[i:i+5])
     torch.testing.assert_close(a.W, b.W, atol=1e-11, rtol=1e-11)
+
+
+def test_nan_or_inf_detection():
+    model = OnlineRidgeRLS(4)
+    model.expand_classes(2)
+    bad_x = torch.tensor([[1.0, float('nan'), 2.0, 3.0]])
+    bad_y = torch.tensor([0])
+    with pytest.raises(ValueError, match='NaN or Inf'):
+        model.update(bad_x, bad_y)
