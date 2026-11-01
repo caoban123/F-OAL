@@ -1,4 +1,5 @@
 import json
+import math
 import tempfile
 from pathlib import Path
 import pytest
@@ -111,9 +112,16 @@ def test_load_and_summarize_runs_protocol_isolation():
         assert reproduction_group['average_incremental_accuracy_mean'] == pytest.approx(0.91)
         assert reproduction_group['last_accuracy_mean'] == pytest.approx(0.89)
 
-        # Pilot group must be completely separate with count=1
+        # Pilot group must be completely separate with count=1 and std=None (N/A)
         assert pilot_group['count'] == 1
         assert pilot_group['average_incremental_accuracy_mean'] == pytest.approx(0.775)
+        assert pilot_group['average_incremental_accuracy_std'] is None
+        assert pilot_group['average_incremental_accuracy_display'] == '77.50% (n=1, std=N/A)'
+        assert '+/- 0.00%' not in pilot_group['average_incremental_accuracy_display']
+
+        # Reproduction group has count=2 and valid sample std
+        assert reproduction_group['average_incremental_accuracy_std'] == pytest.approx(math.sqrt(0.0002))
+        assert '(n=2)' in reproduction_group['average_incremental_accuracy_display']
 
 
 def test_summarize_runs_hyperparameter_and_seed_isolation():

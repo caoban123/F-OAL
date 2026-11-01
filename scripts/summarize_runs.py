@@ -75,7 +75,10 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     if class_order_seed == base_seed and projection_seed == base_seed and stream_seed == base_seed:
         seed_coupling = 'coupled'
     else:
-        seed_coupling = f'c{class_order_seed}_p{projection_seed}_s{stream_seed}'
+        c_tag = 'base' if class_order_seed == base_seed else f'fixed_{class_order_seed}'
+        p_tag = 'base' if projection_seed == base_seed else f'fixed_{projection_seed}'
+        s_tag = 'base' if stream_seed == base_seed else f'fixed_{stream_seed}'
+        seed_coupling = f'c:{c_tag}_p:{p_tag}_s:{s_tag}'
 
     class_order = meta.get('class_order')
     class_order_mode = 'custom_order' if (class_order is not None and class_order_seed is None) else 'seeded_order'
@@ -138,7 +141,10 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
 
 
 def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
-    """Calculate mean and standard deviation for a group of completed runs."""
+    """Calculate mean and standard deviation for a group of completed runs.
+    
+    When n == 1, sample standard deviation is undefined (None / 'N/A').
+    """
     completed = [r for r in runs if r.get('is_complete')]
     n = len(completed)
     stats: dict[str, Any] = {'count': n, 'total_runs': len(runs), 'incomplete_count': len(runs) - n}
@@ -149,12 +155,14 @@ def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
         mean_v = sum(vals) / len(vals)
         if len(vals) > 1:
             var_v = sum((x - mean_v) ** 2 for x in vals) / (len(vals) - 1)
-            std_v = math.sqrt(var_v)
+            std_v: float | None = math.sqrt(var_v)
+            display_str = f'{mean_v * 100:.2f} +/- {std_v * 100:.2f}% (n={len(vals)})'
         else:
-            std_v = 0.0
+            std_v = None
+            display_str = f'{mean_v * 100:.2f}% (n=1, std=N/A)'
         stats[f'{metric_name}_mean'] = mean_v
         stats[f'{metric_name}_std'] = std_v
-        stats[f'{metric_name}_display'] = f'{mean_v * 100:.2f} +/- {std_v * 100:.2f}%'
+        stats[f'{metric_name}_display'] = display_str
     return stats
 
 
