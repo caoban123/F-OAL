@@ -85,7 +85,8 @@ def run(args: argparse.Namespace):
     metadata = dict(git_commit=git_commit, paper='F-OAL NeurIPS 2024', config=cfg, class_order=order,
                     feature_fusion=use_fusion, smooth_projection=use_projection,
                     max_tasks=max_tasks, limit_train_per_task=args.limit_train_per_task,
-                    device=device, experimental_status='PILOT' if max_tasks < len(specs) or args.limit_train_per_task else 'FULL_RUN')
+                    limit_test_per_task=args.limit_test_per_task,
+                    device=device, experimental_status='PILOT' if max_tasks < len(specs) or args.limit_train_per_task or args.limit_test_per_task else 'FULL_RUN')
     (outdir / 'metadata.json').write_text(json.dumps(metadata, indent=2), encoding='utf-8')
     wandb_run = None
     if args.wandb or cfg['logging'].get('use_wandb', False):
@@ -116,6 +117,8 @@ def run(args: argparse.Namespace):
             for previous_spec in seen_specs:
                 task_test_ids = [idx for idx in previous_spec.seen_test_indices
                                  if int(labels_test[idx]) in set(previous_spec.new_original_labels)]
+                if args.limit_test_per_task is not None:
+                    task_test_ids = limit_indices_per_task(task_test_ids, args.limit_test_per_task, seed + previous_spec.task_id)
                 test_ds = IndexedImageDataset(test_source, task_test_ids, mapping, trans)
                 test_loader = DataLoader(test_ds, batch_size=int(cfg['training']['batch_size']),
                                          shuffle=False, num_workers=int(cfg['training']['num_workers']))
@@ -167,6 +170,7 @@ def main():
     parser.add_argument('--config', default='configs/cifar100.yaml')
     parser.add_argument('--max-tasks', type=int, default=None)
     parser.add_argument('--limit-train-per-task', type=int, default=None)
+    parser.add_argument('--limit-test-per-task', type=int, default=None)
     parser.add_argument('--no-feature-fusion', action='store_true')
     parser.add_argument('--no-projection', action='store_true')
     parser.add_argument('--wandb', action='store_true')

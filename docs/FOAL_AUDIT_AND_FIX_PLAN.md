@@ -46,14 +46,14 @@ Mức ưu tiên:
 
 | ID | Hạng mục | Tình trạng | Ưu tiên | File liên quan & Dòng code | Kiểm thử (Tests) | Bằng chứng nghiệm thu (Evidence) |
 |---|---|---|---|---|---|---|
-| A01 | Đúng checkpoint ViT | **PASS** | **P0** | `src/foal/backbone.py` (L18-29), `configs/cifar100.yaml` (L5-14) | `tests/test_vit_transforms.py::test_frozen_vit_properties` | `vit_base_patch16_224.augreg_in1k`, 85.8M params, `requires_grad=False`, `train(False)` ghi đè giữ `eval()` |
-| A02 | Feature Fusion đúng vị trí | **PASS** | **P0** | `src/foal/backbone.py` (L43-62), `src/foal/feature_fusion.py` (L6-15) | `tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm` | Arithmetic mean qua 12 blocks + áp dụng `network.norm` (final LayerNorm). Khi tắt FF, diff với `forward_features` bằng 0.0 |
-| A03 | Transforms đúng backbone | **PASS** | **P0** | `src/foal/datasets.py` (L68-84), `configs/cifar100.yaml` (L23-26) | `tests/test_vit_transforms.py::test_vit_transforms_structure` | Chuẩn hóa `(0.5, 0.5, 0.5)` và `bicubic` 224x224 khớp `timm.data.resolve_model_data_config` |
-| A04 | CIFAR-100 task protocol | **PASS** | **P0** | `src/foal/datasets.py` (L23-64), `scripts/train.py` (L48-56) | `tests/test_dataset.py::test_seeded_order_is_reproducible_and_permutation` | 10 tasks × 10 classes, `total_seen_classes` lũy tiến 10..100, mapping song ánh nhất quán |
-| A05 | Không train/test leakage | **PASS** | **P0** | `src/foal/datasets.py` (L48-58), `scripts/train.py` (L101-118) | `tests/test_dataset.py::test_task_partition_no_train_replay_and_no_future_test` | `isdisjoint` giữa các train sets; `seen_test_indices` chỉ chứa lớp đã học; stream one-pass không replay buffer |
+| A01 | Đúng checkpoint ViT | **PARTIAL** | **P0** | `src/foal/backbone.py` (L18-29), `configs/cifar100.yaml` (L5-14) | `tests/test_vit_transforms.py::test_frozen_vit_properties` | Đã cố định `vit_base_patch16_224.augreg_in1k` (85.8M params, `requires_grad=False`, `train(False)` giữ `eval()`). Đánh dấu **PARTIAL** vì chưa có checksum nhị phân đối chiếu với checkpoint nội bộ của tác giả paper. |
+| A02 | Feature Fusion đúng vị trí | **PASS** | **P0** | `src/foal/backbone.py` (L43-65), `src/foal/feature_fusion.py` (L6-15) | `tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm_both_branches` | Cả 2 nhánh: FF=True (trung bình 12 blocks + `network.norm`) và FF=False (khớp 100% `forward_features`) đều trùng khớp giải tích tính tay với sai số đại số 0.0. |
+| A03 | Transforms đúng backbone | **PASS** | **P0** | `src/foal/datasets.py` (L92-109), `configs/cifar100.yaml` (L23-28) | `tests/test_vit_transforms.py::test_vit_transforms_structure` | Chuẩn hóa `(0.5, 0.5, 0.5)` và `bicubic` 224x224. Đã phân tích rõ ràng: không áp dụng CenterCrop(224) của timm ImageNet để tránh cắt bỏ 10% biên ảnh CIFAR-100 $32 \times 32$. |
+| A04 | CIFAR-100 task protocol | **PARTIAL** | **P0** | `src/foal/datasets.py` (L23-60), `scripts/train.py` (L51-57) | `tests/test_dataset.py::test_seeded_order_is_reproducible_and_permutation` | 10 tasks × 10 classes, stream one-pass không replay, seed 42 cố định và tái lập. Đánh dấu **PARTIAL** do chưa có mảng permutation private từ repo tác giả để chứng minh khớp 100% thứ tự lớp trong Bảng 2. |
+| A05 | Không train/test leakage | **PASS** | **P0** | `src/foal/datasets.py` (L48-60), `scripts/train.py` (L104-123) | `tests/test_dataset.py::test_task_partition_no_train_replay_and_no_future_test` | `isdisjoint` giữa các train sets; `seen_test_indices` chỉ chứa lớp đã học; stream one-pass không replay buffer |
 | A06 | RLS về mặt đại số | **PASS** | **P0** | `src/foal/rls.py` (L41-76) | `tests/test_rls.py::test_rls_matches_closed_form_ridge_with_expanding_classes` | Woodbury identity: `gain = solve(A, K.T).T`. Nghiệm khớp Batch Ridge Regression với sai số $< 10^{-11}$ |
 | A07 | RLS ổn định trên ViT features | **PASS** | **P0** | `src/foal/rls.py` (L59-74), `src/foal/model.py` (L38-46) | `tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features` | Chạy trên ảnh CIFAR-100 thật qua ViT-B khớp Ridge với sai số $< 10^{-10}$; không có NaN/Inf (`isfinite=True`) |
-| A08 | Load/save checkpoint | **PASS** | **P0** | `scripts/train.py` (L129-140), `scripts/evaluate.py` (L16-41) | `tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload` | So sánh trực tiếp class scores (logits) trước/sau nạp checkpoint cho sai số $< 10^{-12}$; eval acc khớp $0.6865$ |
+| A08 | Load/save checkpoint | **PASS** | **P0** | `scripts/train.py` (L134-146), `scripts/evaluate.py` (L16-95) | `tests/test_checkpoint_roundtrip.py::test_checkpoint_save_and_reload` | So sánh trực tiếp class scores (logits) trước/sau nạp checkpoint cho sai số $< 10^{-12}$; `evaluate.py` nạp checkpoint mới khớp tuyệt đối với `train.py` (0.77 vs 0.77, per-task [0.69, 0.85]) |
 | A09 | Định nghĩa metrics | Có code, cần đối chiếu | **P1** | `metrics.py` | — | Khớp paper; không lẫn task/stage/seed/đơn vị |
 | A10 | Headline comparison | Chưa triển khai đủ | **P1** | `train.py`, `src/baselines/` mới | Có F-OAL + baseline công bằng, đủ protocol |
 | A11 | Ablation Table 4 | Có driver, chưa chạy | **P1** | `ablation.py`, `train.py` | 4 cấu hình, output truy vết, so sánh số liệu |
@@ -510,13 +510,15 @@ tests/test_rls.py::test_nan_or_inf_detection PASSED                             
 tests/test_rls_real_features.py::test_rls_matches_ridge_on_real_vit_features PASSED  [ 80%]
 tests/test_vit_transforms.py::test_vit_transforms_structure PASSED                  [ 86%]
 tests/test_vit_transforms.py::test_frozen_vit_properties PASSED                     [ 93%]
-tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm PASSED    [100%]
+tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm_both_branches PASSED [100%]
 
-======================== 15 passed in 36.05s ========================
+======================== 15 passed in 36.46s ========================
 ```
 
 Đặc biệt:
-- `test_feature_fusion_applies_final_layernorm`: Xác nhận Feature Fusion áp dụng `network.norm` (final LayerNorm) sau khi trung bình CLS tokens qua 12 blocks, khớp 100% với chuẩn trích xuất đặc trưng ViT.
+- `test_feature_fusion_applies_final_layernorm_both_branches`: Xác nhận trực tiếp tính đúng đắn toán học của **cả hai nhánh**:
+  1. `feature_fusion=False` (ablation): Khớp 100% với `forward_features(x)[:, 0, :]` của `timm` (diff đại số 0.0).
+  2. `feature_fusion=True` (full F-OAL): Khớp 100% với ground truth tính thủ công qua hook thu thập CLS tokens của 12 blocks, tính trung bình và áp dụng `network.norm` (final LayerNorm) (diff đại số 0.0).
 - `test_checkpoint_roundtrip.py`: Xác nhận so sánh trực tiếp class scores (logits) của cùng một batch trước và sau khi lưu/nạp checkpoint cho kết quả trùng khớp với sai số đại số $< 10^{-12}$.
 - `test_rls_matches_ridge_on_real_vit_features`: Xác minh nghiệm của Online RLS khi học từng mini-batch trên đặc trưng ViT-B/16 từ dữ liệu CIFAR-100 thật khớp với nghiệm giải tích toàn cục Batch Ridge Regression:
   $$W^* = (H^T H + \gamma I)^{-1} H^T Y$$
@@ -524,36 +526,65 @@ tests/test_vit_transforms.py::test_feature_fusion_applies_final_layernorm PASSED
 
 ---
 
-### 16.3. Kết quả End-to-End Smoke Test trên CIFAR-100 thật
+### 16.3. Chi tiết kiểm tra Preprocessing Pipeline (timm vs Continual Learning)
 
-Lệnh thực thi:
-```bash
-python -m scripts.train --config configs/cifar100.yaml --max-tasks 2 --limit-train-per-task 100 --run-name smoke_test_p0
-```
-
-* **Dữ liệu:** CIFAR-100 thật (50.000 train, 10.000 test).
-* **Backbone:** ViT-B/16 (`vit_base_patch16_224.augreg_in1k`, 85.8M parameters, frozen).
-* **Thiết bị chạy:** Intel Core Ultra 5 125H (CPU).
-* **Số tasks:** 2 tasks, mỗi task 10 lớp, giới hạn 100 mẫu train/task để kiểm thử smoke test.
-* **Kết quả đo đạc thực tế:**
-  * **Task 1:** 10 lớp seen, 100 train samples, đánh giá trên 1.000 test samples của Task 1:
-    * Accuracy Task 1 = **72,10%**
-    * Thời gian thực thi = 380,66 giây
-    * Checkpoint tạo lập: `results/smoke_test_p0/task_01.pt` (11,15 MB, $R \in \mathbb{R}^{1000 \times 1000}$, $W \in \mathbb{R}^{1000 \times 10}$)
-  * **Task 2:** 20 lớp seen, thêm 100 train samples (tổng 200 samples), đánh giá trên 2.000 test samples (Task 1 + Task 2):
-    * Accuracy Task 1 (lớp cũ sau khi học Task 2) = **63,10%**
-    * Accuracy Task 2 (lớp mới) = **74,20%**
-    * Average Seen Accuracy tại Stage 2 = **68,65%**
-    * Forgetting Rate $F$ = $72,10\% - 63,10\% = \mathbf{9,00\%}$
-    * Checkpoint tạo lập: `results/smoke_test_p0/task_02.pt` (11,23 MB, $R \in \mathbb{R}^{1000 \times 1000}$, $W \in \mathbb{R}^{1000 \times 20}$)
-  * **Tổng kết nghiệm thu:**
-    * Không xảy ra hiện tượng NaN / Inf trong toàn bộ ma trận $R$ và $W$.
-    * Phép gán nhãn, class expansion và lưu checkpoint nhất quán tuyệt đối.
-    * Đã tạo đầy đủ các tệp kết quả: `metadata.json`, `task_accuracy.csv`, `metrics.json`.
+| Thành phần | timm ImageNet Default (`vit_base_patch16_224.augreg_in1k`) | F-OAL Continual Learning (`src/foal/datasets.py`) | Lý do kỹ thuật & Đối chiếu Paper |
+|---|---|---|---|
+| **Input size** | $224 \times 224$ | $224 \times 224$ | Khớp cấu hình patch embedding ViT-B/16 |
+| **Interpolation** | `bicubic` | `bicubic` (`InterpolationMode.BICUBIC`) | Khớp ViT pretraining chuẩn |
+| **Resize & Crop** | `Resize(248)` $\to$ `CenterCrop(224)` (`crop_pct=0.9`) | `Resize((224, 224))` trực tiếp, **không crop** | Ảnh gốc CIFAR-100 chỉ có kích thước $32 \times 32$. Nếu crop 10% biên sẽ làm mất đặc trưng biên quan trọng của vật thể (cánh, bánh xe, chân). Protocol CL chuẩn resize trực tiếp. |
+| **Normalization** | `mean=(0.5, 0.5, 0.5)`, `std=(0.5, 0.5, 0.5)` | `mean=(0.5, 0.5, 0.5)`, `std=(0.5, 0.5, 0.5)` | Đưa pixel về $[-1.0, 1.0]$, khớp 100% pretraining của ViT AugReg |
 
 ---
 
-### 16.4. Hướng dẫn chạy trên Kaggle / Google Colab (GPU) cho Full Reproduction (Giai đoạn P1)
+### 16.4. Kết quả P0 Post-Fix Validation & Smoke Test CIFAR-100 Mới
+
+Sau khi hoàn tất bản vá LayerNorm và bổ sung test cho Feature Fusion đầy đủ, một đợt kiểm thử End-to-End Smoke Test mới đã được thực thi từ đầu (tuyệt đối không tái sử dụng checkpoint cũ) để tạo run `smoke_test_post_fix`.
+
+#### 1. Huấn luyện One-pass Smoke Test mới:
+```bash
+python -m scripts.train --config configs/cifar100.yaml --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --run-name smoke_test_post_fix
+```
+
+* **Dữ liệu:** CIFAR-100 thật từ Hugging Face (`uoft-cs/cifar100`).
+* **Backbone:** ViT-B/16 (`vit_base_patch16_224.augreg_in1k`, 85.8M parameters, frozen).
+* **Thiết bị:** Intel Core Ultra 5 125H (CPU).
+* **Kết quả huấn luyện qua từng task:**
+  * **Task 1:** 10 lớp seen, 100 mẫu train, đánh giá trên 100 mẫu test:
+    * Task 1 Accuracy: **78,00%** (0.78)
+    * Thời gian thực thi: 65,02 giây
+    * Checkpoint tạo lập: `results/smoke_test_post_fix/task_01.pt` (11,15 MB)
+  * **Task 2:** 20 lớp seen, thêm 100 mẫu train (tổng 200 mẫu), đánh giá trên 200 mẫu test:
+    * Task 1 Accuracy (lớp cũ): **69,00%** (0.69)
+    * Task 2 Accuracy (lớp mới): **85,00%** (0.85)
+    * Average Seen Accuracy: **77,00%** (0.77)
+    * Thời gian thực thi: 163,19 giây
+    * Forgetting Rate $F$: $78,00\% - 69,00\% = \mathbf{9,00\%}$
+    * Checkpoint tạo lập: `results/smoke_test_post_fix/task_02.pt` (11,23 MB)
+  * **Chỉ số tổng hợp (`metrics.json`):**
+    * `average_incremental_accuracy`: **77,50%**
+    * `last_accuracy`: **77,00%**
+    * `forgetting`: **9,00%**
+
+#### 2. Đánh giá độc lập Checkpoint mới bằng `scripts/evaluate.py`:
+```bash
+python -m scripts.evaluate --checkpoint results/smoke_test_post_fix/task_02.pt --device cpu --limit-per-task 100
+```
+
+* **Độ chính xác tổng thể (Accuracy):** **77,00%** (154/200 mẫu đúng) — **khớp 100% với kết quả của `train.py`**.
+* **Độ chính xác từng task (Per-Task Accuracy):**
+  * Task 1: **69,00%** (69/100 mẫu) — khớp chính xác với `train.py`.
+  * Task 2: **85,00%** (85/100 mẫu) — khớp chính xác với `train.py`.
+* **Kiểm tra độ ổn định số học (Score Statistics / Logits):**
+  * Giá trị nhỏ nhất (min): `-0.50286`
+  * Giá trị lớn nhất (max): `1.07427`
+  * Giá trị trung bình (mean): `0.04989`
+  * Độ lệch chuẩn (std): `0.16399`
+  * `all_finite`: **True** (tuyệt đối không có NaN, không có Inf trong mọi logits và ma trận RLS).
+
+---
+
+### 16.5. Hướng dẫn chạy trên Kaggle / Google Colab (GPU) cho Full Reproduction (Giai đoạn P1)
 
 Do máy cá nhân sử dụng CPU khiến việc chạy toàn bộ 10 tasks (50.000 train + 10.000 test) mất nhiều giờ, cấu hình GPU T4/P100/A100 trên Kaggle/Colab được khuyến nghị cho giai đoạn P1:
 
