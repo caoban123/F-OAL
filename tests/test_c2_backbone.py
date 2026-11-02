@@ -126,3 +126,148 @@ def test_frozen_vit_properties_and_strict_eval():
     assert model.network.training is False
     for p in model.parameters():
         assert p.requires_grad is False
+
+
+def test_frozen_vit_metadata_and_non_fallback():
+    """Verify get_backbone_metadata exposure and failure on non-existent checkpoint."""
+    model = FrozenViT("vit_base_patch16_224.augreg_in1k", pretrained=False, feature_fusion=True)
+    meta = model.get_backbone_metadata()
+    assert meta["model_name"] == "vit_base_patch16_224.augreg_in1k"
+    assert meta["feature_dim"] == 768
+    assert meta["num_blocks"] == 12
+    assert "pretrained_cfg" in meta
+
+
+def test_c2_configs_exact_hyperparameter_alignment():
+    """Verify B0 and B1 configs match C1 P1 in every single hyperparameter."""
+    import yaml
+
+    with open("configs/c1_p1_official_uniform.yaml") as f:
+        c1 = yaml.safe_load(f)
+    with open("configs/c2_b0_augreg_in1k.yaml") as f:
+        b0 = yaml.safe_load(f)
+    with open("configs/c2_b1_augreg2_in21k_ft_in1k.yaml") as f:
+        b1 = yaml.safe_load(f)
+
+    # Verification of gamma = 1.0 (strict)
+    assert c1["model"]["gamma"] == 1.0
+    assert b0["model"]["gamma"] == 1.0
+    assert b1["model"]["gamma"] == 1.0
+
+    # Verification of seeds
+    for s_key in ["seed", "class_order_seed", "projection_seed", "stream_seed"]:
+        assert b0[s_key] == c1[s_key] == 42
+        assert b1[s_key] == c1[s_key] == 42
+
+    # Verification of dataset parameters
+    for d_key in ["name", "num_classes", "classes_per_task", "image_size", "mean", "std", "interpolation"]:
+        assert b0["dataset"][d_key] == c1["dataset"][d_key]
+        assert b1["dataset"][d_key] == c1["dataset"][d_key]
+
+    # Verification of training parameters
+    assert b0["training"]["batch_size"] == c1["training"]["batch_size"] == 10
+    assert b1["training"]["batch_size"] == c1["training"]["batch_size"] == 10
+
+    # Verification of model parameters except backbone
+    for m_key in ["pretrained", "feature_fusion", "smooth_projection", "projection_dim", "projection_init", "gamma", "rls_dtype"]:
+        assert b0["model"][m_key] == c1["model"][m_key]
+        assert b1["model"][m_key] == c1["model"][m_key]
+
+    # Verification of single factor of variation: only backbone differs
+    assert b0["model"]["backbone"] == "vit_base_patch16_224.augreg_in1k"
+    assert b1["model"]["backbone"] == "vit_base_patch16_224.augreg2_in21k_ft_in1k"
+
+
+def test_c2_cache_validation_and_tamper_rejection(tmp_path):
+    """Verify feature cache rejects mismatched pretrained_tag, preprocessing, or dataset_name."""
+    import hashlib
+    import json
+    from scripts.train import extract_or_load_task_features
+    from src.foal.datasets import IndexedImageDataset
+    from torchvision.datasets import FakeData
+    from torchvision import transforms
+
+    model = FOALModel(
+        backbone_name="vit_base_patch16_224.augreg_in1k",
+        pretrained=False,
+        projection_init="official_uniform",
+    )
+    # Mock tags
+    model.encoder.pretrained_tag = "augreg_in1k"
+
+    from PIL import Image
+
+    # Mock source list of dicts with 'img' and 'fine_label'
+    mock_source = [
+        {"img": Image.new("RGB", (224, 224), color=(i * 20, i * 20, i * 20)), "fine_label": i % 5}
+        for i in range(10)
+    ]
+    indexed_ds = IndexedImageDataset(
+        mock_source,
+        indices=list(range(10)),
+        label_to_incremental={i: i for i in range(5)},
+        transform=transforms.ToTensor(),
+    )
+
+    prep = {"image_size": 224, "mean": [0.5, 0.5, 0.5], "std": [0.5, 0.5, 0.5], "interpolation": "bicubic"}
+    cache_dir = tmp_path / "cache"
+
+    # First extraction: creates cache
+    feats1, labels1, _, from_cache1 = extract_or_load_task_features(
+        cache_dir=cache_dir,
+        cache_key="test_sample",
+        model=model,
+        dataset=indexed_ds,
+        batch_size=5,
+        num_workers=0,
+        device="cpu",
+        preprocessing=prep,
+        dataset_name="cifar100",
+    )
+    assert from_cache1 is False
+    assert (cache_dir / "test_sample.pt").exists()
+
+    # Second extraction with identical config: loads from cache
+    feats2, labels2, _, from_cache2 = extract_or_load_task_features(
+        cache_dir=cache_dir,
+        cache_key="test_sample",
+        model=model,
+        dataset=indexed_ds,
+        batch_size=5,
+        num_workers=0,
+        device="cpu",
+        preprocessing=prep,
+        dataset_name="cifar100",
+    )
+    assert from_cache2 is True
+
+    # Third extraction with mismatched pretrained_tag: must REJECT cache
+    model.encoder.pretrained_tag = "augreg2_in21k_ft_in1k"
+    feats3, labels3, _, from_cache3 = extract_or_load_task_features(
+        cache_dir=cache_dir,
+        cache_key="test_sample",
+        model=model,
+        dataset=indexed_ds,
+        batch_size=5,
+        num_workers=0,
+        device="cpu",
+        preprocessing=prep,
+        dataset_name="cifar100",
+    )
+    assert from_cache3 is False  # Must re-extract!
+
+    # Fourth extraction with mismatched preprocessing: must REJECT cache
+    prep_mismatch = {"image_size": 224, "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225], "interpolation": "bilinear"}
+    feats4, labels4, _, from_cache4 = extract_or_load_task_features(
+        cache_dir=cache_dir,
+        cache_key="test_sample",
+        model=model,
+        dataset=indexed_ds,
+        batch_size=5,
+        num_workers=0,
+        device="cpu",
+        preprocessing=prep_mismatch,
+        dataset_name="cifar100",
+    )
+    assert from_cache4 is False  # Must re-extract!
+

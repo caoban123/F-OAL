@@ -56,5 +56,6 @@ logging:
   use_wandb: false
   project: hcmus-foal-reproduction
   group: c2_backbone_alignment
-  entity: null
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
   results_dir: results
