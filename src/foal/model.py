@@ -30,6 +30,8 @@ class FOALModel(nn.Module):
 
         self.encoder = FrozenViT(backbone_name, pretrained=pretrained,
                                  feature_fusion=feature_fusion)
+        self.pretrained_tag = getattr(self.encoder, 'pretrained_tag', 'unknown')
+        self.pretrained_cfg = getattr(self.encoder, 'pretrained_cfg', {})
         self.projection = SmoothProjection(
             self.encoder.feature_dim,
             projection_dim,

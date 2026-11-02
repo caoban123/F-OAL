@@ -166,6 +166,8 @@ def extract_or_load_task_features(
     batch_size: int,
     num_workers: int,
     device: str,
+    preprocessing: dict[str, Any] | None = None,
+    dataset_name: str | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, float, bool]:
     """Extract frozen ViT features once or load from verified cache on disk.
 
@@ -177,13 +179,19 @@ def extract_or_load_task_features(
 
     if cache_file.exists():
         saved = torch.load(cache_file, map_location='cpu', weights_only=False)
-        if (
+        valid = (
             saved.get('indices_sha256') == indices_sha
             and saved.get('backbone_name') == model.backbone_name
             and saved.get('feature_fusion') == model.feature_fusion_enabled
-            and len(saved['features']) == len(dataset)
-        ):
+            and saved.get('pretrained_tag') == getattr(model.encoder, 'pretrained_tag', None)
+            and (dataset_name is None or saved.get('dataset_name') == dataset_name)
+            and (preprocessing is None or saved.get('preprocessing') == preprocessing)
+            and len(saved.get('features', [])) == len(dataset)
+        )
+        if valid:
             return saved['features'], saved['labels'], float(saved.get('extraction_seconds', 0.0)), True
+        else:
+            print(f"Warning: Cache {cache_file.name} failed integrity/provenance validation. Re-extracting features...")
 
     t0 = time.monotonic()
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
@@ -201,7 +209,10 @@ def extract_or_load_task_features(
 
     torch.save({
         'backbone_name': model.backbone_name,
+        'pretrained_tag': getattr(model.encoder, 'pretrained_tag', 'unknown'),
         'feature_fusion': model.feature_fusion_enabled,
+        'dataset_name': dataset_name,
+        'preprocessing': preprocessing,
         'indices_sha256': indices_sha,
         'features_sha256': hashlib.sha256(features_cpu.contiguous().numpy().tobytes()).hexdigest(),
         'extraction_seconds': elapsed,
@@ -382,6 +393,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if args.wandb_offline:
                 os.environ['WANDB_MODE'] = 'offline'
 
+            base_url = getattr(args, 'wandb_base_url', None) or cfg['logging'].get('base_url') or os.environ.get('WANDB_BASE_URL')
+            if base_url:
+                os.environ['WANDB_BASE_URL'] = base_url
+
             project = args.wandb_project or cfg['logging'].get('project', 'hcmus-foal-reproduction')
             entity = args.wandb_entity or cfg['logging'].get('entity')
             group = args.wandb_group or f'{method}_{experiment_type}'
@@ -407,6 +422,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     # Initial projection matrix fingerprint to verify P stays strictly frozen across all stages
     initial_proj_sha = projection_meta['matrix_sha256'] if projection_meta is not None else None
 
+    prep_meta = {
+        'image_size': int(cfg['dataset'].get('image_size', 224)),
+        'mean': list(cfg['dataset'].get('mean', [0.5, 0.5, 0.5])),
+        'std': list(cfg['dataset'].get('std', [0.5, 0.5, 0.5])),
+        'interpolation': str(cfg['dataset'].get('interpolation', 'bicubic')),
+    }
+    dataset_name = str(cfg['dataset'].get('name', 'uoft-cs/cifar100'))
+
     try:
         for spec in specs[:max_tasks]:
             model.classifier.expand_classes(spec.total_seen_classes)
@@ -418,8 +441,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             gen = torch.Generator().manual_seed(stream_seed + spec.task_id)
 
             if feature_cache_dir is not None:
+                bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
                 cache_prefix = (
-                    f"c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
+                    f"{bb_slug}_c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
                     f"_tr{args.limit_train_per_task or 'full'}"
                 )
                 train_feats, train_labels, ext_sec, _ = extract_or_load_task_features(
@@ -430,6 +454,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     batch_size=batch_size,
                     num_workers=num_workers,
                     device=device,
+                    preprocessing=prep_meta,
+                    dataset_name=dataset_name,
                 )
                 total_feature_extraction_seconds += ext_sec
                 t_rls = time.monotonic()
@@ -464,8 +490,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if feature_cache_dir is not None:
                     if previous_spec.task_id not in cached_test_sets:
                         test_ds = IndexedImageDataset(test_source, task_test_ids, mapping, trans)
+                        bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
                         cache_prefix = (
-                            f"c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
+                            f"{bb_slug}_c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
                             f"_te{args.limit_test_per_task or 'full'}"
                         )
                         t_feats, t_labels, ext_sec, _ = extract_or_load_task_features(
@@ -476,6 +503,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                             batch_size=batch_size,
                             num_workers=num_workers,
                             device=device,
+                            preprocessing=prep_meta,
+                            dataset_name=dataset_name,
                         )
                         total_feature_extraction_seconds += ext_sec
                         cached_test_sets[previous_spec.task_id] = (t_feats, t_labels)
@@ -655,6 +684,8 @@ def main():
                         help='Weights & Biases project name')
     parser.add_argument('--wandb-entity', default=None,
                         help='Weights & Biases entity/username')
+    parser.add_argument('--wandb-base-url', default=None,
+                        help='Weights & Biases base API URL (e.g. https://api.forge.coreweave.com)')
     parser.add_argument('--wandb-group', default=None,
                         help='Weights & Biases experiment group')
     parser.add_argument('--wandb-tags', default=None,

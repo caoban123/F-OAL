@@ -1,0 +1,61 @@
+# ==============================================================================
+# Experiment C2 (Configuration B1) — Official Pretrained Checkpoint (augreg2_in21k_ft_in1k)
+#
+# Research Question (C2):
+#   Isolate the effect of Pretrained ViT Checkpoint (ImageNet-1K only vs.
+#   ImageNet-21K + 1K fine-tune) while holding all other factors fixed:
+#   - Projection: official_uniform, D=1000, seed=42 (identical matrix P to B0)
+#   - Preprocessing: bicubic 224x224, Normalize(0.5, 0.5)
+#   - Dataset: CIFAR-100, 10 tasks x 10 classes, seed=42
+#   - Optimization: Online Ridge RLS, batch_size=10, gamma=1.0, float64
+#
+# Backbone Specification (B1):
+#   - Model: vit_base_patch16_224.augreg2_in21k_ft_in1k (timm default for vit_base_patch16_224)
+#   - Pretraining: ImageNet-21K pre-trained, fine-tuned on ImageNet-1K
+#   - Timm Hub ID: timm/vit_base_patch16_224.augreg2_in21k_ft_in1k
+#   - Tag: augreg2_in21k_ft_in1k
+#   - Feature Dim: 768
+# ==============================================================================
+
+seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: uoft-cs/cifar100
+  num_classes: 100
+  classes_per_task: 10
+  class_order: null
+  image_size: 224
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+  interpolation: bicubic
+
+projection:
+  dimension: 1000
+  initialization: official_uniform
+  seed: 42
+
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  num_workers: 0
+  device: auto
+
+logging:
+  use_wandb: false
+  project: hcmus-foal-reproduction
+  group: c2_backbone_alignment
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  results_dir: results

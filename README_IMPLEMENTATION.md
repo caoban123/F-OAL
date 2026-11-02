@@ -158,9 +158,21 @@ python -m scripts.train --config configs/cifar100.yaml --device cuda --wandb --r
 | **C1: P0 Gaussian std=1** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.95%** | **8.25%** / **9.17%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) | `VERIFIED FULL GPU` (`C1 PASS`) |
 | **C1: P1 Official Uniform** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.28%** | **74.84%** | **8.07%** / **8.97%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | `VERIFIED FULL GPU` (`C1 PASS`) |
 | **C1: P2 Matched Gaussian** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.37%** | **74.99%** | **7.93%** / **8.81%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | `VERIFIED FULL GPU` (`C1 PASS`) |
+| **C2: Backbone Alignment** | Ours (`src/foal`) | CIFAR-100 | `42` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `HEAD` | [`docs/c2_backbone_alignment_plan.md`](docs/c2_backbone_alignment_plan.md) | `PENDING_GPU` | `READY_FOR_FULL_GPU` (`C2`) |
 | **F-OAL Multi-Seed** | Ours (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
 | **Ablation Study (4 configs)** | Ours (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
 
 ### Đường dẫn W&B Đã Đồng bộ (`hcmus-foal-reproduction`)
 * **Our Run (`2cdeiptv`, Seed 42, Commit `aad7500`):** [https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv)
 * **Official Run (`3eca8232`, Seed 0, Commit `73e4ac1`):** [https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232)
+
+
+### 2.8. Thí nghiệm Kiểm soát Căn chỉnh Pretrained ViT Backbone C2 (H1)
+* **Kế hoạch Nghiên cứu:** [`docs/c2_backbone_alignment_plan.md`](docs/c2_backbone_alignment_plan.md)
+* **Tệp cấu hình:** `configs/c2_b0_augreg_in1k.yaml` (B0) và `configs/c2_b1_augreg2_in21k_ft_in1k.yaml` (B1).
+* **Notebook chạy Colab GPU:** [`notebooks/foal_c2_backbone_controlled.ipynb`](notebooks/foal_c2_backbone_controlled.ipynb).
+* **Lệnh chạy Pilot (2 tasks):**
+  ```bash
+  python -m scripts.train --config configs/c2_b0_augreg_in1k.yaml --output-dir results/c2_pilot/b0 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100
+  python -m scripts.train --config configs/c2_b1_augreg2_in21k_ft_in1k.yaml --output-dir results/c2_pilot/b1 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100
+  ```

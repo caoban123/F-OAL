@@ -138,3 +138,33 @@ def limit_indices_per_task(indices: Sequence[int], limit: int | None, seed: int)
     rng = np.random.default_rng(seed)
     chosen = rng.choice(list(indices), size=min(limit, len(indices)), replace=False)
     return chosen.tolist()
+
+
+class CIFAR100OnlineDataset:
+    """Convenience wrapper around load_cifar100 for stream and diagnostics management."""
+
+    def __init__(self, root: str = 'artifacts/data', seed: int = 42):
+        self.root = root
+        self.seed = seed
+        self.train_source, self.test_source = load_cifar100(root=root)
+        self.class_order = make_class_order(100, seed=seed)
+        self.label_mapping = {orig: i for i, orig in enumerate(self.class_order)}
+        self.transforms = cifar100_transforms(
+            size=224,
+            mean=(0.5, 0.5, 0.5),
+            std=(0.5, 0.5, 0.5),
+            interpolation='bicubic',
+        )
+
+    def get_train_source(self):
+        return self.train_source
+
+    def get_test_source(self):
+        return self.test_source
+
+    def get_label_mapping(self) -> dict[int, int]:
+        return self.label_mapping
+
+    def get_transforms(self):
+        return self.transforms
+

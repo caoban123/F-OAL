@@ -53,11 +53,13 @@ def get_environment_info() -> dict[str, Any]:
     cuda_available = torch.cuda.is_available()
     gpu_info = None
     if cuda_available:
+        props = torch.cuda.get_device_properties(0)
         gpu_info = {
             'count': torch.cuda.device_count(),
-            'device_name': torch.cuda.get_device_name(0),
+            'device_name': props.name,
+            'total_memory_gb': round(props.total_memory / (1024**3), 2),
             'cuda_version': torch.version.cuda,
-            'capability': torch.cuda.get_device_capability(0),
+            'capability': (props.major, props.minor),
         }
 
     return {

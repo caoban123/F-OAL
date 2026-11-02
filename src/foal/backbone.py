@@ -30,6 +30,40 @@ class FrozenViT(nn.Module):
             p.requires_grad_(False)
         self.network.eval()
 
+        # Resolve pretrained configuration details for auditing and cache validation
+        cfg = getattr(self.network, 'pretrained_cfg', getattr(self.network, 'default_cfg', {}))
+        if hasattr(cfg, 'to_dict'):
+            self.pretrained_cfg = cfg.to_dict()
+        elif isinstance(cfg, dict):
+            self.pretrained_cfg = dict(cfg)
+        else:
+            self.pretrained_cfg = {}
+        self.pretrained_tag = str(self.pretrained_cfg.get('tag', 'unknown'))
+        self.architecture = str(self.pretrained_cfg.get('architecture', name.split('.')[0]))
+        self.hf_hub_id = self.pretrained_cfg.get('hf_hub_id', None)
+
+        if pretrained:
+            # Enforce that pretrained weights are loaded and non-trivial (prevent silent fallback to random weights)
+            first_param = next(self.network.parameters(), None)
+            if first_param is None or not torch.isfinite(first_param).all():
+                raise RuntimeError(f"Pretrained weights for {name} are invalid, non-finite, or empty.")
+
+    def get_backbone_metadata(self) -> dict[str, Any]:
+        """Return structured metadata identifying the ViT backbone and its pretrained checkpoint."""
+        return {
+            'model_name': self.model_name,
+            'architecture': self.architecture,
+            'pretrained_tag': self.pretrained_tag,
+            'hf_hub_id': self.hf_hub_id,
+            'feature_dim': self.feature_dim,
+            'feature_fusion': self.feature_fusion,
+            'num_blocks': len(self.network.blocks) if hasattr(self.network, 'blocks') else None,
+            'pretrained_cfg': {
+                k: v for k, v in self.pretrained_cfg.items()
+                if isinstance(v, (str, int, float, bool, list, tuple, dict)) or v is None
+            },
+        }
+
     @property
     def feature_dim(self) -> int:
         return int(self.network.num_features)

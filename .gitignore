@@ -16,6 +16,7 @@ results/foal_full_cifar100_seed42/*.pt
 !results/official_foal_cifar100_seed0/
 !results/c1_diagnostics/
 !results/c1_analysis/
+!results/c2_analysis/
 *.zip
 data/
 *.ckpt

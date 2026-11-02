@@ -395,3 +395,69 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 2. **Tái hiện Bản chạy Lịch sử P0 (Historical P0 Reproducibility):**
    - *Phân loại:* **`HISTORICAL_P0_NEAR_REPRODUCED — CAUSE_OF_SMALL_DIFFERENCE_UNDETERMINED`**.
    - *Chi tiết:* Bản chạy P0 mới trên Colab A100 đạt $\bar{A} = 79.3315\%$, $A_{10} = 70.9500\%$, so với bản chạy lịch sử trên Colab T4 (`aad7500`, Run `2cdeiptv`) đạt $\bar{A} = 79.3332\%$, $A_{10} = 70.9200\%$. Độ lệch tuyệt đối giữa hai môi trường là $-0.0017\text{ pp}$ trên $\bar{A}$ và $+0.0300\text{ pp}$ trên $A_{10}$ (sai số cực vi mô, nhiều khả năng do khác biệt làm tròn số học dấu phẩy động hoặc kernel cuBLAS giữa kiến trúc GPU Turing T4 và Ampere A100).
+
+
+---
+
+## 7. Thí nghiệm Kiểm soát C2: Căn chỉnh Trọng số Pretrained ViT Backbone (ImageNet-21K vs 1K)
+
+Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [docs/c2_backbone_alignment_plan.md](c2_backbone_alignment_plan.md).
+
+- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (it_base_patch16_224.augreg2_in21k_ft_in1k trong mã nguồn tác giả vs it_base_patch16_224.augreg_in1k ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
+- **Trạng thái hiện tại:** **FULL_GPU_COMPLETED_AND_VERIFIED** (Nghiệm thu thực nghiệm thành công ngày 02/11/2026).
+  - Tệp nén kết quả: oal_c2_backbone_results.zip (SHA256: d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429, 0 lỗi CRC).
+  - Thư mục trích xuất & kiểm chứng: [
+esults/c2_full_gpu_verified/](../results/c2_full_gpu_verified/).
+  - Bảng tổng hợp & hình vẽ phân tích: [
+esults/c2_analysis/](../results/c2_analysis/).
+  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, 	imm 1.0.30).
+  - Bộ kiểm thử hồi quy: 56/56 tests PASSED (100%).
+
+### 7.1. Bảng Kết quả Toàn diện Thí nghiệm Kiểm soát C2
+
+| Chỉ số Thực nghiệm (CIFAR-100, 10 Tasks, Seed 42) | C2-B0 (Control: ugreg_in1k) | C2-B1 (Treatment: ugreg2_in21k_ft_in1k) | Tác động Đơn yếu tố $\Delta(B1 - B0)$ | C1-P1 Ref (ugreg_in1k) | Official Run (seed=0, 73e4ac1) | Paper (NeurIPS 2024 Table 1) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **$\bar{A}$ (Avg Incremental Acc, $\uparrow$)** | **.2814\%$** | **.7742\%$** | **$+8.4929\text{ pp}$** | .2814\%$ | .9828\%$ | .10\%$ |
+| **{10}$ (Last Task Acc, $\uparrow$)** | **.8400\%$** | **.4300\%$** | **$+12.5900\text{ pp}$** | .8400\%$ | .8400\%$ | — |
+| **{10}^{\text{past}}$ (Paper Forgetting, $\downarrow$)** | **.9667\%$** | **.0222\%$** | **$-3.9444\text{ pp}$** | .9667\%$ | .1667\%$ | — |
+| **{10}^{\text{code}}$ (Official Code Forgetting, $\downarrow$)** | **.0700\%$** | **.5200\%$** | **$-3.5500\text{ pp}$** | .0700\%$ | .6900\%$ | .50\%$ |
+| **Thời gian Trích xuất Đặc trưng (s)** | .46\text{ s}$ | .30\text{ s}$ | $-0.16\text{ s}$ | — | — | — |
+| **Thời gian Cập nhật RLS + Eval (s)** | .55\text{ s}$ | .49\text{ s}$ | $-0.06\text{ s}$ | — | — | — |
+| **Tổng Thời gian Chạy (s)** | .13\text{ s}$ ($\approx 5.04\text{ phút}$) | .32\text{ s}$ ($\approx 5.02\text{ phút}$) | $-0.81\text{ s}$ | — | .6\text{ s}$ | .0\text{ s}$ |
+| **W&B Online Run URL** | [Run 3oiftwg6](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) | [Run 
+e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | — | [Run 6whrot4z](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | [Run 3eca8232](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | — |
+
+### 7.2. Quỹ đạo Độ chính xác Qua Từng Giai đoạn (Stage-by-Stage Trajectory)
+
+| Giai đoạn ($) | B0 (ugreg_in1k) | B1 (ugreg2_in21k_ft_in1k) | Ưu thế của B1 ($\Delta_{B1 - B0}$) | C1-P1 Ref | Official Run (seed 0) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Stage 1** | .70\%$ | **.30\%$** | $+4.60\text{ pp}$ | .70\%$ | .60\%$ |
+| **Stage 2** | .60\%$ | **.10\%$** | $+4.50\text{ pp}$ | .60\%$ | .75\%$ |
+| **Stage 3** | .60\%$ | **.13\%$** | $+5.53\text{ pp}$ | .60\%$ | .00\%$ |
+| **Stage 4** | .62\%$ | **.65\%$** | $+7.03\text{ pp}$ | .62\%$ | .15\%$ |
+| **Stage 5** | .74\%$ | **.10\%$** | $+8.36\text{ pp}$ | .74\%$ | .78\%$ |
+| **Stage 6** | .50\%$ | **.78\%$** | $+9.28\text{ pp}$ | .50\%$ | .67\%$ |
+| **Stage 7** | .06\%$ | **.04\%$** | $+9.99\text{ pp}$ | .06\%$ | .89\%$ |
+| **Stage 8** | .76\%$ | **.12\%$** | $+11.36\text{ pp}$ | .76\%$ | .10\%$ |
+| **Stage 9** | .39\%$ | **.08\%$** | $+11.69\text{ pp}$ | .39\%$ | .06\%$ |
+| **Stage 10 (Final)** | .84\%$ | **.43\%$** | $+12.59\text{ pp}$ | .84\%$ | .84\%$ |
+| **Trung bình ($\bar{A}$)** | **.28\%$** | **.77\%$** | **$+8.49\text{ pp}$** | **.28\%$** | **.98\%$** |
+
+### 7.3. Kết luận Khoa học & Hiệu chỉnh Học thuật Then chốt (Scientific Corrections)
+1. **Khẳng định Giả thuyết H1 trong Phạm vi Cấu hình Thử nghiệm (H1_SUPPORTED_BY_C2):**
+   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (ugreg2_in21k_ft_in1k) tạo ra bước nhảy vọt hiệu năng:
+     - Tăng $\bar{A}$ thêm **$+8.4929\text{ pp}$** (.28\% \to 91.77\%$).
+     - Tăng {10}$ thêm **$+12.5900\text{ pp}$** (.84\% \to 87.43\%$).
+     - Giảm tỷ lệ quên {10}^{\text{past}}$ từ .97\%$ xuống .02\%$ (giảm $-3.9444\text{ pp}$).
+2. **Hiệu chỉnh Nhận định So sánh với Paper & Official Run:**
+   - Kết quả .77\%$ của B1 tương đương về mặt số học và cao hơn một lượng nhỏ so với Paper (.10\%$) và Official Run (.98\%$).
+   - Do giao thức giữa hai bên chưa hoàn toàn đồng nhất (thứ tự lớp seed 42 vs seed 0; tiền xử lý Bicubic vs Bilinear), **đây không phải là bằng chứng cho thấy mã nguồn nhóm vượt trội có ý nghĩa thống kê so với bài báo hay tác giả**.
+3. **Hiệu chỉnh Phân tích Tỷ lệ Thu hẹp Khoảng cách:**
+   - Mức tăng $+8.49\text{ pp}$ của B1 vượt qua khoảng cách trước đó so với bản chạy đơn seed tác giả (.70\text{ pp}$). Đây là một tỷ số số học thuần túy phản ánh độ lớn cải thiện, **không phải là bằng chứng phân rã nhân quả hình thức (formal causal decomposition) đã giải thích 110.3% nguyên nhân**.
+4. **Hiệu chỉnh Phân tích Độ tương đồng Cosine:**
+   - B1 có độ tương đồng nội lớp $\mathcal{S}_{\text{intra}} = 0.8423$ (tăng từ .5449$), nhưng độ tương đồng liên lớp $\mathcal{S}_{\text{inter}}$ cũng tăng mạnh (.7642$ so với .3603$). Hiệu số  = \mathcal{S}_{\text{intra}} - \mathcal{S}_{\text{inter}}$ của B1 (.0781$) nhỏ hơn B0 (.1846$). Điều này phản ánh các vector đặc trưng của B1 tập trung trong một nón góc hẹp hơn với biên độ chuẩn L2 gấp đôi ($\approx 38.7$ vs .3$), chứ không phải là sự tách biệt góc tuyệt đối giữa các lớp.
+5. **Hiệu chỉnh So sánh Thời gian Chạy (Runtime):**
+   - Sự khác biệt về thời gian chạy giữa C2 ($\approx 301\text{ s}$ trên Colab A100) và Official Run (\text{ s}$ trên Colab T4) đến từ sự khác biệt phần cứng GPU, cơ chế cache đặc trưng và việc loại bỏ forward pass thừa, **không phải là gia tốc thuật toán thuần túy**.
+6. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
+   - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác 100% đến từng số thập phân với C1-P1.
+   - Ma trận chiếu $ được kiểm chứng đồng nhất tuyệt đối qua mã băm SHA256 (6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b), bảo đảm tính công bằng đơn yếu tố tuyệt đối (Single-Factor Control Fairness).

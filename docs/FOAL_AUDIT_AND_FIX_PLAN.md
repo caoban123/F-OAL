@@ -1048,4 +1048,27 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
     - **P1 (`official_uniform`):** $\bar{A} = 83.28\%$, $A_{10} = 74.84\%$, $F_{10}^{\text{past}} = 8.97\%$, $F_{10}^{\text{code}} = 8.07\%$ ($\Delta_{P1-P0} = +3.95\text{ pp}$, [W&B Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z)).
     - **P2 (`gaussian_matched_variance`):** $\bar{A} = 83.37\%$, $A_{10} = 74.99\%$, $F_{10}^{\text{past}} = 8.81\%$, $F_{10}^{\text{code}} = 7.93\%$ ($\Delta_{P2-P0} = +4.04\text{ pp}$, [W&B Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p)).
   - **Kết luận Giả thuyết H2:** **`SUPPORTED BY FULL EXPERIMENT`**. Phương sai khởi tạo ma trận chiếu thu hẹp được $33.9\%$ khoảng cách giữa nhóm và tác giả. Phân phối Uniform vs Gaussian không gây ra khác biệt đáng kể trên đơn seed ($\Delta_{P1-P2} = -0.09\text{ pp}$ trên $\bar{A}$, seed 42); biến số tác động chi phối là quy mô phương sai (variance scale) ngăn hiện tượng bão hòa đặc trưng. Phân tích Centered Covariance Rank ($71.26$ vs $71.10$) giải mã việc rank Gram chưa chuẩn tâm $\approx 1.20$ chỉ là hiệu ứng phụ của vector trung bình dương.
-- **Trạng thái Ký duyệt C1 (Sign-off):** **`APPROVED FOR PULL REQUEST`**. Nhánh `experiment/c1-projection-initialization` đã có đầy đủ kiểm thử, hiện vật, chẩn đoán, đối chiếu dữ liệu thực tế và tài liệu khoa học, sẵn sàng mở PR vào `main`.
+- **Trạng thái Ký duyệt C1 (Sign-off):** **`MERGED INTO MAIN`** (Commit `e2252b9`). Nhánh C1 đã hoàn thành đầy đủ kiểm thử, đối chiếu hiện vật số học, đồng bộ W&B và merge thành công vào nhánh chính.
+
+
+---
+
+## 25. Triển khai Thí nghiệm Kiểm soát C2 (Controlled Pretrained ViT Backbone Alignment)
+
+- **Kế hoạch Nghiên cứu Đầy đủ:** [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+- **Nhánh làm việc:** `experiment/c2-backbone-alignment` (tách từ `main` commit `e2252b9`).
+- **Câu hỏi Nghiên cứu:** Xác định mức độ ảnh hưởng của checkpoint ViT `vit_base_patch16_224.augreg2_in21k_ft_in1k` (ImageNet-21K tiền huấn luyện, cấu hình tác giả) so với `vit_base_patch16_224.augreg_in1k` (ImageNet-1K ban đầu của nhóm).
+- **Thiết kế Kiểm soát Đơn yếu tố:** Cố định tuyệt đối ma trận chiếu $P$ (cùng seed 42, $D=1000$, `official_uniform`, cùng SHA256), cố định tiền xử lý, thứ tự lớp, siêu tham số và tối ưu giải tích RLS.
+- **Trạng thái Thực nghiệm C2:**
+  - `PLANNED`: Hoàn thành văn bản kế hoạch [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+  - `IMPLEMENTED`: Đã triển khai hỗ trợ backbone và chẩn đoán biểu diễn trong `src/foal/`.
+  - `UNIT_TESTED`: 8/8 ca kiểm thử trong `tests/test_c2_backbone.py` vượt qua tuyệt đối (tổng cộng 56 unit tests).
+  - `PILOT_VERIFIED`: Đã chạy kiểm chứng Pilot B0 đạt $\bar{A} = 79.00\%$, $A_2 = 78.00\%$.
+  - `READY_FOR_FULL_GPU`: Notebook Colab hoàn tất tại [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb).
+  - `FULL_GPU_COMPLETED_AND_VERIFIED`: **`PASS (VERIFIED)`** (Đã chạy hoàn tất trên Google Colab NVIDIA A100-SXM4-40GB; xác thực toàn vẹn gói nén `foal_c2_backbone_results.zip` SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`).
+    - **B0 (`augreg_in1k`):** $\bar{A} = \mathbf{83.2814\%}$, $A_{10} = \mathbf{74.8400\%}$, $F_{10}^{\text{past}} = \mathbf{8.9667\%}$, $F_{10}^{\text{code}} = \mathbf{8.0700\%}$ (khớp chính xác 100% C1-P1).
+    - **B1 (`augreg2_in21k_ft_in1k`):** $\bar{A} = \mathbf{91.7742\%}$, $A_{10} = \mathbf{87.4300\%}$, $F_{10}^{\text{past}} = \mathbf{5.0222\%}$, $F_{10}^{\text{code}} = \mathbf{4.5200\%}$.
+    - **Tác động Đơn yếu tố $\Delta(B1 - B0)$:** $\Delta \bar{A} = \mathbf{+8.4929\text{ pp}}$, $\Delta A_{10} = \mathbf{+12.5900\text{ pp}}$, $\Delta F_{10}^{\text{past}} = \mathbf{-3.9444\text{ pp}}$.
+- **Kết luận Giả thuyết H1:** **`H1_SUPPORTED_BY_C2 với Giới hạn Thống kê`**. Checkpoint ViT từ ImageNet-21K nâng $\bar{A}$ lên **$91.77\%$** dưới cấu hình kiểm nghiệm, tương đương số học với Paper ($91.10\%$) và Official Run ($90.98\%$). Mức tăng $+8.49\text{ pp}$ vượt qua khoảng cách trước đó ($7.70\text{ pp}$) trên đơn seed CIFAR-100.
+- **Trạng thái Ký duyệt C2 (Sign-off):** **`C2_SIGNED_OFF_WITH_LIMITATIONS`** (Đã xác minh đầy đủ 7 runs trực tuyến trên CoreWeave Forge; chuẩn bị PR cho người dùng xem xét, tuyệt đối không tự động merge vào `main`). Toàn bộ artifacts phân tích lưu tại `results/c2_analysis/`, 56/56 unit tests passed.
+- **Thí nghiệm C3 (Tiền xử lý ảnh):** Kế hoạch chi tiết tại [`docs/c3_preprocessing_alignment_plan.md`](c3_preprocessing_alignment_plan.md) ở trạng thái **`C3_PLANNED — NOT IMPLEMENTED — NOT EXECUTED`**.

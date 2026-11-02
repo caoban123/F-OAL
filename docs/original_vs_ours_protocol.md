@@ -145,4 +145,22 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
   - Khởi tạo ma trận chiếu thu nhỏ phương sai giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách $11.65\text{ pp}$ giữa nhóm và tác giả.
   - Phân phối Uniform và Gaussian khi cùng khớp phương sai cho kết quả gần như tương đồng trên đơn seed ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$, seed 42), cho thấy quy mô phương sai (variance scale) đóng vai trò chi phối trong việc ngăn bão hòa phi tuyến, chứ không phải hình dạng phân phối (Uniform vs. Gaussian).
   - Phân tích phổ hiệp phương sai chuẩn tâm cho thấy Effective Rank của P1 ($71.26$) và P2 ($71.10$) phản ánh đúng số chiều nội tại của ViT backbone (~71), trong khi giá trị uncentered Gram rank $\approx 1.20$ thuần túy là hiệu ứng phụ của vector trung bình dương $\mathbf{m} \approx 0.5 \times \mathbf{1}$.
-  - Khoảng cách còn lại $\approx 7.65\text{ pp}$ được định vị chính xác nằm ở **H1 (Pretrained ViT Checkpoint ImageNet-21K)** và **H4 (Bilinear $[0, 1]$ Preprocessing)**.
+### 5.3. C2 — Căn chỉnh Pretrained ViT Backbone (`ImageNet-21K` vs `1K`) & Nghiệm thu Thực nghiệm
+- **Thiết kế kiểm soát đơn yếu tố:**
+  - B0 (Control): `vit_base_patch16_224.augreg_in1k` (ImageNet-1K).
+  - B1 (Treatment): `vit_base_patch16_224.augreg2_in21k_ft_in1k` (ImageNet-21K + IN-1K FT).
+  - Cố định 100%: Ma trận ngẫu nhiên $P$ (seed 42, cùng mã SHA256: `6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b`), thứ tự lớp (seed 42), Bicubic $[-1, 1]$, batch size 10, gamma 1.0, float64 RLS.
+- **Kết quả Full GPU trên NVIDIA A100-SXM4-40GB (10 Tasks, CIFAR-100, Seed 42):**
+  - **B0 (`augreg_in1k`):** $\bar{A} = \mathbf{83.2814\%}$, $A_{10} = \mathbf{74.8400\%}$, $F_{10}^{\text{past}} = \mathbf{8.9667\%}$, $F_{10}^{\text{code}} = \mathbf{8.0700\%}$. Khớp 100% kết quả C1-P1.
+  - **B1 (`augreg2_in21k_ft_in1k`):** $\bar{A} = \mathbf{91.7742\%}$, $A_{10} = \mathbf{87.4300\%}$, $F_{10}^{\text{past}} = \mathbf{5.0222\%}$, $F_{10}^{\text{code}} = \mathbf{4.5200\%}$.
+  - **Tác động đơn yếu tố $\Delta(B1 - B0)$:**
+    - $\Delta \bar{A} = \mathbf{+8.4929\text{ pp}}$
+    - $\Delta A_{10} = \mathbf{+12.5900\text{ pp}}$
+    - $\Delta F_{10}^{\text{past}} = \mathbf{-3.9444\text{ pp}}$
+- **Kết luận Giả thuyết H1 (`H1_SUPPORTED_BY_C2 với Giới hạn Thống kê`):**
+  - Trọng số Pretrained ViT tiền huấn luyện trên ImageNet-21K (`augreg2_in21k_ft_in1k`) là nhân tố cốt lõi cải thiện biểu diễn đặc trưng, nâng $\bar{A}$ lên **$91.77\%$** trên CIFAR-100 dưới cấu hình kiểm nghiệm.
+  - Về mặt số học, kết quả này tương đương và cao hơn một lượng nhỏ so với Paper ($91.10\%$) và Official Run ($90.98\%$). Mức tăng $+8.49\text{ pp}$ vượt qua khoảng cách trước đó so với bản chạy đơn seed tác giả ($7.70\text{ pp}$). Tuy nhiên, do các giao thức chưa được căn chỉnh hoàn toàn (khác biệt seed thứ tự lớp $42$ vs $0$, tiền xử lý ảnh Bilinear vs Bicubic chưa cô lập ở C2), con số này không phải là bằng chứng cho thấy mã nguồn nhóm vượt trội có ý nghĩa thống kê so với phương pháp gốc.
+  - Gói dữ liệu lưu trữ: `foal_c2_backbone_results.zip` (SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`).
+  - Phân tích chi tiết và hình vẽ: `results/c2_analysis/`.
+  - W&B Online Runs trên CoreWeave Forge: [Run `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) (B0), [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) (B1).
+  - Trạng thái nghiệm thu: **`C2_SIGNED_OFF_WITH_LIMITATIONS`**.
