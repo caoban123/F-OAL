@@ -30,6 +30,18 @@ class FrozenViT(nn.Module):
             p.requires_grad_(False)
         self.network.eval()
 
+        # Resolve pretrained configuration details for auditing and cache validation
+        cfg = getattr(self.network, 'pretrained_cfg', getattr(self.network, 'default_cfg', {}))
+        if hasattr(cfg, 'to_dict'):
+            self.pretrained_cfg = cfg.to_dict()
+        elif isinstance(cfg, dict):
+            self.pretrained_cfg = dict(cfg)
+        else:
+            self.pretrained_cfg = {}
+        self.pretrained_tag = str(self.pretrained_cfg.get('tag', 'unknown'))
+        self.architecture = str(self.pretrained_cfg.get('architecture', name.split('.')[0]))
+        self.hf_hub_id = self.pretrained_cfg.get('hf_hub_id', None)
+
     @property
     def feature_dim(self) -> int:
         return int(self.network.num_features)

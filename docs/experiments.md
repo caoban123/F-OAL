@@ -395,3 +395,23 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 2. **Tái hiện Bản chạy Lịch sử P0 (Historical P0 Reproducibility):**
    - *Phân loại:* **`HISTORICAL_P0_NEAR_REPRODUCED — CAUSE_OF_SMALL_DIFFERENCE_UNDETERMINED`**.
    - *Chi tiết:* Bản chạy P0 mới trên Colab A100 đạt $\bar{A} = 79.3315\%$, $A_{10} = 70.9500\%$, so với bản chạy lịch sử trên Colab T4 (`aad7500`, Run `2cdeiptv`) đạt $\bar{A} = 79.3332\%$, $A_{10} = 70.9200\%$. Độ lệch tuyệt đối giữa hai môi trường là $-0.0017\text{ pp}$ trên $\bar{A}$ và $+0.0300\text{ pp}$ trên $A_{10}$ (sai số cực vi mô, nhiều khả năng do khác biệt làm tròn số học dấu phẩy động hoặc kernel cuBLAS giữa kiến trúc GPU Turing T4 và Ampere A100).
+
+
+---
+
+## 7. Thí nghiệm Kiểm soát C2: Căn chỉnh Trọng số Pretrained ViT Backbone (`ImageNet-21K` vs `1K`)
+
+Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+
+- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (`vit_base_patch16_224.augreg2_in21k_ft_in1k` trong mã nguồn tác giả vs `vit_base_patch16_224.augreg_in1k` ban đầu của nhóm) đối với khoảng cách $pprox 7.7\text{ pp}$ còn lại sau C1.
+- **Trạng thái hiện tại:** **`READY_FOR_FULL_GPU`**
+  - Kế hoạch nghiên cứu: [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md) (`PLANNED`).
+  - Triển khai mã nguồn: `src/foal/backbone.py`, `src/foal/model.py`, `src/foal/diagnostics.py` (`IMPLEMENTED`).
+  - Kiểm thử tự động: `tests/test_c2_backbone.py` 5/5 PASSED (`UNIT_TESTED`).
+  - Kiểm chứng Pilot: B0 Pilot 2 tasks trên CPU đạt $\bar{A}=79.00\%$, $A_2=78.00\%$ trùng khớp bitwise với C1 P1 (`PILOT_VERIFIED`).
+  - Notebook Google Colab GPU: [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb) (`READY_FOR_FULL_GPU`).
+  - Thực nghiệm 10 Tasks Full GPU: `PENDING_GPU` (chờ người dùng thực thi trên Google Colab GPU A100).
+- **Nguyên tắc Kiểm soát Đơn Yếu tố:**
+  - Cố định 100% ma trận chiếu $P$ (seed 42, $D=1000$, `official_uniform`, bảo đảm Projection Equality qua cùng mã SHA256).
+  - Cố định 100% tiền xử lý (Bicubic 224x224, `[-1, 1]`), thứ tự lớp (seed 42), batch size 10, gamma 1.0, float64 RLS.
+  - Cô lập bộ nhớ đệm đặc trưng (Cache Safety): Tên tệp và khóa cache tích hợp định danh backbone để ngăn ngừa tải chéo đặc trưng.

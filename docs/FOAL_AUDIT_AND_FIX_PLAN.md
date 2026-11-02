@@ -1048,4 +1048,21 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
     - **P1 (`official_uniform`):** $\bar{A} = 83.28\%$, $A_{10} = 74.84\%$, $F_{10}^{\text{past}} = 8.97\%$, $F_{10}^{\text{code}} = 8.07\%$ ($\Delta_{P1-P0} = +3.95\text{ pp}$, [W&B Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z)).
     - **P2 (`gaussian_matched_variance`):** $\bar{A} = 83.37\%$, $A_{10} = 74.99\%$, $F_{10}^{\text{past}} = 8.81\%$, $F_{10}^{\text{code}} = 7.93\%$ ($\Delta_{P2-P0} = +4.04\text{ pp}$, [W&B Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p)).
   - **Kết luận Giả thuyết H2:** **`SUPPORTED BY FULL EXPERIMENT`**. Phương sai khởi tạo ma trận chiếu thu hẹp được $33.9\%$ khoảng cách giữa nhóm và tác giả. Phân phối Uniform vs Gaussian không gây ra khác biệt đáng kể trên đơn seed ($\Delta_{P1-P2} = -0.09\text{ pp}$ trên $\bar{A}$, seed 42); biến số tác động chi phối là quy mô phương sai (variance scale) ngăn hiện tượng bão hòa đặc trưng. Phân tích Centered Covariance Rank ($71.26$ vs $71.10$) giải mã việc rank Gram chưa chuẩn tâm $\approx 1.20$ chỉ là hiệu ứng phụ của vector trung bình dương.
-- **Trạng thái Ký duyệt C1 (Sign-off):** **`APPROVED FOR PULL REQUEST`**. Nhánh `experiment/c1-projection-initialization` đã có đầy đủ kiểm thử, hiện vật, chẩn đoán, đối chiếu dữ liệu thực tế và tài liệu khoa học, sẵn sàng mở PR vào `main`.
+- **Trạng thái Ký duyệt C1 (Sign-off):** **`MERGED INTO MAIN`** (Commit `e2252b9`). Nhánh C1 đã hoàn thành đầy đủ kiểm thử, đối chiếu hiện vật số học, đồng bộ W&B và merge thành công vào nhánh chính.
+
+
+---
+
+## 25. Triển khai Thí nghiệm Kiểm soát C2 (Controlled Pretrained ViT Backbone Alignment)
+
+- **Kế hoạch Nghiên cứu Đầy đủ:** [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+- **Nhánh làm việc:** `experiment/c2-backbone-alignment` (tách từ `main` commit `e2252b9`).
+- **Câu hỏi Nghiên cứu:** Xác định mức độ ảnh hưởng của checkpoint ViT `vit_base_patch16_224.augreg2_in21k_ft_in1k` (ImageNet-21K tiền huấn luyện, cấu hình tác giả) so với `vit_base_patch16_224.augreg_in1k` (ImageNet-1K ban đầu của nhóm).
+- **Thiết kế Kiểm soát Đơn yếu tố:** Cố định tuyệt đối ma trận chiếu $P$ (cùng seed 42, $D=1000$, `official_uniform`, cùng SHA256), cố định tiền xử lý, thứ tự lớp, siêu tham số và tối ưu giải tích RLS.
+- **Trạng thái Thực nghiệm C2:**
+  - `PLANNED`: Hoàn thành văn bản kế hoạch [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+  - `IMPLEMENTED`: Đã triển khai hỗ trợ backbone và chẩn đoán biểu diễn trong `src/foal/`.
+  - `UNIT_TESTED`: 5/5 ca kiểm thử mới trong `tests/test_c2_backbone.py` vượt qua tuyệt đối (tổng cộng 52 unit tests).
+  - `PILOT_VERIFIED`: Đã chạy kiểm chứng Pilot B0 đạt $\bar{A} = 79.00\%$, $A_2 = 78.00\%$.
+  - `READY_FOR_FULL_GPU`: Notebook Colab sẵn sàng tại [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb).
+  - `FULL_GPU_COMPLETED`: **`PENDING_GPU`** (chờ thực thi trên Colab A100 GPU).
