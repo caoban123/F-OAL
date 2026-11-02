@@ -971,8 +971,8 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 | Phương pháp / Nguồn Kết quả | Phân loại Nguồn | Seeds / Số lần chạy | $\bar{A}$ ($A_{\text{avg}}$, $\uparrow$) | $A_{10}$ ($A_{\text{last}}$, $\uparrow$) | $F_{10}$ ($F$, $\downarrow$) | $\Delta_{\text{pp}}(\bar{A})$ so với Paper | $\Delta_{\text{rel}}(\bar{A})$ so với Paper | Thời gian chạy (s) | Peak VRAM (GB) | Đường dẫn W&B Công khai & Ghi chú Giao thức |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
 | **F-OAL (Paper Table 2, 3, Fig. 2)** | `PAPER_REPORTED` | 3 runs (Mean) | **91.10%** | **86.50%** | **5.50%** | $0.00\text{ pp}$ | $0.00\%$ | $261\text{ s}$ (RTX 4070 Ti) | $1.9\text{ GB}$ | Số liệu tham chiếu từ bài báo NeurIPS 2024 (Section 5.2, Table 2 & 3). |
-| **F-OAL (Author Repo `liuyuchen-cz/F-OAL @ 73e4ac1`)** | `ORIGINAL_REPRODUCED` | `PENDING` (Stage B) | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Đã chuẩn bị [`notebooks/foal_official_cifar100_reproduction.ipynb`](../notebooks/foal_official_cifar100_reproduction.ipynb) (**A19**). |
-| **F-OAL (Nhóm tự hiện thực — Bản chạy GPU đầu tiên, code commit `aad7500`)** | `OUR_REPRODUCED` *(Single-seed v1)* | `n=1, std=N/A` (`seed=42`) | **79.33%** (`n=1, std=N/A`) | **70.92%** (`n=1, std=N/A`) | **9.21%** (`n=1, std=N/A`) | **$-11.77\text{ pp}$** | **$-12.92\%$** | $1735.3\text{ s}$ (Colab T4) | `NOT LOGGED` | `offline-run-2cdeiptv` (`PENDING_USER_AUTH`); hiện vật gốc đã xác minh tại `results/foal_full_cifar100_seed42/` (`VERIFIED_LOCAL`). Xem phân tích chênh lệch tại [`docs/original_vs_ours_protocol.md`](original_vs_ours_protocol.md). |
+| **F-OAL (Author Repo `liuyuchen-cz/F-OAL @ 73e4ac1`)** | `ORIGINAL_REPRODUCED` | `n=1, std=N/A` (`seed=0`) | **90.98%** (`n=1, std=N/A`) | **85.84%** (`n=1, std=N/A`) | **4.69%** (10-task) / **5.17%** (9-task) | **$-0.12\text{ pp}$** | **$-0.13\%$** | $3047.6\text{ s}$ (Colab T4) | `NOT LOGGED` | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) — Hiện vật đã xác minh tại [`results/official_foal_cifar100_seed0/`](../results/official_foal_cifar100_seed0/) (**A19 PASS**). |
+| **F-OAL (Nhóm tự hiện thực — Bản chạy GPU đầu tiên, code commit `aad7500`)** | `OUR_REPRODUCED` *(Single-seed v1)* | `n=1, std=N/A` (`seed=42`) | **79.33%** (`n=1, std=N/A`) | **70.92%** (`n=1, std=N/A`) | **8.29%** (10-task) / **9.21%** (9-task) | **$-11.77\text{ pp}$** | **$-12.92\%$** | $1735.3\text{ s}$ (Colab T4) | `NOT LOGGED` | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) — Hiện vật gốc đã xác minh tại [`results/foal_full_cifar100_seed42/`](../results/foal_full_cifar100_seed42/) (`VERIFIED`). Xem phân tích chênh lệch tại [`docs/original_vs_ours_protocol.md`](original_vs_ours_protocol.md). |
 | **F-OAL (Nhóm tự hiện thực — Sau điều tra A20 & Multi-Seed)** | `OUR_REPRODUCED` *(3-seed Official)* | 3 seeds (`42, 123, 2026`) | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Sẽ thực thi tại Stage C/D sau khi hoàn tất đối chiếu **A20**. |
 | **Baseline 1: Frozen ViT + Backprop FC Classifier (1-pass)** | `PAPER_REPORTED` / `OUR_REPRODUCED` | Paper: $32.40\%$ / Ours: `PENDING` | Paper: **32.40%** / Ours: `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | Thí nghiệm đối chứng vai trò của RLS so với SGD/Adam 1-pass (Paper Section 5.3 / **A15**). |
 | **Baseline 2: Frozen ViT + Linear Ridge (w/o Smooth Projection)** | `OUR_REPRODUCED` | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | Thí nghiệm đối chứng vai trò của Smooth Projection (**A16** / Ablation cấu hình 3). |
@@ -984,7 +984,7 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 
 ### A19 — Original Code Reproduction (`https://github.com/liuyuchen-cz/F-OAL`)
 * **Mức ưu tiên:** **P0 (Bắt buộc cho Checkpoint 3)**
-* **Trạng thái hiện tại:** **`PENDING`**
+* **Trạng thái hiện tại:** **`PASS` (`VERIFIED`)** — Đã chạy hoàn tất 10 tasks CIFAR-100 từ commit `73e4ac1` (`seed=0`) trên Colab Tesla T4, đạt $\bar{A} = 90.98\%$, $A_{10} = 85.84\%$, $F_{\text{official}} = 4.69\%$ ($F_{\text{ours}} = 5.17\%$), lưu trữ tại [`results/official_foal_cifar100_seed0/`](../results/official_foal_cifar100_seed0/) và đồng bộ lên W&B tại [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232).
 * **Mô tả:** Tải và chạy mã nguồn chính thức do tác giả công bố trên bộ dữ liệu CIFAR-100 trong một thư mục cách ly (`external/official_foal/`), không can thiệp vào mã nguồn tự hiện thực trong `src/foal/`.
 * **Tiêu chí nghiệm thu (Acceptance Criteria):**
   1. Ghi nhận đầy đủ lệnh chạy, môi trường, phiên bản thư viện và biến thể pretrained ViT mà repo gốc sử dụng.
@@ -993,7 +993,7 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 
 ### A20 — Pipeline Discrepancy Investigation (Điều tra Nguyên nhân Sai lệch Ours vs Original/Paper)
 * **Mức ưu tiên:** **P0 (Bắt buộc cho Checkpoint 3)**
-* **Trạng thái hiện tại:** **`PENDING`**
+* **Trạng thái hiện tại:** **`IN PROGRESS / PARTIAL`** — Đã hoàn tất kiểm toán đối chiếu mã nguồn (`H1`–`H7`) tại [`docs/original_vs_ours_protocol.md`](original_vs_ours_protocol.md) và thiết kế kế hoạch thí nghiệm kiểm soát biến số (`C0`–`C4`); chờ chạy các thí nghiệm kiểm soát trên GPU để định lượng đóng góp của từng yếu tố.
 * **Mô tả:** Thực hiện quy trình đối chiếu 7 bước (Mục 21.5) giữa `external/official_foal/` và `src/foal/` để xác định chính xác nguyên nhân gây ra khoảng cách $-11.77\text{ pp}$ trên $\bar{A}$ và $-15.58\text{ pp}$ trên $A_{10}$.
 * **Tiêu chí nghiệm thu (Acceptance Criteria):**
   1. Xác minh từng giả thuyết từ **H1** đến **H9** (đặc biệt là **H1: Pretrained ViT checkpoint** và **H2: Độ lệch chuẩn khởi tạo của Smooth Projection gây bão hòa Sigmoid**).
@@ -1002,7 +1002,7 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 
 ### A21 — Public W&B Tracking & Evidence Traceability
 * **Mức ưu tiên:** **P1 (Bắt buộc cho Checkpoint 3)**
-* **Trạng thái hiện tại:** **`PARTIAL`** (Đã có code tích hợp `src/foal/wandb_utils.py`, chưa có public cloud runs)
+* **Trạng thái hiện tại:** **`PARTIAL` (2 runs chính đã đồng bộ trực tuyến)** — Đã đồng bộ thành công cả Our Run ([Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv)) và Official Run ([Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232)) lên project `hcmus-foal-reproduction` trên CoreWeave Forge W&B; cần duy trì chế độ Public và tiếp tục đồng bộ các lượt chạy Multi-Seed / Ablation / Controlled Experiments tiếp theo.
 * **Mô tả:** Đồng bộ hóa toàn bộ các lượt chạy thực nghiệm chính thức lên một project Weights & Biases ở chế độ công khai (`Public`) và liên kết từng kết quả trong báo cáo tới W&B run tương ứng.
 * **Tiêu chí nghiệm thu (Acceptance Criteria):**
   1. Đường dẫn project W&B mở được trực tiếp trong trình duyệt ẩn danh (Incognito) mà không cần đăng nhập.

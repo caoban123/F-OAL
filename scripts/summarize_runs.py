@@ -46,7 +46,11 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     exp_type = meta.get('experiment_type', meta.get('experimental_status', 'UNKNOWN')).upper()
     seed = meta.get('seeds', {}).get('base', meta.get('config', {}).get('seed'))
     device = meta.get('device', meta.get('training_protocol', {}).get('device', 'unknown'))
-    git_commit = meta.get('git_commit', meta.get('environment', {}).get('git', {}).get('commit'))
+    git_commit = (
+        meta.get('git_commit')
+        or meta.get('official_commit_sha')
+        or meta.get('environment', {}).get('git', {}).get('commit')
+    )
     if git_commit and len(git_commit) > 7:
         git_commit = git_commit[:7]
 
@@ -92,9 +96,18 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         len(task_matrix) == expected_tasks
     )
 
-    # 2. Must contain final checkpoint file
+    # 2. Must contain final checkpoint file (for our implementation) or verified official CSV/log (for official_foal)
     final_ckpt = run_dir / f'task_{expected_tasks:02d}.pt'
     has_final_ckpt = final_ckpt.exists() and final_ckpt.stat().st_size > 0
+    if not has_final_ckpt and (method == 'official_foal' or exp_type == 'OFFICIAL_REPRODUCTION'):
+        official_csv = run_dir / 'cifar100_FOAL.csv'
+        official_log = run_dir / 'official_stdout.log'
+        has_final_ckpt = (
+            official_csv.exists()
+            and official_csv.stat().st_size > 0
+            and official_log.exists()
+            and 'Records have been written' in official_log.read_text(encoding='utf-8', errors='ignore')
+        )
 
     is_complete = bool(has_metrics and has_final_ckpt)
     status = 'COMPLETE' if is_complete else 'INCOMPLETE'

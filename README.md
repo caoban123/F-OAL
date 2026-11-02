@@ -639,13 +639,14 @@ Tuy nhiên, phương pháp vẫn phụ thuộc mạnh vào chất lượng của
 
 ## 14. Bảng Ánh xạ Bằng chứng Thực nghiệm (README Evidence Mapping — Checkpoint 3)
 
-| Experiment | Source | Dataset | Seeds | $\bar{A}$ | $A_{10}$ | $F_{10}$ | Git Commit | Local Artifact | W&B Run | Status |
+| Experiment | Implementation | Dataset | Seed | $\bar{A}$ | $A_{10}$ | $F$ ($F_{\text{official}}$ / $F_{\text{ours}}$) | Git SHA | Local Artifact | W&B Run | Status |
 |---|---|---|---:|---:|---:|---:|---|---|---|---|
-| **Paper F-OAL** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% | — | — | — | `PAPER_REPORTED` |
-| **Original F-OAL** | Author Repo (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `73e4ac1` | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | `NOT YET SYNCED` | `PREPARED` (`A19`) |
-| **Our F-OAL (Single-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | 79.33% | 70.92% | 9.21% | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | `offline-run-2cdeiptv` (`PENDING_USER_AUTH`) | `VERIFIED_LOCAL` |
-| **Our F-OAL (Multi-Seed)** | Our Repo (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
-| **Ablation Study (4 configs)** | Our Repo (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
+| **F-OAL Paper** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% / — | — | — | — | `PAPER_REPORTED` |
+| **F-OAL Official** | Original (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `0` (`n=1, std=N/A`) | **90.98%** | **85.84%** | **4.69%** / **5.17%** | `73e4ac1` | [`results/official_foal_cifar100_seed0/`](results/official_foal_cifar100_seed0/) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | `VERIFIED` (`A19 PASS`) |
+| **F-OAL Full** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.92%** | **8.29%** / **9.21%** | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | `VERIFIED` (`P1.2 PASS`) |
+| **F-OAL Controlled (`C1`–`C4`)** | Ours (`src/foal`) | CIFAR-100 | `42` / `0` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) | `NOT YET SYNCED` | `IN PROGRESS` (`A20`) |
+| **F-OAL Multi-Seed** | Ours (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
+| **Ablation Study (4 configs)** | Ours (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
 
 * **Hướng dẫn triển khai & thực nghiệm chi tiết:** [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)
 * **Kế hoạch thực nghiệm & kết quả tái hiện:** [`docs/experiments.md`](docs/experiments.md)

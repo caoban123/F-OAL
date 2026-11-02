@@ -1,5 +1,6 @@
 run_name,method,experiment_type,status,seed,num_tasks,limit_train,limit_test,avg_inc_acc,last_acc,forgetting,duration_s,git_commit,device
 foal_full_cifar100_seed42,foal,REPRODUCTION,COMPLETE,42,10,full,full,0.7933,0.7092,0.0921,1735.3,aad7500,cuda
+official_foal_cifar100_seed0,official_foal,OFFICIAL_REPRODUCTION,COMPLETE,0,10,full,full,0.9098,0.8584,0.0517,3056.24,73e4ac1,cuda
 smoke_test_p0,foal,PILOT,COMPLETE,42,2,100,full,0.7037,0.6865,0.0900,,93a95dd,cpu
 smoke_test_post_fix,foal,PILOT,COMPLETE,42,2,100,100,0.7750,0.7700,0.0900,,15c5147,cpu
 smoke_test_post_fix_seed42,foal,PILOT,COMPLETE,42,2,100,100,0.7750,0.7700,0.0900,162.31,8325faa,cpu
