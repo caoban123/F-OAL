@@ -15,7 +15,8 @@
       "rls_time_sec": 8.55,
       "feat_time_sec": 248.46,
       "git_commit": "7fd0f4abb3945f97a7d7fc58a52ac74fa807d6ca",
-      "wandb_run_id": "3oiftwg6"
+      "wandb_run_id": "3oiftwg6",
+      "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6"
     },
     {
       "condition": "C2-B1 (Treatment)",
@@ -32,7 +33,8 @@
       "rls_time_sec": 8.49,
       "feat_time_sec": 248.3,
       "git_commit": "7fd0f4abb3945f97a7d7fc58a52ac74fa807d6ca",
-      "wandb_run_id": "ne1p16b5"
+      "wandb_run_id": "ne1p16b5",
+      "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5"
     },
     {
       "condition": "C1-P1 (Reference)",
@@ -49,7 +51,8 @@
       "rls_time_sec": 8.59,
       "feat_time_sec": 245.92,
       "git_commit": "269f05c",
-      "wandb_run_id": "c1_p1"
+      "wandb_run_id": "6whrot4z",
+      "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z"
     },
     {
       "condition": "Official F-OAL (Author Run)",
@@ -66,7 +69,8 @@
       "rls_time_sec": null,
       "feat_time_sec": null,
       "git_commit": "73e4ac1",
-      "wandb_run_id": "3eca8232"
+      "wandb_run_id": "3eca8232",
+      "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232"
     },
     {
       "condition": "NeurIPS 2024 Paper",
@@ -83,7 +87,8 @@
       "rls_time_sec": null,
       "feat_time_sec": null,
       "git_commit": "NeurIPS 2024",
-      "wandb_run_id": "N/A"
+      "wandb_run_id": "N/A",
+      "wandb_url": "N/A"
     }
   ],
   "deltas": {

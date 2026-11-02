@@ -1,122 +1,168 @@
-# F-OAL — C3 Controlled Input Preprocessing & Normalization Alignment Plan
+# F-OAL — C3 Controlled Input Preprocessing & Normalization Alignment Plan ($2 \times 2$ Factorial Design)
 
-> **Trạng thái tài liệu:** `PLANNING_ONLY` (Chỉ lập kế hoạch nghiên cứu — **TUYỆT ĐỐI CHƯA TRIỂN KHAI HOẶC CHẠY TRONG GIAI ĐOẠN NÀY**).  
-> **Kế thừa từ:** C0 (Metric Alignment: `COMPLETED`), C1 (Controlled Projection Initialization: `MERGED INTO MAIN`), C2 (Controlled ViT Backbone Alignment: `VERIFIED & SIGNED OFF`).
-
----
-
-## 1. Câu hỏi Nghiên cứu & Bối cảnh Khoa học (Research Question)
-
-### 1.1. Câu hỏi Nghiên cứu
-*Trong điều kiện kiểm soát đơn yếu tố (single-factor control) nghiêm ngặt trên tập dữ liệu CIFAR-100 với backbone `vit_base_patch16_224.augreg2_in21k_ft_in1k`, việc sử dụng tiền xử lý hình ảnh của mã nguồn gốc tác giả F-OAL (phóng to nội suy Song tuyến tính **Bilinear** và dải pixel **$[0.0, 1.0]$** không chuẩn hóa `Normalize`) so với tiền xử lý theo chuẩn thiết kế của `timm` (nội suy Song nhị phân **Bicubic** và chuẩn hóa `mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5)` về dải **$[-1.0, 1.0]$**) tác động định lượng như thế nào lên biểu diễn đặc trưng ViT và hiệu năng phân loại tăng dần của F-OAL?*
-
-### 1.2. Bối cảnh Kế thừa từ C0, C1 & C2
-- **C0 (Metric Alignment):** Đã phân định độc lập $F_{10}^{\text{past}}$ (Paper Eq. 17–18, mẫu số $9$) và $F_{10}^{\text{code}}$ (Official Code, mẫu số $10$).
-- **C1 (Smooth Projection Scale, Giả thuyết H2):** Khởi tạo $\mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$ loại bỏ triệt để hiện tượng bão hòa Sigmoid ($81.03\% \to 0.00\%$), nâng $\bar{A}$ từ $79.33\%$ lên $83.28\%$ ($+3.95\text{ pp}$), giải thích $33.9\%$ khoảng cách ban đầu.
-- **C2 (ViT Pretrained Backbone, Giả thuyết H1):** Trọng số ImageNet-21K (`augreg2_in21k_ft_in1k`) tạo bước nhảy vọt $+8.49\text{ pp}$ trên $\bar{A}$ ($83.28\% \to 91.77\%$) và $+12.59\text{ pp}$ trên $A_{10}$ ($74.84\% \to 87.43\%$), chính thức vượt qua Paper ($91.10\%$) và Official Run ($90.98\%$).
-- **Hiện tượng cần giải thích của C3:**
-  - Ở C2, bản chạy B1 của nhóm đạt $\bar{A} = 91.77\%$, cao hơn bản chạy mã tác giả Official Run ($90.98\%$) khoảng $+0.79\text{ pp}$.
-  - Bên cạnh sự khác biệt về hạt giống ngẫu nhiên (`seed=42` vs `seed=0`), biến số giao thức kỹ thuật cuối cùng chưa được cô lập là **Tiền xử lý hình ảnh (Giả thuyết H4)**:
-    - Nhóm: `Resize(224, Bicubic) -> ToTensor() -> Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])` $\implies$ $[-1, 1]$.
-    - Tác giả: `Resize(224, Bilinear) -> ToTensor()` $\implies$ $[0, 1]$ (không có hàm `Normalize`).
+> **Trạng thái tài liệu:** `C3_PLANNED — NOT IMPLEMENTED — NOT EXECUTED` (Chỉ lập kế hoạch nghiên cứu khoa học — **TUYỆT ĐỐI CHƯA TẠO NHÁNH, CHƯA SỬA CODE, CHƯA CHẠY GPU TRONG PHIÊN HIỆN TẠI**).  
+> **Kế thừa từ:** C0 (Metric Alignment: `COMPLETED`), C1 (Controlled Projection Initialization: `MERGED INTO MAIN`), C2 (Controlled ViT Backbone Alignment: `C2_SIGNED_OFF_WITH_LIMITATIONS`).
 
 ---
 
-## 2. Giả thuyết Khoa học (Scientific Hypothesis H4)
+## 1. Vấn đề Khoa học & Bối cảnh (Scientific Problem & Context)
 
-* **Giả thuyết H4a (Phân phối dữ liệu đầu vào của ViT):** Kiến trúc Vision Transformer (`vit_base_patch16_224.augreg2_in21k_ft_in1k`) được tiền huấn luyện trong dự án Google AugReg với chuẩn hóa ảnh về $[-1.0, 1.0]$ (`mean=0.5, std=0.5`). Khi đưa ảnh ở dải $[0.0, 1.0]$ không chuẩn hóa vào mạng, phân phối đầu vào bị dịch chuyển kỳ vọng ($\Delta \mu = +0.5$), có thể làm thay đổi đáp ứng của tầng Patch Embedding đầu tiên ($W_{\text{patch}} x + b$). Tuy nhiên, cơ chế LayerNorm ngay sau Patch Embedding và trong từng block Transformer có khả năng bù trừ một phần sự dịch chuyển mức độ sáng này.
-* **Giả thuyết H4b (Phương pháp Nội suy Hình ảnh):** CIFAR-100 có độ phân giải gốc rất nhỏ ($32 \times 32$), phải phóng to gấp $7$ lần lên $224 \times 224$. Thuật toán nội suy **Bicubic** (bậc 3, bảo toàn cạnh và độ mượt tốt hơn) có thể tạo ra các chi tiết bề mặt và cạnh biên sắc nét hơn so với **Bilinear** (bậc 1), giúp các attention head của ViT trích xuất đặc trưng có độ phân tách cao hơn một lượng nhỏ ($0.3\text{–}1.0\text{ pp}$).
-* **Kỳ vọng Khoa học Khách quan:** Tác động của tiền xử lý được dự đoán là một hiệu ứng thứ cấp ($\approx \pm 0.5\text{–}1.2\text{ pp}$), nhỏ hơn nhiều so với tác động của Backbone (H1, $+8.49\text{ pp}$) và Khởi tạo Chiếu (H2, $+3.95\text{ pp}$).
+### 1.1. Bối cảnh từ C0, C1 và C2
+- **C0 (Metric Alignment):** Đã phân định độc lập công thức Forgetting giữa Paper Eq. 17–18 ($F_{10}^{\text{past}}$, mẫu số $9$) và Official Code ($F_{10}^{\text{code}}$, mẫu số $10$).
+- **C1 (Smooth Projection Scale, H2):** Khởi tạo $\mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$ loại bỏ triệt để hiện tượng bão hòa Sigmoid ($81.03\% \to 0.00\%$), nâng $\bar{A}$ từ $79.33\%$ lên $83.28\%$ ($+3.95\text{ pp}$), thu hẹp $33.9\%$ khoảng cách ban đầu.
+- **C2 (ViT Pretrained Backbone, H1):** Căn chỉnh backbone sang ImageNet-21K checkpoint (`vit_base_patch16_224.augreg2_in21k_ft_in1k`) nâng $\bar{A}$ lên **$91.77\%$** ($+8.49\text{ pp}$ so với $83.28\%$), tương đương về mặt số học và cao hơn một lượng nhỏ so với Paper ($91.10\%$) và Official Run ($90.98\%$).
+- **Hiện tượng cần giải quyết trong C3:**
+  - Ở C2, bản chạy B1 của nhóm ($91.77\%$) và bản chạy tác giả Official Run ($90.98\%$) vẫn còn hai biến số chưa được căn chỉnh: hạt giống ngẫu nhiên (`seed=42` vs `seed=0`) và **Quy trình tiền xử lý hình ảnh (Image Preprocessing — Giả thuyết H4)**.
+  - Hiện thực độc lập của nhóm (`src/foal/datasets.py`):
+    `Resize(224, InterpolationMode.BICUBIC) -> ToTensor() -> Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])` $\implies$ pixel trong $[-1.0, 1.0]$.
+  - Mã nguồn gốc của tác giả (`utils/setup_elements.py:49–53`):
+    `ToPILImage() -> Resize((224, 224))` (PIL default Bilinear) `-> ToTensor()` $\implies$ pixel trong $[0.0, 1.0]$ (không có bước `Normalize`).
 
----
+### 1.2. Tính Phức hợp của Biến số Tiền xử lý
+Sự khác biệt giữa hai pipeline **không phải là một biến số đơn nhất** mà bao gồm hai nhân tố độc lập:
+1. **Nhân tố A — Phương pháp Nội suy Không gian (Spatial Interpolation):** Bicubic (bậc 3) vs. Bilinear (bậc 1).
+2. **Nhân tố B — Chuẩn hóa Dải Pixel (Pixel Normalization):** Chuẩn hóa về $[-1.0, 1.0]$ vs. Giữ nguyên dải thô $[0.0, 1.0]$.
 
-## 3. Thiết kế Thực nghiệm Kiểm soát Đơn Yếu tố (Single-Factor Control Design)
-
-Thực nghiệm C3 so sánh đối đầu giữa 2 cấu hình trên cùng tập dữ liệu CIFAR-100:
-
-### 3.1. Hai Cấu hình Đối đầu
-1. **P_ctrl — C2 B1 Control Baseline (Chuẩn timm Bicubic $[-1, 1]$):**
-   - **Backbone:** `vit_base_patch16_224.augreg2_in21k_ft_in1k`
-   - **Nội suy:** `InterpolationMode.BICUBIC`
-   - **Dải pixel:** $[-1.0, 1.0]$ (`mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)`)
-   - **Ma trận Chiếu $P$:** `official_uniform` (seed 42, cùng mã SHA256)
-2. **P_treat — Official Preprocessing Alignment (Chuẩn Tác giả Bilinear $[0, 1]$):**
-   - **Backbone:** `vit_base_patch16_224.augreg2_in21k_ft_in1k`
-   - **Nội suy:** `InterpolationMode.BILINEAR`
-   - **Dải pixel:** $[0.0, 1.0]$ (chỉ gọi `transforms.ToTensor()`, không `Normalize`)
-   - **Ma trận Chiếu $P$:** `official_uniform` (seed 42, cùng mã SHA256)
-
-### 3.2. Bảng Kiểm soát Biến số Nghiêm ngặt (Strict Single-Factor Controls)
-
-| Thành phần Thực nghiệm | Cấu hình P_ctrl (Baseline) | Cấu hình P_treat (Treatment) | Trạng thái Kiểm soát |
-|:---|:---|:---|:---:|
-| **Tiền xử lý & Chuẩn hóa** | Bicubic, $224 \times 224$, $[-1, 1]$ | Bilinear, $224 \times 224$, $[0, 1]$ | **Biến số thử nghiệm duy nhất ($\Delta$)** |
-| **Pretrained Checkpoint** | `vit_base_patch16_224.augreg2_in21k_ft_in1k` | `vit_base_patch16_224.augreg2_in21k_ft_in1k` | **Cố định 100%** |
-| **Tập dữ liệu** | CIFAR-100 (50k train, 10k test) | CIFAR-100 (50k train, 10k test) | **Cố định 100%** |
-| **Phân chia Task** | 10 tasks $\times$ 10 classes | 10 tasks $\times$ 10 classes | **Cố định 100%** |
-| **Thứ tự lớp (Class Order)** | Hoán vị giả ngẫu nhiên `seed=42` | Hoán vị giả ngẫu nhiên `seed=42` | **Cố định 100%** |
-| **Thứ tự mẫu stream** | `stream_seed=42` | `stream_seed=42` | **Cố định 100%** |
-| **Feature Fusion** | Trung bình CLS 12 blocks + LayerNorm | Trung bình CLS 12 blocks + LayerNorm | **Cố định 100%** |
-| **Khởi tạo Ma trận Chiếu $P$** | `official_uniform` | `official_uniform` | **Cố định 100%** |
-| **Số chiều Chiếu $D$** | $D = 1000$ | $D = 1000$ | **Cố định 100%** |
-| **Hạt giống Ma trận Chiếu** | `projection_seed = 42` | `projection_seed = 42` | **Cố định 100%** |
-| **Tính Đồng nhất Ma trận $P$** | Cùng mã băm SHA256 của $P$ | Cùng mã băm SHA256 của $P$ | **Đồng nhất số học tuyệt đối** |
-| **Hàm kích hoạt** | Sigmoid $\sigma(\cdot)$ | Sigmoid $\sigma(\cdot)$ | **Cố định 100%** |
-| **Hệ số chính quy hóa $\gamma$**| $\gamma = 1.0$ | $\gamma = 1.0$ | **Cố định 100%** |
-| **Batch Size ($B$)** | $B = 10$ | $B = 10$ | **Cố định 100%** |
-| **Kiểu dữ liệu RLS** | `torch.float64` | `torch.float64` | **Cố định 100%** |
+> [!CAUTION]
+> Nếu thay đổi đồng thời cả hai yếu tố trong một lượt chạy duy nhất, ta sẽ không thể xác định được sự thay đổi của độ chính xác là do phép nội suy, do phép chuẩn hóa dải pixel, hay do hiệu ứng tương tác (interaction effect) giữa chúng. Vì vậy, **C3 bắt buộc phải được thiết kế theo mô hình giai thừa $2 \times 2$ (Factorial Design)**.
 
 ---
 
-## 4. An toàn Bộ nhớ Đệm Đặc trưng (Feature Cache Safety Rules)
+## 2. Thiết kế Nghiên cứu Giai thừa $2 \times 2$ (2×2 Factorial Design)
 
-Do đầu vào của ViT bị thay đổi hoàn toàn bởi hàm biến đổi hình ảnh, cơ chế Feature Cache bắt buộc phải tuân thủ các quy tắc an toàn:
-1. **Khóa Cache riêng biệt:** Tên tệp cache và khóa cache bắt buộc phải phân biệt tiền xử lý (ví dụ: `prep_bicubic_norm` vs `prep_bilinear_raw`).
-2. **Kiểm tra Metadata trong Cache:** Tệp cache phải lưu trường:
+Cố định toàn bộ các thành phần khác:
+- Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k` (ImageNet-21K + IN-1K FT).
+- Khởi tạo ma trận chiếu $P$: `official_uniform` (seed 42, $D=1000$, cùng mã SHA256: `6d3048f4a0fca387...`).
+- Seed: `seed = 42` (`class_order_seed = projection_seed = stream_seed = 42`).
+- RLS: $\gamma = 1.0$, `float64`, batch size $10$.
+
+### Bảng 4 Cấu hình Giai thừa $2 \times 2$:
+
+| Mã Cấu hình | Phương pháp Nội suy (Factor A) | Chuẩn hóa Pixel (Factor B) | Dải Pixel Đầu vào | Vai trò Khoa học |
+|:---|:---:|:---:|:---:|:---|
+| **C3-A** | **Bicubic** | **Normalize** (`mean=0.5, std=0.5`) | $[-1.0, 1.0]$ | **Baseline Đối chứng** (Tái hiện chính xác C2 B1) |
+| **C3-B** | **Bilinear** | **Normalize** (`mean=0.5, std=0.5`) | $[-1.0, 1.0]$ | **Cô lập Tác động Nội suy** ($\text{Main Effect}_A$) |
+| **C3-C** | **Bicubic** | **Raw Tensor** (No Normalization) | $[0.0, 1.0]$ | **Cô lập Tác động Chuẩn hóa** ($\text{Main Effect}_B$) |
+| **C3-D** | **Bilinear** | **Raw Tensor** (No Normalization) | $[0.0, 1.0]$ | **Căn chỉnh Giao thức Tác giả** (Full Author Preprocessing) |
+
+### Phân rã Toán học Các Tác động:
+- **Tác động chính của Phép Nội suy ($\Delta_{\text{Interp}}$):**
+  $$\Delta_{\text{Interp}} = \frac{1}{2} \left[ (\bar{A}_{\text{C3-B}} - \bar{A}_{\text{C3-A}}) + (\bar{A}_{\text{C3-D}} - \bar{A}_{\text{C3-C}}) \right]$$
+- **Tác động chính của Phép Chuẩn hóa ($\Delta_{\text{Norm}}$):**
+  $$\Delta_{\text{Norm}} = \frac{1}{2} \left[ (\bar{A}_{\text{C3-C}} - \bar{A}_{\text{C3-A}}) + (\bar{A}_{\text{C3-D}} - \bar{A}_{\text{C3-B}}) \right]$$
+- **Hiệu ứng Tương tác ($\Delta_{\text{Interact}}$):**
+  $$\Delta_{\text{Interact}} = (\bar{A}_{\text{C3-D}} - \bar{A}_{\text{C3-B}}) - (\bar{A}_{\text{C3-C}} - \bar{A}_{\text{C3-A}})$$
+- **Tổng chênh lệch Tiền xử lý ($\Delta_{\text{Prep, total}}$):**
+  $$\Delta_{\text{Prep, total}} = \bar{A}_{\text{C3-D}} - \bar{A}_{\text{C3-A}}$$
+
+---
+
+## 3. Các Yếu tố Chi tiết Kỹ thuật Cần Kiểm soát (Subtle Preprocessing Nuances)
+
+Thực nghiệm C3 không chỉ so sánh tên hàm mà phải kiểm soát chặt chẽ các chi tiết triển khai cụ thể:
+1. **PIL vs. Tensor Resizing:**
+   - Mã tác giả sử dụng `transforms.ToPILImage() -> transforms.Resize((224, 224))` (sử dụng backend PIL).
+   - PyTorch torchvision `transforms.Resize` trên PIL Image mặc định bật `antialias=True` từ phiên bản $0.15+$. Cần xác minh cờ `antialias` giữa hai phiên bản torchvision để tránh nhiễu do thuật toán lọc chống răng cưa.
+2. **Thứ tự Chuyển đổi (Transform Ordering):**
+   - Chuyển ảnh PIL sang Tensor trước rồi mới Resize, hay Resize trên PIL rồi mới `ToTensor()` có thể tạo sai khác nhỏ về mức lượng tử hóa dấu phẩy động ($[0, 255] \to [0.0, 1.0]$).
+3. **Không gian Màu & Kiểu dữ liệu:**
+   - Bảo đảm ảnh được ép kiểu đồng nhất sang RGB 3 kênh chuẩn `torch.float32`.
+
+---
+
+## 4. Kiểm soát Biến số Cố định Nghiêm ngặt (Strict Fixed Controls)
+
+Mọi thành phần dưới đây được đóng băng $100\%$ không thay đổi giữa cả 4 cấu hình C3:
+
+| Thành phần | Thiết lập Cố định | Trạng thái Kiểm soát |
+|:---|:---|:---:|
+| **Tập dữ liệu** | CIFAR-100 ($50,000$ train, $10,000$ test) | Cố định 100% |
+| **Phân chia Task** | 10 tasks $\times$ 10 classes | Cố định 100% |
+| **Hạt giống (Seeds)** | `seed = 42`, `class_order_seed = 42`, `stream_seed = 42` | Cố định 100% |
+| **Backbone Model** | `vit_base_patch16_224.augreg2_in21k_ft_in1k` | Cố định 100% |
+| **Trạng thái Backbone** | Đóng băng tham số (`requires_grad = False`), cố định `eval()` | Cố định 100% |
+| **Feature Fusion** | Mean CLS 12 blocks + `network.norm` | Cố định 100% |
+| **Ma trận Chiếu $P$** | `official_uniform`, $D=1000$, `projection_seed = 42` | Cố định 100% (cùng SHA256) |
+| **Hàm kích hoạt** | Sigmoid $\sigma(\cdot)$ phi tuyến | Cố định 100% |
+| **Giải tích Classifier** | Woodbury RLS, $\gamma = 1.0$, `torch.float64` | Cố định 100% |
+| **Kích thước Mini-batch**| $B = 10$, xử lý tuần tự 1-pass (zero-replay) | Cố định 100% |
+
+---
+
+## 5. An toàn Bộ nhớ Đệm Đặc trưng (Feature Cache Safety Rules)
+
+Do việc thay đổi tiền xử lý làm thay đổi trực tiếp tensor ảnh đầu vào của ViT, cơ chế Feature Cache bắt buộc phải tuân thủ nghiêm ngặt:
+1. **Cô lập Đường dẫn Cache:**
+   - Mỗi cấu hình phải có thư mục cache riêng biệt, ví dụ:
+     - C3-A: `results/c3_feature_cache/c3_a_bicubic_norm/`
+     - C3-B: `results/c3_feature_cache/c3_b_bilinear_norm/`
+     - C3-C: `results/c3_feature_cache/c3_c_bicubic_raw/`
+     - C3-D: `results/c3_feature_cache/c3_d_bilinear_raw/`
+2. **Khóa Cache & Kiểm tra Metadata:**
+   Mỗi tệp `.pt` cache phải chứa metadata xác thực:
    ```json
    {
+     "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
      "preprocessing": {
-       "image_size": 224,
        "interpolation": "bilinear",
+       "image_size": 224,
+       "normalized": false,
        "mean": [0.0, 0.0, 0.0],
        "std": [1.0, 1.0, 1.0]
-     }
+     },
+     "indices_sha256": "...",
+     "features_sha256": "..."
    }
    ```
-3. **Từ chối Nạp Cache Sai Lệch (Rejection):** Nếu phát hiện tiền xử lý không khớp, chương trình phải tự động từ chối cache và trích xuất lại từ đầu, ngăn ngừa hoàn toàn việc tái sử dụng đặc trưng Bicubic cho Bilinear.
+3. **Từ chối Cache Bất tương thích:** Nếu phát hiện `interpolation` hoặc `normalized` không khớp cấu hình, hàm trích xuất phải ném lỗi hoặc tự động trích xuất lại từ đầu, tuyệt đối không được tải chéo.
 
 ---
 
-## 5. Chẩn đoán So sánh Đặc trưng Đối khớp (Matched-Preprocessing Diagnostics)
+## 6. Kế hoạch Tối ưu Hóa Tài nguyên (Resource & Compute Planning)
 
-Trước khi thực thi GPU đầy đủ, thực hiện chẩn đoán trên cùng 200 ảnh CIFAR-100:
-1. **Thống kê tensor ảnh đầu vào:** Giá trị cực tiểu, cực đại, trung bình và độ lệch chuẩn của pixel ảnh sau biến đổi.
-2. **Thống kê đặc trưng ViT sau encoder:** $\|h\|_2$ norm, độ lệch chuẩn đặc trưng, khoảng cách góc giữa vector đặc trưng cùng ảnh sinh ra từ 2 cách tiền xử lý ($\text{Cosine}(h_{\text{bicubic}}, h_{\text{bilinear}})$).
-3. **Chỉ số phân tách lớp:** $\mathcal{S}_{\text{intra}}$, $\mathcal{S}_{\text{inter}}$, tỷ số $\mathcal{R}_{\text{sep}}$.
-
----
-
-## 6. Chỉ số Đánh giá & Tiêu chuẩn Nghiệm thu (Acceptance Criteria)
-
-### 6.1. Chỉ số Đo lường
-1. **Average Incremental Accuracy ($\bar{A}$, $\uparrow$)**: Tính trung bình trên 10 giai đoạn.
-2. **Last Task Accuracy ($A_{10}$, $\uparrow$)**: Độ chính xác tại giai đoạn 10.
-3. **Past Forgetting ($F_{10}^{\text{past}}$, $\downarrow$)**: Định nghĩa Paper (9 tasks).
-4. **Code Forgetting ($F_{10}^{\text{code}}$, $\downarrow$)**: Định nghĩa Official Code (10 tasks).
-5. **Độ chênh lệch thực nghiệm:**
-   $$\Delta_{\text{prep}}(\bar{A}) = \bar{A}_{\text{treat}} - \bar{A}_{\text{ctrl}}$$
-
-### 6.2. Tiêu chuẩn Nghiệm thu (Acceptance Gates)
-- [ ] Không có bất kỳ thay đổi nào trong kiến trúc mô hình, mã nguồn RLS hay seed ngẫu nhiên.
-- [ ] Ma trận chiếu $P$ được kiểm chứng đồng nhất bitwise (cùng SHA256: `6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b`).
-- [ ] Cơ chế Cache Safety ngăn chặn thành công việc tải chéo đặc trưng giữa hai chế độ tiền xử lý.
-- [ ] Toàn bộ kết quả được đóng gói độc lập, không ghi đè kết quả C0, C1 hay C2.
+Một lượt chạy đầy đủ 10 tasks CIFAR-100 cho 4 cấu hình đòi hỏi $4 \times 50,000 = 200,000$ lượt forward ViT:
+1. **Tái sử dụng Kết quả C2-B1 cho C3-A:**
+   Nếu cấu hình tiền xử lý, seed, thứ tự mẫu và mã nguồn của C3-A trùng khớp hoàn toàn $100\%$ bitwise với C2-B1, nhóm có thể tái sử dụng dữ liệu đặc trưng đã lưu trữ của C2-B1 để tiết kiệm $25\%$ thời gian tính toán GPU.
+2. **Quy trình Pilot 2 Tasks trước khi chạy Full GPU:**
+   - Bắt buộc chạy Pilot 2 tasks trên CPU hoặc GPU nhỏ cho cả 4 cấu hình để kiểm tra shape, dải giá trị tensor ảnh và bộ kiểm tra cache trước khi chạy 10 tasks đầy đủ.
+3. **Ước tính Thời gian GPU (NVIDIA A100):**
+   - Mỗi cấu hình mới: $\approx 5\text{ phút}$ (trích xuất đặc trưng $248\text{ s}$ + RLS $8.5\text{ s}$).
+   - Tổng thời gian cho 3 cấu hình mới (C3-B, C3-C, C3-D): $\approx 15\text{ phút}$.
 
 ---
 
-## 7. Ranh giới Triển khai & Cam kết
+## 7. Chẩn đoán Đối khớp Tiền xử lý (Matched Preprocessing Diagnostics)
+
+Trước khi chạy toàn bộ 10 tasks, trích xuất đặc trưng từ 200 ảnh CIFAR-100 thực tế trên cả 4 cấu hình để đo lường:
+1. **Thống kê Tensor Đầu vào:**
+   - $\min(x), \max(x), \text{mean}(x), \text{std}(x)$.
+2. **Đặc trưng ViT ($h \in \mathbb{R}^{200 \times 768}$):**
+   - Độ dài vector $\|h\|_2$.
+   - Độ tương đồng Cosine giữa các vector cùng ảnh qua các phép tiền xử lý: $\text{Cosine}(h_{\text{C3-A}}, h_{\text{C3-D}})$.
+   - Độ lệch chuẩn tiền kích hoạt $\text{std}(u = hP)$ và kiểm tra bão hòa Sigmoid.
+   - Số chiều hữu hiệu ma trận hiệp phương sai chuẩn tâm ($r_{\text{eff}}$).
+
+---
+
+## 8. Tiêu chuẩn Nghiệm thu Khoa học (Acceptance Gates for C3)
+
+- [ ] Toàn bộ 4 cấu hình C3-A, C3-B, C3-C, C3-D chạy trên cùng ma trận chiếu $P$ (cùng seed 42, cùng SHA256).
+- [ ] Tính năng Cache Safety cô lập hoàn toàn giữa 4 cấu hình, không tải chéo dữ liệu.
+- [ ] Đo lường đầy đủ 4 chỉ số chính: $\bar{A}$, $A_{10}$, $F_{10}^{\text{past}}$, $F_{10}^{\text{code}}$.
+- [ ] Tính toán đầy đủ tác động chính của nội suy, tác động chính của chuẩn hóa và hiệu ứng tương tác.
+- [ ] Cả 4 lượt chạy được ghi nhận đầy đủ vào Weights & Biases CoreWeave Forge trong group `c3_preprocessing_alignment`.
+- [ ] Toàn bộ checkpoints và ma trận được đóng gói và kiểm chứng độc lập.
+
+---
+
+## 9. Định vị C3 trong Bối cảnh Toàn diện Đồ án (Broader Project Scope)
 
 > [!IMPORTANT]
-> **Cam kết Nghiêm ngặt:**  
-> Kế hoạch C3 này chỉ mang tính chất chuẩn bị tài liệu thiết kế nghiên cứu cho các giai đoạn tiếp theo.  
-> **Không tạo nhánh Git mới, không sửa mã nguồn huấn luyện và không chạy bất kỳ thực nghiệm nào cho C3 trong phiên làm việc hiện tại.**
+> **Quy định Nghiêm ngặt về Tiến độ HCMUS Checkpoint 3:**  
+> Chuỗi thí nghiệm kiểm soát C1 (Khởi tạo chiếu), C2 (Backbone ViT), và C3 (Tiền xử lý) là **thực nghiệm thẩm định giao thức trên CIFAR-100**.  
+> Việc hoàn thành C1–C3 **chưa đồng nghĩa với hoàn tất toàn bộ yêu cầu đồ án**.  
+> Theo bản đặc tả đồ án, sau khi hoàn tất căn chỉnh giao thức trên CIFAR-100, nhóm phải thực hiện:
+> 1. **Thí nghiệm Đối chứng Đầu bảng (Headline Comparison):** Chạy so sánh F-OAL với các Baseline đại diện (Backprop FC 1-pass, Linear Ridge, Experience Replay) trên cùng task split.
+> 2. **Ablation Study Toàn diện (Table 4):** Đánh giá 4 tổ hợp Feature Fusion $\times$ Smooth Projection.
+> 3. **Phân tích Mở rộng Độc lập (Original Additional Analysis):** Kiểm chứng tính bất biến theo Batch size $B \in \{5, 10, 25, 50, 100\}$ và độ nhạy siêu tham số $D, \gamma$.
+> 4. **Mở rộng Đa Tập Dữ liệu (Cross-Dataset Evaluation):** Mở rộng đánh giá trên các tập dữ liệu khác (như DTD, FGVCAircraft) nếu thuộc phạm vi Core Scope được phê duyệt.

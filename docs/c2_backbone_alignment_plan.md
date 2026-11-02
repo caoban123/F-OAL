@@ -180,12 +180,33 @@ Trước khi chạy toàn bộ 10 tasks trên GPU, thực hiện chẩn đoán t
 | **Thời gian Trích xuất (s)** | $248.46\text{ s}$ | $248.30\text{ s}$ | $-0.16\text{ s}$ | — | — | — |
 | **Thời gian RLS + Eval (s)** | $8.55\text{ s}$ | $8.49\text{ s}$ | $-0.06\text{ s}$ | — | — | — |
 
-### 10.2. Kết luận Khoa học Chính thức (Scientific Verdict)
-- **Scientific Verdict: `H1_SUPPORTED_BY_C2` (PASS)**
-- Việc thay thế checkpoint pretrained ViT từ `augreg_in1k` sang `augreg2_in21k_ft_in1k` đem lại mức cải thiện vượt trội:
-  - Tăng độ chính xác tăng dần trung bình $\bar{A}$ thêm **$+8.49\text{ pp}$** ($83.28\% \to 91.77\%$).
-  - Tăng độ chính xác giai đoạn cuối $A_{10}$ thêm **$+12.59\text{ pp}$** ($74.84\% \to 87.43\%$).
-  - Giảm tỷ lệ quên trung bình quá khứ $F_{10}^{\text{past}}$ bớt **$-3.94\text{ pp}$** ($8.97\% \to 5.02\%$).
-- Kết quả $91.77\%$ của B1 vượt qua kết quả báo cáo trong bài báo NeurIPS 2024 ($91.10\%$) và kết quả mã nguồn chính thức tác giả ($90.98\%$).
-- Tỷ lệ giải thích khoảng cách (Gap Explained): $\frac{8.49\%}{90.98\% - 83.28\%} \times 100\% \approx \mathbf{110.3\%}$.
-- **Sign-off:** Toàn bộ dữ liệu thực nghiệm đã được kiểm chứng bằng tệp lưu trữ số học `foal_c2_backbone_results.zip` (SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`), các artifact được trích xuất tại `results/c2_analysis/` và 56/56 bài kiểm thử hồi quy passed.
+### 10.2. Kết luận Khoa học Chính thức & Hiệu chỉnh Học thuật (Scientific Verdict & Corrections)
+- **Scientific Verdict: `H1_SUPPORTED_BY_C2` (PASS với Giới hạn Thống kê Đơn Seed)**
+- **Tác động Đơn yếu tố của Checkpoint Pretrained ViT:**
+  - Tăng độ chính xác tăng dần trung bình $\bar{A}$ thêm **$+8.4929\text{ pp}$** ($83.2814\% \to 91.7742\%$).
+  - Tăng độ chính xác giai đoạn cuối $A_{10}$ thêm **$+12.5900\text{ pp}$** ($74.8400\% \to 87.4300\%$).
+  - Giảm tỷ lệ quên trung bình quá khứ $F_{10}^{\text{past}}$ bớt **$-3.9444\text{ pp}$** ($8.9667\% \to 5.0222\%$).
+  - Giảm tỷ lệ quên theo code tác giả $F_{10}^{\text{code}}$ bớt **$-3.5500\text{ pp}$** ($8.0700\% \to 4.5200\%$).
+
+#### Các Hiệu chỉnh Học thuật Bắt buộc (Scientific Corrections):
+1. **So sánh với Bài báo và Bản chạy Tác giả:**
+   Bản tái hiện độc lập của nhóm với backbone được căn chỉnh (`vit_base_patch16_224.augreg2_in21k_ft_in1k`) đạt độ chính xác tăng dần trung bình $\bar{A} = 91.77\%$ trên CIFAR-100, tương đương về mặt số học và cao hơn một lượng nhỏ so với kết quả bài báo ($91.10\%$) và kết quả đơn seed của tác giả ($90.98\%$). Tuy nhiên, do các giao thức chưa được căn chỉnh hoàn toàn (khác biệt seed thứ tự lớp $42$ vs $0$, tiền xử lý ảnh Bilinear vs Bicubic chưa cô lập ở C2), con số này **không phải là bằng chứng cho thấy mã nguồn nhóm vượt trội có ý nghĩa thống kê so với phương pháp gốc**.
+2. **Giải thích Tỷ số Khoảng cách (Interpreting Gap Ratio):**
+   Về mặt số học thuần túy, mức tăng do chuyển đổi backbone ($+8.49\text{ pp}$) vượt qua khoảng cách trước đó so với bản chạy đơn seed tác giả ($7.70\text{ pp}$). Đây là tỷ số số học phản ánh mức độ cải thiện lớn, **không phải là bằng chứng phân rã nhân quả hình thức (formal causal decomposition) đã giải thích $110.3\%$ nguyên nhân**.
+3. **Bản chất của Tác động Backbone:**
+   Cải thiện này đến từ toàn bộ gói checkpoint tiền huấn luyện (`augreg2_in21k_ft_in1k` bao gồm dữ liệu tiền huấn luyện ImageNet-21K, công thức huấn luyện AugReg v2, quá trình fine-tune ImageNet-1K), không thể quy kết đơn nhất cho riêng yếu tố "số lượng ảnh pretraining".
+4. **Phân tích Đúng đắn về Độ tương đồng Cosine:**
+   Mặc dù độ tương đồng nội lớp $\mathcal{S}_{\text{intra}}$ của B1 tăng cao ($0.8423$ so với $0.5449$), độ tương đồng liên lớp $\mathcal{S}_{\text{inter}}$ cũng tăng mạnh ($0.7642$ so với $0.3603$). Hiệu số phân tách thô $M = \mathcal{S}_{\text{intra}} - \mathcal{S}_{\text{inter}}$ của B1 ($0.0781$) thực tế hẹp hơn B0 ($0.1846$). Điều này phản ánh đặc trưng B1 tập trung trong một nón góc hẹp hơn với chuẩn vector L2 lớn gấp đôi ($\|h\|_2 \approx 38.7$ vs $19.3$), chứ không phải là sự tách biệt góc tuyệt đối.
+5. **Hiệu chỉnh Phân tích Thời gian Chạy (Runtime):**
+   Thời gian chạy của C2 ($\approx 301\text{ s}$ trên Colab A100) so với Official Run ($3048\text{ s}$ trên Colab T4) phản ánh sự khác biệt về phần cứng (A100 vs T4), kiến trúc lưu cache đặc trưng, và việc giảm thiểu các lượt forward pass thừa, **không phải là gia tốc thuật toán thuần túy**.
+6. **Giới hạn Thống kê Đơn Seed:**
+   Kết quả được thu thập trên $n=1$ seed (`seed=42`) trên CIFAR-100. Mười giai đoạn là các phép đo tương quan trên cùng luồng tăng dần, không phải $10$ lượt chạy độc lập. Do đó, kết luận H1 được khẳng định **trong phạm vi cấu hình kiểm nghiệm**.
+
+### 10.3. Liên kết Bằng chứng W&B Trực tuyến Đã Xác minh (CoreWeave Forge)
+- **Project URL (Công khai):** [CoreWeave Forge W&B Project](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction)
+- **C2-B0 Run (`3oiftwg6`):** [Run `3oiftwg6` on CoreWeave Forge](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) — Trạng thái: `finished`, Group: `c2_backbone_alignment`.
+- **C2-B1 Run (`ne1p16b5`):** [Run `ne1p16b5` on CoreWeave Forge](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) — Trạng thái: `finished`, Group: `c2_backbone_alignment`.
+
+- **Quyết định Nghiệm thu:** **`C2_SIGNED_OFF_WITH_LIMITATIONS`**
+  - Nghiệm thu thành công tính toàn vẹn số học và việc tái hiện đầy đủ hiệu năng của F-OAL với backbone ImageNet-21K.
+  - Ghi nhận đầy đủ các giới hạn thống kê đơn seed và bảo lưu các giả thuyết tiếp theo (C3 Tiền xử lý ảnh).

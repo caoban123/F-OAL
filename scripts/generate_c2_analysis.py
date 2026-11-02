@@ -58,6 +58,7 @@ def main():
             "feat_time_sec": b0_metrics["feature_extraction_seconds"],
             "git_commit": b0_meta.get("git_commit", b0_meta.get("environment", {}).get("git", {}).get("commit", "unknown")),
             "wandb_run_id": "3oiftwg6",
+            "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6",
         },
         {
             "condition": "C2-B1 (Treatment)",
@@ -75,6 +76,7 @@ def main():
             "feat_time_sec": b1_metrics["feature_extraction_seconds"],
             "git_commit": b1_meta.get("git_commit", b1_meta.get("environment", {}).get("git", {}).get("commit", "unknown")),
             "wandb_run_id": "ne1p16b5",
+            "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5",
         },
         {
             "condition": "C1-P1 (Reference)",
@@ -91,7 +93,8 @@ def main():
             "rls_time_sec": c1_p1_metrics.get("rls_and_eval_seconds", None),
             "feat_time_sec": c1_p1_metrics.get("feature_extraction_seconds", None),
             "git_commit": "269f05c",
-            "wandb_run_id": "c1_p1",
+            "wandb_run_id": "6whrot4z",
+            "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z",
         },
         {
             "condition": "Official F-OAL (Author Run)",
@@ -109,6 +112,7 @@ def main():
             "feat_time_sec": None,
             "git_commit": "73e4ac1",
             "wandb_run_id": "3eca8232",
+            "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232",
         },
         {
             "condition": "NeurIPS 2024 Paper",
@@ -126,6 +130,7 @@ def main():
             "feat_time_sec": None,
             "git_commit": "NeurIPS 2024",
             "wandb_run_id": "N/A",
+            "wandb_url": "N/A",
         }
     ]
 
@@ -135,7 +140,7 @@ def main():
         fieldnames = [
             "condition", "short_name", "backbone", "pretrain_data", "seed", "gamma",
             "avg_incremental_acc", "last_acc", "forgetting_past", "forgetting_code",
-            "total_time_sec", "rls_time_sec", "feat_time_sec", "git_commit", "wandb_run_id"
+            "total_time_sec", "rls_time_sec", "feat_time_sec", "git_commit", "wandb_run_id", "wandb_url"
         ]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -274,6 +279,7 @@ def main():
         "wandb_tracking": {
             "platform": "CoreWeave Forge",
             "base_url": "https://api.forge.coreweave.com",
+            "public_project_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction",
             "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
             "project": "hcmus-foal-reproduction",
             "group": "c2_backbone_alignment",
@@ -281,12 +287,18 @@ def main():
                 {
                     "run_id": "3oiftwg6",
                     "condition": "b0_augreg_in1k",
-                    "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_162749-3oiftwg6"
+                    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6",
+                    "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_162749-3oiftwg6",
+                    "status": "finished",
+                    "verified_online": True
                 },
                 {
                     "run_id": "ne1p16b5",
                     "condition": "b1_augreg2_in21k_ft_in1k",
-                    "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_163312-ne1p16b5"
+                    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5",
+                    "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_163312-ne1p16b5",
+                    "status": "finished",
+                    "verified_online": True
                 }
             ]
         },
@@ -295,8 +307,8 @@ def main():
             "delta_avg_incremental_acc_pp": (b1_metrics["average_incremental_accuracy"] - b0_metrics["average_incremental_accuracy"]) * 100,
             "delta_last_acc_pp": (b1_metrics["last_accuracy"] - b0_metrics["last_accuracy"]) * 100,
             "delta_past_forgetting_pp": (b1_metrics["forgetting_past_tasks"] - b0_metrics["forgetting_past_tasks"]) * 100,
-            "p_value_threshold_status": "Effect (+8.49 pp) exceeds 17x the significance threshold of 0.50 pp",
-            "conclusion": "The pretrained ViT checkpoint accounts for +8.49 pp in average incremental accuracy and +12.59 pp in final accuracy. Upgrading the backbone to augreg2_in21k_ft_in1k fully closes the historical gap and elevates F-OAL performance to 91.77%, matching and exceeding the NeurIPS 2024 Paper reported result of 91.10%."
+            "reproduction_threshold_status": "Effect (+8.49 pp) far exceeds the minimal experimental variation threshold of 0.50 pp",
+            "conclusion": "The independent implementation with the aligned pretrained backbone (vit_base_patch16_224.augreg2_in21k_ft_in1k) reaches an Average Incremental Accuracy of 91.77% on CIFAR-100, which is numerically comparable to and slightly above the reported paper (91.10%) and single-seed official reference values (90.98%). The measured backbone-switch improvement (+8.49 pp) exceeds the prior numerical gap to the official seed-0 reference under the tested protocol. Since the protocols (class order seed, image preprocessing) are not yet fully matched and n=1 seed was tested, this is not evidence of a statistically significant improvement over the original method, but strongly supports Hypothesis H1 within the tested configuration."
         }
     }
     with open(out_dir / "c2_evidence_manifest.json", "w", encoding="utf-8") as f:

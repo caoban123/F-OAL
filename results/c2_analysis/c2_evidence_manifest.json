@@ -43,6 +43,7 @@
   "wandb_tracking": {
     "platform": "CoreWeave Forge",
     "base_url": "https://api.forge.coreweave.com",
+    "public_project_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction",
     "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
     "project": "hcmus-foal-reproduction",
     "group": "c2_backbone_alignment",
@@ -50,12 +51,18 @@
       {
         "run_id": "3oiftwg6",
         "condition": "b0_augreg_in1k",
-        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_162749-3oiftwg6"
+        "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6",
+        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_162749-3oiftwg6",
+        "status": "finished",
+        "verified_online": true
       },
       {
         "run_id": "ne1p16b5",
         "condition": "b1_augreg2_in21k_ft_in1k",
-        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_163312-ne1p16b5"
+        "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5",
+        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_163312-ne1p16b5",
+        "status": "finished",
+        "verified_online": true
       }
     ]
   },
@@ -64,7 +71,7 @@
     "delta_avg_incremental_acc_pp": 8.492876984126996,
     "delta_last_acc_pp": 12.590000000000012,
     "delta_past_forgetting_pp": -3.9444444444444415,
-    "p_value_threshold_status": "Effect (+8.49 pp) exceeds 17x the significance threshold of 0.50 pp",
-    "conclusion": "The pretrained ViT checkpoint accounts for +8.49 pp in average incremental accuracy and +12.59 pp in final accuracy. Upgrading the backbone to augreg2_in21k_ft_in1k fully closes the historical gap and elevates F-OAL performance to 91.77%, matching and exceeding the NeurIPS 2024 Paper reported result of 91.10%."
+    "reproduction_threshold_status": "Effect (+8.49 pp) far exceeds the minimal experimental variation threshold of 0.50 pp",
+    "conclusion": "The independent implementation with the aligned pretrained backbone (vit_base_patch16_224.augreg2_in21k_ft_in1k) reaches an Average Incremental Accuracy of 91.77% on CIFAR-100, which is numerically comparable to and slightly above the reported paper (91.10%) and single-seed official reference values (90.98%). The measured backbone-switch improvement (+8.49 pp) exceeds the prior numerical gap to the official seed-0 reference under the tested protocol. Since the protocols (class order seed, image preprocessing) are not yet fully matched and n=1 seed was tested, this is not evidence of a statistically significant improvement over the original method, but strongly supports Hypothesis H1 within the tested configuration."
   }
 }

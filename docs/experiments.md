@@ -424,8 +424,8 @@ esults/c2_analysis/](../results/c2_analysis/).
 | **Thời gian Trích xuất Đặc trưng (s)** | .46\text{ s}$ | .30\text{ s}$ | $-0.16\text{ s}$ | — | — | — |
 | **Thời gian Cập nhật RLS + Eval (s)** | .55\text{ s}$ | .49\text{ s}$ | $-0.06\text{ s}$ | — | — | — |
 | **Tổng Thời gian Chạy (s)** | .13\text{ s}$ ($\approx 5.04\text{ phút}$) | .32\text{ s}$ ($\approx 5.02\text{ phút}$) | $-0.81\text{ s}$ | — | .6\text{ s}$ | .0\text{ s}$ |
-| **W&B Offline Run ID** | 3oiftwg6 | 
-e1p16b5 | — | c1_p1 | 3eca8232 | — |
+| **W&B Online Run URL** | [Run 3oiftwg6](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) | [Run 
+e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | — | [Run 6whrot4z](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | [Run 3eca8232](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | — |
 
 ### 7.2. Quỹ đạo Độ chính xác Qua Từng Giai đoạn (Stage-by-Stage Trajectory)
 
@@ -443,16 +443,21 @@ e1p16b5 | — | c1_p1 | 3eca8232 | — |
 | **Stage 10 (Final)** | .84\%$ | **.43\%$** | $+12.59\text{ pp}$ | .84\%$ | .84\%$ |
 | **Trung bình ($\bar{A}$)** | **.28\%$** | **.77\%$** | **$+8.49\text{ pp}$** | **.28\%$** | **.98\%$** |
 
-### 7.3. Kết luận Khoa học Then chốt từ Thí nghiệm C2
-1. **Khẳng định Giả thuyết H1 (H1_SUPPORTED_BY_C2):**
-   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (ugreg2_in21k_ft_in1k) là **nhân tố gốc rễ quyết định** tạo ra bước nhảy vọt hiệu năng:
-     - Tăng $\bar{A}$ thêm **$+8.49\text{ pp}$** (.28\% \to 91.77\%$).
-     - Tăng {10}$ thêm **$+12.59\text{ pp}$** (.84\% \to 87.43\%$).
-     - Giảm tỷ lệ quên {10}^{\text{past}}$ từ .97\%$ xuống .02\%$ (giảm $-3.94\text{ pp}$).
-2. **Khép lại Hoàn toàn Khoảng cách Tái hiện (Gap Closed):**
-   - Khoảng cách còn lại sau C1 là .70\text{ pp}$ (.98\% - 83.28\%$).
-   - Mức tăng của B1 là $+8.49\text{ pp}$, giải thích **.3\%$** khoảng cách còn lại.
-   - Hiệu năng của B1 (.77\%$) chính thức **vượt qua cả kết quả công bố trong Paper (.10\%$)** và kết quả chạy mã tác giả (.98\%$).
-3. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
-   - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác \%$ đến từng số thập phân với C1-P1.
+### 7.3. Kết luận Khoa học & Hiệu chỉnh Học thuật Then chốt (Scientific Corrections)
+1. **Khẳng định Giả thuyết H1 trong Phạm vi Cấu hình Thử nghiệm (H1_SUPPORTED_BY_C2):**
+   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (ugreg2_in21k_ft_in1k) tạo ra bước nhảy vọt hiệu năng:
+     - Tăng $\bar{A}$ thêm **$+8.4929\text{ pp}$** (.28\% \to 91.77\%$).
+     - Tăng {10}$ thêm **$+12.5900\text{ pp}$** (.84\% \to 87.43\%$).
+     - Giảm tỷ lệ quên {10}^{\text{past}}$ từ .97\%$ xuống .02\%$ (giảm $-3.9444\text{ pp}$).
+2. **Hiệu chỉnh Nhận định So sánh với Paper & Official Run:**
+   - Kết quả .77\%$ của B1 tương đương về mặt số học và cao hơn một lượng nhỏ so với Paper (.10\%$) và Official Run (.98\%$).
+   - Do giao thức giữa hai bên chưa hoàn toàn đồng nhất (thứ tự lớp seed 42 vs seed 0; tiền xử lý Bicubic vs Bilinear), **đây không phải là bằng chứng cho thấy mã nguồn nhóm vượt trội có ý nghĩa thống kê so với bài báo hay tác giả**.
+3. **Hiệu chỉnh Phân tích Tỷ lệ Thu hẹp Khoảng cách:**
+   - Mức tăng $+8.49\text{ pp}$ của B1 vượt qua khoảng cách trước đó so với bản chạy đơn seed tác giả (.70\text{ pp}$). Đây là một tỷ số số học thuần túy phản ánh độ lớn cải thiện, **không phải là bằng chứng phân rã nhân quả hình thức (formal causal decomposition) đã giải thích 110.3% nguyên nhân**.
+4. **Hiệu chỉnh Phân tích Độ tương đồng Cosine:**
+   - B1 có độ tương đồng nội lớp $\mathcal{S}_{\text{intra}} = 0.8423$ (tăng từ .5449$), nhưng độ tương đồng liên lớp $\mathcal{S}_{\text{inter}}$ cũng tăng mạnh (.7642$ so với .3603$). Hiệu số  = \mathcal{S}_{\text{intra}} - \mathcal{S}_{\text{inter}}$ của B1 (.0781$) nhỏ hơn B0 (.1846$). Điều này phản ánh các vector đặc trưng của B1 tập trung trong một nón góc hẹp hơn với biên độ chuẩn L2 gấp đôi ($\approx 38.7$ vs .3$), chứ không phải là sự tách biệt góc tuyệt đối giữa các lớp.
+5. **Hiệu chỉnh So sánh Thời gian Chạy (Runtime):**
+   - Sự khác biệt về thời gian chạy giữa C2 ($\approx 301\text{ s}$ trên Colab A100) và Official Run (\text{ s}$ trên Colab T4) đến từ sự khác biệt phần cứng GPU, cơ chế cache đặc trưng và việc loại bỏ forward pass thừa, **không phải là gia tốc thuật toán thuần túy**.
+6. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
+   - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác 100% đến từng số thập phân với C1-P1.
    - Ma trận chiếu $ được kiểm chứng đồng nhất tuyệt đối qua mã băm SHA256 (6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b), bảo đảm tính công bằng đơn yếu tố tuyệt đối (Single-Factor Control Fairness).

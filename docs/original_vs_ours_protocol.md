@@ -157,8 +157,10 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
     - $\Delta \bar{A} = \mathbf{+8.4929\text{ pp}}$
     - $\Delta A_{10} = \mathbf{+12.5900\text{ pp}}$
     - $\Delta F_{10}^{\text{past}} = \mathbf{-3.9444\text{ pp}}$
-- **Kết luận Giả thuyết H1 (`H1_SUPPORTED_BY_C2`):**
-  - Trọng số Pretrained ViT tiền huấn luyện trên ImageNet-21K là **nhân tố cốt lõi** giải thích khoảng cách còn lại sau C1 ($7.70\text{ pp}$).
-  - Mức tăng $+8.49\text{ pp}$ của B1 giải thích **$110.3\%$** khoảng cách kỹ thuật còn lại, đưa độ chính xác trung bình $\bar{A}$ lên **$91.77\%$**, chính thức **vượt qua cả Paper ($91.10\%$)** và mã nguồn gốc tác giả ($90.98\%$).
+- **Kết luận Giả thuyết H1 (`H1_SUPPORTED_BY_C2 với Giới hạn Thống kê`):**
+  - Trọng số Pretrained ViT tiền huấn luyện trên ImageNet-21K (`augreg2_in21k_ft_in1k`) là nhân tố cốt lõi cải thiện biểu diễn đặc trưng, nâng $\bar{A}$ lên **$91.77\%$** trên CIFAR-100 dưới cấu hình kiểm nghiệm.
+  - Về mặt số học, kết quả này tương đương và cao hơn một lượng nhỏ so với Paper ($91.10\%$) và Official Run ($90.98\%$). Mức tăng $+8.49\text{ pp}$ vượt qua khoảng cách trước đó so với bản chạy đơn seed tác giả ($7.70\text{ pp}$). Tuy nhiên, do các giao thức chưa được căn chỉnh hoàn toàn (khác biệt seed thứ tự lớp $42$ vs $0$, tiền xử lý ảnh Bilinear vs Bicubic chưa cô lập ở C2), con số này không phải là bằng chứng cho thấy mã nguồn nhóm vượt trội có ý nghĩa thống kê so với phương pháp gốc.
   - Gói dữ liệu lưu trữ: `foal_c2_backbone_results.zip` (SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`).
-  - Phân tích chi tiết và hình vẽ: `results/c2_analysis/`. Offline W&B runs: `3oiftwg6` (B0), `ne1p16b5` (B1).
+  - Phân tích chi tiết và hình vẽ: `results/c2_analysis/`.
+  - W&B Online Runs trên CoreWeave Forge: [Run `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) (B0), [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) (B1).
+  - Trạng thái nghiệm thu: **`C2_SIGNED_OFF_WITH_LIMITATIONS`**.
