@@ -2,7 +2,7 @@
 
 Scans the results directory for runs, validates completeness (including final task checkpoint),
 and aggregates runs strictly by matching protocol to prevent mixing pilot, full reproduction,
-or incomplete runs.
+controlled projection initializations, or incomplete runs.
 
 Usage:
     python -m scripts.summarize_runs --results-dir results
@@ -16,10 +16,12 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from src.foal.metrics import forgetting_official_code, forgetting_past_tasks
+
 
 def load_run(run_dir: Path) -> dict[str, Any] | None:
     """Read and validate a single run's metadata.json and metrics.json.
-    
+
     Verifies that the run is complete, including the presence of the final checkpoint.
     """
     meta_path = run_dir / 'metadata.json'
@@ -38,10 +40,14 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     if not method:
         ff = meta.get('feature_fusion', meta.get('model_config', {}).get('feature_fusion', True))
         sp = meta.get('smooth_projection', meta.get('model_config', {}).get('smooth_projection', True))
-        if ff and sp: method = 'foal'
-        elif not ff and sp: method = 'foal_no_fusion'
-        elif ff and not sp: method = 'foal_no_projection'
-        else: method = 'foal_neither'
+        if ff and sp:
+            method = 'foal'
+        elif not ff and sp:
+            method = 'foal_no_fusion'
+        elif ff and not sp:
+            method = 'foal_no_projection'
+        else:
+            method = 'foal_neither'
 
     exp_type = meta.get('experiment_type', meta.get('experimental_status', 'UNKNOWN')).upper()
     seed = meta.get('seeds', {}).get('base', meta.get('config', {}).get('seed'))
@@ -56,7 +62,9 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
 
     protocol = meta.get('training_protocol', {})
     model_cfg = meta.get('model_config', meta.get('config', {}).get('model', {}))
-    
+    proj_meta = meta.get('projection_metadata') or {}
+    proj_cfg = meta.get('config', {}).get('projection', {}) or {}
+
     task_matrix = metrics.get('task_matrix', [])
     num_tasks = metrics.get('num_tasks', len(task_matrix))
     expected_tasks = protocol.get('max_tasks', num_tasks)
@@ -64,7 +72,13 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     limit_train = protocol.get('limit_train_per_task', meta.get('limit_train_per_task'))
     limit_test = protocol.get('limit_test_per_task', meta.get('limit_test_per_task'))
     backbone = model_cfg.get('backbone', 'unknown')
-    projection_dim = model_cfg.get('projection_dim', 1000)
+    projection_dim = model_cfg.get('projection_dim', proj_cfg.get('dimension', 1000))
+    projection_init = (
+        model_cfg.get('projection_init')
+        or proj_meta.get('initialization')
+        or proj_cfg.get('initialization')
+        or 'gaussian_std1'
+    )
     gamma = model_cfg.get('gamma', 1.0)
     rls_dtype = model_cfg.get('rls_dtype', 'float64')
     ff = model_cfg.get('feature_fusion', meta.get('feature_fusion', True))
@@ -112,6 +126,18 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     is_complete = bool(has_metrics and has_final_ckpt)
     status = 'COMPLETE' if is_complete else 'INCOMPLETE'
 
+    # Compute C0 dual forgetting definitions when complete
+    f_past = None
+    f_code = None
+    if is_complete:
+        f_past = metrics.get('forgetting_past_tasks', metrics.get('forgetting'))
+        f_code = metrics.get('forgetting_official_code', metrics.get('official_forgetting_10_tasks'))
+        if f_code is None and task_matrix:
+            try:
+                f_code = forgetting_official_code(task_matrix)
+            except Exception:
+                f_code = None
+
     # Strict protocol signature prevents accidental cross-protocol aggregation
     protocol_sig = (
         method,
@@ -126,7 +152,8 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         float(gamma),
         str(rls_dtype),
         str(seed_coupling),
-        str(class_order_mode)
+        str(class_order_mode),
+        str(projection_init),
     )
 
     return {
@@ -142,11 +169,14 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         'limit_test_per_task': limit_test,
         'backbone': backbone,
         'projection_dim': projection_dim,
+        'projection_init': projection_init,
         'gamma': gamma,
         'protocol_sig': protocol_sig,
         'average_incremental_accuracy': metrics.get('average_incremental_accuracy') if is_complete else None,
         'last_accuracy': metrics.get('last_accuracy') if is_complete else None,
         'forgetting': metrics.get('forgetting') if is_complete else None,
+        'forgetting_past_tasks': f_past,
+        'forgetting_official_code': f_code,
         'total_duration_seconds': metrics.get('total_duration_seconds'),
         'git_commit': git_commit,
         'device': device,
@@ -155,13 +185,19 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
 
 def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
     """Calculate mean and standard deviation for a group of completed runs.
-    
+
     When n == 1, sample standard deviation is undefined (None / 'N/A').
     """
     completed = [r for r in runs if r.get('is_complete')]
     n = len(completed)
     stats: dict[str, Any] = {'count': n, 'total_runs': len(runs), 'incomplete_count': len(runs) - n}
-    for metric_name in ['average_incremental_accuracy', 'last_accuracy', 'forgetting']:
+    for metric_name in [
+        'average_incremental_accuracy',
+        'last_accuracy',
+        'forgetting',
+        'forgetting_past_tasks',
+        'forgetting_official_code',
+    ]:
         vals = [r[metric_name] for r in completed if r.get(metric_name) is not None]
         if not vals:
             continue
@@ -181,7 +217,11 @@ def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
 
 def format_protocol_description(sig: tuple) -> str:
     """Format protocol signature into human-readable label."""
-    method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode = sig
+    if len(sig) == 14:
+        method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode, p_init = sig
+    else:
+        method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode = sig
+        p_init = 'gaussian_std1'
     data_desc = 'full data'
     if lim_train or lim_test:
         data_desc = f"train<={lim_train or 'all'}, test<={lim_test or 'all'}"
@@ -190,6 +230,8 @@ def format_protocol_description(sig: tuple) -> str:
         desc += " [no_fusion]"
     if not sp:
         desc += " [no_proj]"
+    elif p_init != 'gaussian_std1':
+        desc += f" [proj:{p_init}]"
     if seed_coup != 'coupled':
         desc += f" [seeds: {seed_coup}]"
     if order_mode != 'seeded_order':
@@ -225,18 +267,22 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
     with individual_csv.open('w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'run_name', 'method', 'experiment_type', 'status', 'seed', 'num_tasks',
+            'run_name', 'method', 'experiment_type', 'projection_init', 'status', 'seed', 'num_tasks',
             'limit_train', 'limit_test', 'avg_inc_acc', 'last_acc', 'forgetting',
+            'forgetting_past_tasks', 'forgetting_official_code',
             'duration_s', 'git_commit', 'device'
         ])
         for r in all_runs:
             writer.writerow([
-                r['run_name'], r['method'], r['experiment_type'], r['status'], r['seed'], r['num_tasks'],
+                r['run_name'], r['method'], r['experiment_type'], r.get('projection_init', 'gaussian_std1'),
+                r['status'], r['seed'], r['num_tasks'],
                 r['limit_train_per_task'] if r['limit_train_per_task'] is not None else 'full',
                 r['limit_test_per_task'] if r['limit_test_per_task'] is not None else 'full',
                 f"{r['average_incremental_accuracy']:.4f}" if r['average_incremental_accuracy'] is not None else 'N/A',
                 f"{r['last_accuracy']:.4f}" if r['last_accuracy'] is not None else 'N/A',
                 f"{r['forgetting']:.4f}" if r['forgetting'] is not None else 'N/A',
+                f"{r['forgetting_past_tasks']:.4f}" if r.get('forgetting_past_tasks') is not None else 'N/A',
+                f"{r['forgetting_official_code']:.4f}" if r.get('forgetting_official_code') is not None else 'N/A',
                 r['total_duration_seconds'] or '',
                 r['git_commit'] or '',
                 r['device'] or ''
@@ -257,7 +303,8 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
         writer = csv.writer(f)
         writer.writerow([
             'protocol_label', 'method', 'experiment_type', 'num_tasks', 'limit_train', 'limit_test',
-            'completed_runs', 'total_runs', 'avg_inc_acc_mean_std', 'last_acc_mean_std', 'forgetting_mean_std'
+            'completed_runs', 'total_runs', 'avg_inc_acc_mean_std', 'last_acc_mean_std',
+            'forgetting_mean_std', 'forgetting_official_code_mean_std'
         ])
         for sig, run_list in sorted(groups.items(), key=_sig_sort_key):
             stats = compute_group_stats(run_list)
@@ -269,7 +316,8 @@ def summarize_results(results_dir: str = 'results', output_dir: str | None = Non
                 stats['count'], stats['total_runs'],
                 stats.get('average_incremental_accuracy_display', 'N/A'),
                 stats.get('last_accuracy_display', 'N/A'),
-                stats.get('forgetting_display', 'N/A')
+                stats.get('forgetting_display', 'N/A'),
+                stats.get('forgetting_official_code_display', 'N/A'),
             ])
 
     # Specialized summary for ablation runs if present

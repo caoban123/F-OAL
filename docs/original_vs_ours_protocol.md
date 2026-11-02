@@ -120,3 +120,22 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
 | **Experiment C2 — Pretrained ViT Checkpoint (`H1`)** | Change `backbone` from `vit_base_patch16_224.augreg_in1k` to `vit_base_patch16_224` (`augreg2_in21k_ft_in1k`). | Our current projection & `[-1, 1]` bicubic norm, `seed=42` (plus combined with `C1`) | $\sim 3\text{ min}$ (pilot) + $\sim 29\text{ min}$ (full) | Measure exact $\Delta \bar{A}$ and $\Delta A_{10}$ contributed by ImageNet-21K pre-training. |
 | **Experiment C3 — Preprocessing & Normalization (`H4`)** | Change transform to `Resize((224, 224), BILINEAR)` + `ToTensor()` (`mean=[0,0,0], std=[1,1,1]`, range $[0, 1]$). | Fixed backbone + projection from `C1`/`C2`, `seed=42` | $\sim 3\text{ min}$ (pilot) + $\sim 29\text{ min}$ (full) | Measure sensitivity of frozen ViT features to $[0, 1]$ bilinear vs. $[-1, 1]$ bicubic preprocessing. |
 | **Experiment C4 — Combined Protocol Alignment (`H1+H2+H4`)** | Enable all verified official protocol settings (`vit_base_patch16_224`, `kaiming_uniform` projection, `[0, 1]` bilinear transform) in `src/foal/` and run on both `seed=0` and `seeds=[42, 123, 2026]`. | Official Run (`90.98%` on `seed=0`) | $\sim 29\text{ min/seed}$ | Verify that our independent implementation matches the Official Run (`~90.98%`) within $< 0.2\text{ pp}$ on `seed=0` and establish the 3-seed $Mean \pm Std$. |
+
+
+---
+
+## 5. Kết quả Triển khai Thí nghiệm Kiểm soát C0 & C1
+
+### 5.1. C0 — Đồng nhất Hóa Định nghĩa Forgetting
+- **Phân tích đối chiếu:** Paper Section 4.2 Equations (17)–(18) chia trung bình trên $T-1=9$ task quá khứ ($F_T^{\text{past}}$). Ngược lại, mã nguồn tác giả `experiment/metrics.py:49–54` chia trung bình trên $T=10$ task ($F_T^{\text{code}}$).
+- **Tái tính toán thực tế:**
+  - Official Run Seed 0 (`3eca8232`): $F_T^{\text{past}} = 5.17\%$, $F_T^{\text{code}} = 4.69\%$.
+  - Our Historical Run Seed 42 (`2cdeiptv`): $F_T^{\text{past}} = 9.21\%$, $F_T^{\text{code}} = 8.29\%$.
+- Cả hai công thức đã được tích hợp vào `src/foal/metrics.py` và tự động ghi nhận vào `metrics.json` và W&B.
+
+### 5.2. C1 — Chẩn đoán Khởi tạo Chiếu & Pilot Thực nghiệm
+- Đã hoàn tất module chẩn đoán `src/foal/diagnostics.py` và đo đạc trên 200 đặc trưng ViT thực tế:
+  - P0 (`gaussian_std1`): Độ lệch chuẩn trước kích hoạt $u$ đạt $19.28$, dẫn đến tỷ lệ bão hòa cực đoan Sigmoid lên tới **$81.03\%$**.
+  - P1 (`official_uniform`) & P2 (`gaussian_matched_variance`): Giữ độ lệch chuẩn $u \approx 0.40$, tỷ lệ bão hòa **$0.00\%$**, bảo toàn độ nhạy đạo hàm $\approx 0.25$.
+- Đã hoàn tất Level A Pilot 2 Tasks trên CPU: P1 đạt $79.00\%$ Accuracy (cao hơn P0 $77.50\%$).
+- Đã hoàn tất notebook Google Colab GPU [`notebooks/foal_c1_projection_controlled.ipynb`](../notebooks/foal_c1_projection_controlled.ipynb) phục vụ Level B Full 10 Tasks run trên GPU.

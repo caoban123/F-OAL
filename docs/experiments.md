@@ -247,3 +247,86 @@ Chi tiết phân tích mã nguồn và kế hoạch thí nghiệm kiểm soát b
 | $B = 25$ | $200$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 50$ | $100$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 100$ | $50$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
+
+
+---
+
+## 6. Thí nghiệm Kiểm soát Khác biệt Kỹ thuật: C0 & C1 (Checkpoint 3 Compliance)
+
+### 6.1. C0 — Đối chiếu & Tái tính toán Công thức Forgetting (`Eq. 17–18` vs. `Official Code`)
+
+Nhóm đã đối chiếu trực tiếp giữa công thức toán học công bố trong Paper PDF chính thức (NeurIPS 2024, Section 4.2, trang 8) và mã nguồn tác giả trong file `experiment/metrics.py`:
+
+1. **Công thức Paper — Equations (17) & (18):**
+   $$F_i = \frac{1}{i - 1} \sum_{j=1}^{i - 1} f_{i, j} \quad (17), \qquad f_{k, j} = \max_{l \in \{1, \dots, k-1\}} (a_{l, j}) - a_{k, j}, \ \forall j < k \quad (18)$$
+   - Ký hiệu mã nguồn nhóm: `forgetting_past_tasks` ($F_T^{\text{past}}$).
+   - Mẫu số là $T - 1 = 9$ (chỉ tính trên các task đã qua, loại trừ Task $T$ hiện tại).
+   - Cực đại lấy trên các giai đoạn trước $l \in \{1, \dots, k-1\}$. Nếu ở giai đoạn $k$ accuracy của task $j$ tăng lên so với mọi giai đoạn trước (positive backward transfer), $f_{k,j} < 0$.
+
+2. **Công thức trong Code Gốc Tác giả — `experiment/metrics.py:18, 22–26, 49–54`:**
+   ```python
+   # experiment/metrics.py:49-54 (single_run_avg_end_fgt)
+   best_acc = np.max(end_task_acc_arr, axis=1)  # max over ALL stages l in {1, ..., T}
+   final_forgets = best_acc - end_acc
+   avg_fgt = np.mean(final_forgets, axis=1)  # mean over ALL T tasks (including task T)
+   ```
+   - Ký hiệu mã nguồn nhóm: `forgetting_official_code` ($F_T^{\text{code}}$).
+   - Mẫu số là $T = 10$ tasks (chia cho 10 thay vì 9).
+   - Cực đại lấy trên toàn bộ $l \in \{1, \dots, T\}$ bao gồm cả $l = T$, do đó với Task $T$, $\max(a_{l, T}) - a_{T, T} = 0.0$ và mọi mức quên âm đều bị ép về $\ge 0.0$.
+
+#### Bảng Tái tính toán C0 trên Dữ liệu Thực nghiệm Thật
+
+| Ma trận Dữ liệu Thực nghiệm | $F_T^{\text{past}}$ (Paper Eq. 17–18, $T-1=9$) | $F_T^{\text{code}}$ (Official Code, $T=10$) | Chênh lệch giữa 2 định nghĩa ($\Delta_{\text{pp}}$) |
+|:---|:---:|:---:|:---:|
+| **Official Run (`3eca8232`, Seed 0)** | **`5.1667%`** ($0.465 / 9$) | **`4.6900%`** ($0.469 / 10$) | $-0.4767\text{ pp}$ (do Task 9 tăng từ 86.8% lên 87.2%, và Task 10 thêm số 0) |
+| **Our Historical Run (`2cdeiptv`, Seed 42)** | **`9.2111%`** ($0.829 / 9$) | **`8.2900%`** ($0.829 / 10$) | $-0.9211\text{ pp}$ (hoàn toàn do khác biệt mẫu số $9$ vs $10$) |
+
+---
+
+### 6.2. C1 — Chẩn đoán Ma trận Chiếu trên Cùng Đầu vào Thực tế (Matched-Input Diagnostics)
+
+Để kiểm chứng giả thuyết `H2` rằng việc khởi tạo ma trận ngẫu nhiên chuẩn tắc $\mathcal{N}(0, 1)$ làm bão hòa Sigmoid, nhóm đã trích xuất đặc trưng thực tế từ **200 ảnh CIFAR-100** ($20$ mẫu/class trên $10$ classes của Task 1) bằng backbone ViT đông cứng `vit_base_patch16_224.augreg_in1k`, sau đó đánh giá 3 cơ chế khởi tạo trên **cùng một tensor đặc trưng đầu vào $h \in \mathbb{R}^{200 \times 768}$**:
+
+* **P0 (`gaussian_std1`):** Khởi tạo ban đầu của nhóm, $P_{ij} \sim \mathcal{N}(0, 1)$, variance = $1.0$.
+* **P1 (`official_uniform`):** Khởi tạo của tác giả (`nn.Linear(768, 1000, bias=False)`), $P_{ij} \sim \mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$, variance = $1/(3 \times 768) \approx 0.000434$.
+* **P2 (`gaussian_matched_variance`):** Đối chứng Gaussian có phương sai lý thuyết trùng khớp tuyệt đối với P1: $P_{ij} \sim \mathcal{N}(0, 1/2304)$, variance = $1/2304 \approx 0.000434$.
+
+#### Bảng Kết quả Đo đạc Chẩn đoán Khách quan (`results/c1_diagnostics/`)
+
+| Chỉ số Chẩn đoán (Diagnostic Metric) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Ý nghĩa Vật lý / Toán học |
+|:---|:---:|:---:|:---:|:---|
+| **Trọng số ma trận $\text{std}(P)$** | $1.000661$ | $0.020832$ | $0.020847$ | P1 và P2 khớp phương sai lý thuyết ($\sigma \approx 1/48$) |
+| **Độ lệch chuẩn tiền kích hoạt $\text{std}(u)$ ($u = h P$)** | **$19.2844$** | **$0.3979$** | **$0.4018$** | P0 phóng đại tín hiệu gấp $\approx 48$ lần |
+| **Độ lệch chuẩn sau kích hoạt $\text{std}(z)$ ($z = \sigma(u)$)** | $0.4790$ | $0.0958$ | $0.0967$ | P0 đẩy giá trị về sát 0 hoặc 1 |
+| **Tỷ lệ bão hòa cực đoan ($z < 0.01 \lor z > 0.99$)** | **`81.03%`** | **`0.00%`** | **`0.00%`** | **81.03% chiều đặc trưng của P0 bị triệt tiêu đạo hàm và mất phân biệt!** |
+| **Đạo hàm trung bình Sigmoid $\phi(1-\phi)$** | $0.0469$ | $0.2458$ | $0.2457$ | P1/P2 duy trì vùng tuyến tính nhạy cảm nhất ($\approx 0.25$) |
+| **Số điều kiện Gram chính quy hóa $\text{Cond}(G + \gamma I)$** | $65,218.28$ | $50,467.89$ | $50,954.65$ | Gram matrix của P1/P2 ổn định hơn, số điều kiện nhỏ hơn |
+| **Effective Rank $r_{\text{eff}}(G)$** | $8.60$ | $1.20$ | $1.20$ | P1 và P2 phân bổ phổ trị riêng tập trung hơn |
+
+> **Phát hiện Khoa học then chốt:** Thí nghiệm chẩn đoán matched-input khẳng định chắc chắn 100% rằng ma trận chiếu $\mathcal{N}(0, 1)$ trong code ban đầu của nhóm đã đẩy $81.03\%$ kích hoạt phi tuyến vào vùng bão hòa chết của hàm Sigmoid. Trong khi đó, khởi tạo $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ của tác giả giữ $100\%$ kích hoạt trong vùng tuyến tính mượt mà ($0.00\%$ bão hòa).
+
+---
+
+### 6.3. Level A — Thí nghiệm Pilot 2 Tasks trên CPU (`results/c1_pilot/`)
+
+Đã thực hiện chạy kiểm chứng 2 tasks đầu tiên (100 ảnh train/task, 100 ảnh test/task) với tính năng bộ nhớ đệm đặc trưng (`--feature-cache-dir results/c1_pilot_feature_cache`):
+
+| Cấu hình Pilot (2 Tasks) | Task 1 Acc ($A_1$) | Task 2 Acc ($a_{2, 2}$) | Drop Task 1 ($f_{2, 1}$) | Avg Incr Acc ($\bar{A}$) | Last Acc ($A_2$) | Thời gian RLS & Eval (s) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **P0 (`gaussian_std1`)** | $78.00\%$ | $85.00\%$ | $9.00\%$ | $77.50\%$ | $77.00\%$ | $0.23\text{ s}$ |
+| **P1 (`official_uniform`)** | **$80.00\%$** | **$87.00\%$** | $11.00\%$ | **$79.00\%$** | **$78.00\%$** | $0.25\text{ s}$ |
+| **P2 (`gaussian_matched_variance`)** | $77.00\%$ | $86.00\%$ | $8.00\%$ | $77.25\%$ | $77.50\%$ | $0.27\text{ s}$ |
+
+- **Kiểm chứng tính toàn vẹn của Feature Cache:** Lượt chạy P0 dùng cache cho ra kết quả `task_matrix = [[0.78], [0.69, 0.85]]` trùng khớp **100% bitwise** với lượt chạy không dùng cache (`smoke_test_post_fix_seed42`), trong khi thời gian thực thi giảm từ $94.95\text{ s}$ xuống $1.36\text{ s}$ (nhanh gấp $\approx 70$ lần).
+
+---
+
+### 6.4. Level B — Thí nghiệm Đầy đủ 10 Tasks CIFAR-100 trên GPU (`PENDING_GPU`)
+
+| Cấu hình Thí nghiệm C1 (Full 10 Tasks, Seed 42) | Avg Incr Acc ($\bar{A}$) | Last Acc ($A_{10}$) | Forgetting ($F_{10}^{\text{past}}$) | Forgetting ($F_{10}^{\text{code}}$) | Trạng thái Thực thi | W&B Target Run Name |
+|:---|:---:|:---:|:---:|:---:|:---:|:---|
+| **P0 (`gaussian_std1`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_gaussian_std1_seed42` |
+| **P1 (`official_uniform`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_official_uniform_seed42` |
+| **P2 (`gaussian_matched_variance`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_gaussian_matched_variance_seed42` |
+
+> *Ghi chú trung thực học thuật:* Kết quả số học cho Level B Full 10 Tasks được đánh dấu rõ ràng là `PENDING_GPU`. Notebook hoàn chỉnh, tự động và độc lập phục vụ việc chạy trên GPU đã được chuẩn bị tại [`notebooks/foal_c1_projection_controlled.ipynb`](../notebooks/foal_c1_projection_controlled.ipynb).

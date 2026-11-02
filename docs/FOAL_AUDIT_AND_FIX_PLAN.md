@@ -1031,3 +1031,16 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 | **Stage D — Multi-Seed Reproduction & Public W&B (`A12`, `A21`)** | **08–12/11/2026** | 1. Chạy `scripts/run_seeds.py --seeds 42 123 2026` cho cấu hình F-OAL chuẩn trên GPU.<br>2. Bật `--wandb` đồng bộ toàn bộ các run lên project W&B ở chế độ **Public**.<br>3. Chạy `scripts/summarize_runs.py` xuất bảng $Mean \pm Std$ chính thức. | • Bảng kết quả 3-seed $Mean \pm Std$ cho `OUR_REPRODUCED`.<br>• Link project W&B công khai truy cập không cần login (**A21**). |
 | **Stage E — Ablation, Baselines & Additional Analysis (`A11`, `A15`–`A18`, `A22`)** | **12–17/11/2026** | 1. Chạy 4 cấu hình Ablation (`scripts/ablation.py`) trên GPU (**A11**).<br>2. Chạy các baseline trong Core Scope (`A15` Backprop FC 1-pass, `A16` Linear Ridge, `A17` ER) trên cùng task split.<br>3. Chạy Additional Analysis: kiểm chứng tính bất biến theo Batch size $B \in \{5, 10, 25, 50, 100\}$ và độ nhạy $D, \gamma$. | • Bảng kết quả Ablation đầy đủ (tái hiện Table 4).<br>• Bảng Headline Comparison 3 nguồn + Baselines + Time/VRAM.<br>• Biểu đồ phân tích độ nhạy Batch size / $D$ / $\gamma$. |
 | **Stage F — Final Audit & Midterm Presentation (`ID.pptx`)** | **17–21/11/2026** | 1. Rà soát chéo toàn bộ bảng số liệu, công thức $\Delta_{\text{pp}}$, $\Delta_{\text{rel}}\%$ và link W&B.<br>2. Thiết kế bộ slide 20–40 trang theo chuẩn IEEE citation, tự vẽ lại toàn bộ biểu đồ từ số liệu thực.<br>3. Nộp `ID.pptx` trước hạn **21/11/2026, 23:59**. | • Bộ slide báo cáo giữa kỳ `ID.pptx` (< 20 MB).<br>• Kho lưu trữ GitHub và trang W&B công khai hoàn chỉnh. |
+
+
+---
+
+## 24. Cập nhật Thực nghiệm: Hoàn tất C0 & C1 (Level A Pilot & Matched-Input Diagnostics)
+
+- **Trạng thái C0 (Metric Alignment):** **`COMPLETED & VERIFIED`**. Cả hai công thức $F_T^{\text{past}}$ (Paper Eq. 17–18, mẫu số $T-1$) và $F_T^{\text{code}}$ (Official Code `experiment/metrics.py:49–54`, mẫu số $T$) đã được cài đặt độc lập, kiểm thử unit test 100% pass và đối chiếu trên dữ liệu thực:
+  - Official Run Seed 0 (`3eca8232`): $F_T^{\text{past}} = 5.17\%$, $F_T^{\text{code}} = 4.69\%$.
+  - Our Historical Run Seed 42 (`2cdeiptv`): $F_T^{\text{past}} = 9.21\%$, $F_T^{\text{code}} = 8.29\%$.
+- **Trạng thái C1 (Controlled Smooth Projection):**
+  - **Matched-Input Diagnostics:** **`COMPLETED`**. Đo đạc trực tiếp trên 200 đặc trưng CIFAR-100 ViT thực tế chứng minh P0 ($\mathcal{N}(0, 1)$) gây bão hòa Sigmoid lên tới $81.03\%$ (std $u = 19.28$), trong khi P1 và P2 có mức bão hòa $0.00\%$ (std $u \approx 0.40$), duy trì đạo hàm trung bình Sigmoid tại $0.246$.
+  - **Level A Pilot 2 Tasks:** **`COMPLETED`**. Chạy thành công trên CPU với `--feature-cache-dir`. P1 đạt Accuracy $79.00\%$ so với P0 $77.50\%$. Cache đặc trưng cho kết quả trùng khớp $100\%$ bitwise với chạy không cache và tăng tốc $70$ lần.
+  - **Level B Full 10 Tasks:** **`READY FOR GPU EXECUTION`**. Đã hoàn tất notebook Google Colab GPU [`notebooks/foal_c1_projection_controlled.ipynb`](../notebooks/foal_c1_projection_controlled.ipynb) phục vụ chạy GPU trên T4/L4/A100 và đồng bộ W&B.

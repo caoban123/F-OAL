@@ -82,6 +82,27 @@ python -m scripts.ablation --config configs/cifar100.yaml --max-tasks 2 --limit-
 python -m scripts.evaluate --checkpoint results/smoke_test_post_fix/task_02.pt --device cpu --limit-per-task 100
 ```
 
+### 2.7. Thí nghiệm Kiểm soát Khởi tạo Smooth Projection C1 & Chẩn đoán Matched-Input (A20)
+Chạy chẩn đoán ma trận chiếu trên cùng 200 đặc trưng ViT thực tế của CIFAR-100:
+```bash
+python -m scripts.run_c1_diagnostics --output-dir results/c1_diagnostics --device cpu
+```
+
+Chạy thí nghiệm kiểm soát C1 trên 3 cấu hình khởi tạo ma trận chiếu:
+- `P0` (`gaussian_std1`): $\mathcal{N}(0, 1)$ ban đầu của nhóm (variance = 1.0).
+- `P1` (`official_uniform`): $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ của tác giả (variance = $1/(3d)$).
+- `P2` (`gaussian_matched_variance`): Đối chứng $\mathcal{N}(0, 1/(3d))$ khớp phương sai với P1.
+
+```bash
+# Level A Pilot (2 tasks) với bộ nhớ đệm đặc trưng ViT:
+python -m scripts.train --config configs/c1_p0_gaussian_std1.yaml --output-dir results/c1_pilot_p0_gaussian_std1 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+python -m scripts.train --config configs/c1_p1_official_uniform.yaml --output-dir results/c1_pilot_p1_official_uniform --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+python -m scripts.train --config configs/c1_p2_gaussian_matched_variance.yaml --output-dir results/c1_pilot_p2_gaussian_matched_variance --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+
+# Level B Full 10 Tasks CIFAR-100 trên GPU (Notebook Colab độc lập):
+# Mở và chạy: notebooks/foal_c1_projection_controlled.ipynb
+```
+
 ---
 
 ## 3. Kiến trúc mã nguồn
