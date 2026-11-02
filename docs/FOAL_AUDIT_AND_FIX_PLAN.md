@@ -1062,7 +1062,12 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 - **Trạng thái Thực nghiệm C2:**
   - `PLANNED`: Hoàn thành văn bản kế hoạch [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
   - `IMPLEMENTED`: Đã triển khai hỗ trợ backbone và chẩn đoán biểu diễn trong `src/foal/`.
-  - `UNIT_TESTED`: 5/5 ca kiểm thử mới trong `tests/test_c2_backbone.py` vượt qua tuyệt đối (tổng cộng 52 unit tests).
+  - `UNIT_TESTED`: 8/8 ca kiểm thử trong `tests/test_c2_backbone.py` vượt qua tuyệt đối (tổng cộng 56 unit tests).
   - `PILOT_VERIFIED`: Đã chạy kiểm chứng Pilot B0 đạt $\bar{A} = 79.00\%$, $A_2 = 78.00\%$.
-  - `READY_FOR_FULL_GPU`: Notebook Colab sẵn sàng tại [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb).
-  - `FULL_GPU_COMPLETED`: **`PENDING_GPU`** (chờ thực thi trên Colab A100 GPU).
+  - `READY_FOR_FULL_GPU`: Notebook Colab hoàn tất tại [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb).
+  - `FULL_GPU_COMPLETED_AND_VERIFIED`: **`PASS (VERIFIED)`** (Đã chạy hoàn tất trên Google Colab NVIDIA A100-SXM4-40GB; xác thực toàn vẹn gói nén `foal_c2_backbone_results.zip` SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`).
+    - **B0 (`augreg_in1k`):** $\bar{A} = \mathbf{83.2814\%}$, $A_{10} = \mathbf{74.8400\%}$, $F_{10}^{\text{past}} = \mathbf{8.9667\%}$, $F_{10}^{\text{code}} = \mathbf{8.0700\%}$ (khớp chính xác 100% C1-P1).
+    - **B1 (`augreg2_in21k_ft_in1k`):** $\bar{A} = \mathbf{91.7742\%}$, $A_{10} = \mathbf{87.4300\%}$, $F_{10}^{\text{past}} = \mathbf{5.0222\%}$, $F_{10}^{\text{code}} = \mathbf{4.5200\%}$.
+    - **Tác động Đơn yếu tố $\Delta(B1 - B0)$:** $\Delta \bar{A} = \mathbf{+8.4929\text{ pp}}$, $\Delta A_{10} = \mathbf{+12.5900\text{ pp}}$, $\Delta F_{10}^{\text{past}} = \mathbf{-3.9444\text{ pp}}$.
+- **Kết luận Giả thuyết H1:** **`H1_SUPPORTED_BY_C2`**. Checkpoint ViT từ ImageNet-21K nâng $\bar{A}$ lên $91.77\%$, chính thức vượt qua Paper ($91.10\%$) và giải thích $110.3\%$ khoảng cách kỹ thuật còn lại sau C1.
+- **Trạng thái Ký duyệt C2 (Sign-off):** **`VERIFIED & SIGNED OFF`** (Chờ người dùng phê duyệt PR merge vào `main`). Toàn bộ artifacts phân tích lưu tại `results/c2_analysis/`, 56/56 unit tests passed.

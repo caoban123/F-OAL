@@ -150,11 +150,12 @@ Trước khi chạy toàn bộ 10 tasks trên GPU, thực hiện chẩn đoán t
    $$\text{Gap Explained (\%)} = \frac{\Delta_{B1 - B0}(\bar{A})}{90.98\% - 83.28\%} \times 100\%$$
 
 ### 8.2. Tiêu chí Chấp thuận Nghiệm thu (Acceptance Gates)
-- [ ] Trọng số của cả B0 và B1 được tải thành công từ các nguồn được xác minh (`timm`).
-- [ ] Ma trận chiếu $P$ được kiểm chứng đồng nhất tuyệt đối giữa B0 và B1 (cùng seed 42, cùng fingerprint SHA256).
-- [ ] Không có lỗi `NaN` hoặc `Inf` trong toàn bộ quá trình cập nhật RLS.
-- [ ] Toàn bộ 10 checkpoints `.pt` của mỗi cấu hình có thể tải lại và đánh giá độc lập.
-- [ ] Báo cáo kết quả tuân thủ nghiêm ngặt nguyên tắc thống kê đơn seed ($n=1$, `seed=42`).
+- [x] Trọng số của cả B0 và B1 được tải thành công từ các nguồn được xác minh (`timm`).
+- [x] Ma trận chiếu $P$ được kiểm chứng đồng nhất tuyệt đối giữa B0 và B1 (cùng seed 42, cùng fingerprint SHA256: `6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b`).
+- [x] Không có lỗi `NaN` hoặc `Inf` trong toàn bộ quá trình cập nhật RLS.
+- [x] Toàn bộ 10 checkpoints `.pt` của mỗi cấu hình có thể tải lại và đánh giá độc lập.
+- [x] Báo cáo kết quả tuân thủ nghiêm ngặt nguyên tắc thống kê đơn seed ($n=1$, `seed=42`).
+- [x] Bộ kiểm thử hồi quy 56/56 passed (100%).
 
 ---
 
@@ -163,3 +164,28 @@ Trước khi chạy toàn bộ 10 tasks trên GPU, thực hiện chẩn đoán t
 - **Phạm vi Hiện tại:** Thí nghiệm C2 được thực hiện trên **CIFAR-100** nhằm thẩm định giao thức và giải mã khoảng cách kỹ thuật.
 - **Giới hạn Khái quát hóa:** Kết quả thu được từ C2 trên CIFAR-100 **không được tự động suy diễn** cho các bộ dữ liệu khác như DTD, FGVCAircraft, Tiny-ImageNet hay Country211. Mỗi bộ dữ liệu có đặc trưng miền riêng và sẽ được mở rộng độc lập trong các giai đoạn tiếp theo.
 - C2 là bước thẩm định giao thức thiết yếu, đóng góp vào mục tiêu hoàn thành toàn diện **Core Scope** theo yêu cầu của đồ án HCMUS.
+
+---
+
+## 10. Kết quả Thực nghiệm Thực tế & Nghiệm thu Khoa học (Final Results & Sign-off)
+
+### 10.1. Tóm tắt Định lượng Thực nghiệm GPU (NVIDIA A100-SXM4-40GB)
+
+| Chỉ số Đánh giá | B0 (Control: `augreg_in1k`) | B1 (Treatment: `augreg2_in21k_ft_in1k`) | Chênh lệch $\Delta(B1 - B0)$ | C1-P1 Ref | Official Run (seed 0) | Paper (NeurIPS 2024) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **$\bar{A}$ (Avg Incremental Acc)** | **$83.2814\%$** | **$91.7742\%$** | **$+8.4929\text{ pp}$** | $83.2814\%$ | $90.9828\%$ | $91.10\%$ |
+| **$A_{10}$ (Last Task Acc)** | **$74.8400\%$** | **$87.4300\%$** | **$+12.5900\text{ pp}$** | $74.8400\%$ | $85.8400\%$ | — |
+| **$F_{10}^{\text{past}}$ (Past Forgetting)** | **$8.9667\%$** | **$5.0222\%$** | **$-3.9444\text{ pp}$** | $8.9667\%$ | $5.1667\%$ | — |
+| **$F_{10}^{\text{code}}$ (Code Forgetting)** | **$8.0700\%$** | **$4.5200\%$** | **$-3.5500\text{ pp}$** | $8.0700\%$ | $4.6900\%$ | — |
+| **Thời gian Trích xuất (s)** | $248.46\text{ s}$ | $248.30\text{ s}$ | $-0.16\text{ s}$ | — | — | — |
+| **Thời gian RLS + Eval (s)** | $8.55\text{ s}$ | $8.49\text{ s}$ | $-0.06\text{ s}$ | — | — | — |
+
+### 10.2. Kết luận Khoa học Chính thức (Scientific Verdict)
+- **Scientific Verdict: `H1_SUPPORTED_BY_C2` (PASS)**
+- Việc thay thế checkpoint pretrained ViT từ `augreg_in1k` sang `augreg2_in21k_ft_in1k` đem lại mức cải thiện vượt trội:
+  - Tăng độ chính xác tăng dần trung bình $\bar{A}$ thêm **$+8.49\text{ pp}$** ($83.28\% \to 91.77\%$).
+  - Tăng độ chính xác giai đoạn cuối $A_{10}$ thêm **$+12.59\text{ pp}$** ($74.84\% \to 87.43\%$).
+  - Giảm tỷ lệ quên trung bình quá khứ $F_{10}^{\text{past}}$ bớt **$-3.94\text{ pp}$** ($8.97\% \to 5.02\%$).
+- Kết quả $91.77\%$ của B1 vượt qua kết quả báo cáo trong bài báo NeurIPS 2024 ($91.10\%$) và kết quả mã nguồn chính thức tác giả ($90.98\%$).
+- Tỷ lệ giải thích khoảng cách (Gap Explained): $\frac{8.49\%}{90.98\% - 83.28\%} \times 100\% \approx \mathbf{110.3\%}$.
+- **Sign-off:** Toàn bộ dữ liệu thực nghiệm đã được kiểm chứng bằng tệp lưu trữ số học `foal_c2_backbone_results.zip` (SHA256: `d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429`), các artifact được trích xuất tại `results/c2_analysis/` và 56/56 bài kiểm thử hồi quy passed.

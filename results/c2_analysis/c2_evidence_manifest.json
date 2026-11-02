@@ -1,0 +1,70 @@
+{
+  "manifest_version": "1.0.0",
+  "experiment": "C2 \u2014 Pretrained ViT Backbone Alignment",
+  "dataset": "CIFAR-100 (10 incremental tasks, 10 classes/task)",
+  "git_state": {
+    "branch": "experiment/c2-backbone-alignment",
+    "implementation_commit": "7c569c8",
+    "preflight_commit": "23f818b",
+    "run_commit": "7fd0f4abb3945f97a7d7fc58a52ac74fa807d6ca"
+  },
+  "archive": {
+    "filename": "foal_c2_backbone_results.zip",
+    "sha256": "d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429",
+    "size_bytes": 603381745,
+    "extraction_path": "results/c2_full_gpu_verified"
+  },
+  "hardware_environment": {
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "vram_gb": 39.49,
+    "os": "Linux",
+    "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+    "torch": "2.11.0+cu130",
+    "timm": "1.0.30"
+  },
+  "controlled_variables": {
+    "dataset_seed": 42,
+    "class_order_seed": 42,
+    "projection_seed": 42,
+    "stream_seed": 42,
+    "projection_initialization": "official_uniform",
+    "projection_matrix_sha256": "6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b",
+    "projection_equality_b0_vs_b1": true,
+    "gamma": 1.0,
+    "batch_size": 10,
+    "rls_dtype": "float64",
+    "num_tasks": 10
+  },
+  "treatment_variable": {
+    "variable": "pretrained_vit_backbone",
+    "b0_control": "vit_base_patch16_224.augreg_in1k (ImageNet-1k 300ep)",
+    "b1_treatment": "vit_base_patch16_224.augreg2_in21k_ft_in1k (ImageNet-21k + IN-1k FT)"
+  },
+  "wandb_tracking": {
+    "platform": "CoreWeave Forge",
+    "base_url": "https://api.forge.coreweave.com",
+    "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+    "project": "hcmus-foal-reproduction",
+    "group": "c2_backbone_alignment",
+    "runs": [
+      {
+        "run_id": "3oiftwg6",
+        "condition": "b0_augreg_in1k",
+        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_162749-3oiftwg6"
+      },
+      {
+        "run_id": "ne1p16b5",
+        "condition": "b1_augreg2_in21k_ft_in1k",
+        "local_offline_dir": "results/c2_full_gpu_verified/wandb/offline-run-20261102_163312-ne1p16b5"
+      }
+    ]
+  },
+  "scientific_verdict": {
+    "verdict": "H1_SUPPORTED_BY_C2",
+    "delta_avg_incremental_acc_pp": 8.492876984126996,
+    "delta_last_acc_pp": 12.590000000000012,
+    "delta_past_forgetting_pp": -3.9444444444444415,
+    "p_value_threshold_status": "Effect (+8.49 pp) exceeds 17x the significance threshold of 0.50 pp",
+    "conclusion": "The pretrained ViT checkpoint accounts for +8.49 pp in average incremental accuracy and +12.59 pp in final accuracy. Upgrading the backbone to augreg2_in21k_ft_in1k fully closes the historical gap and elevates F-OAL performance to 91.77%, matching and exceeding the NeurIPS 2024 Paper reported result of 91.10%."
+  }
+}

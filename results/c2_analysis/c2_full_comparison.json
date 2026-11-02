@@ -1,0 +1,112 @@
+{
+  "comparison_table": [
+    {
+      "condition": "C2-B0 (Control)",
+      "short_name": "C2 B0 (augreg_in1k)",
+      "backbone": "vit_base_patch16_224.augreg_in1k",
+      "pretrain_data": "ImageNet-1k",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 0.8328135317460317,
+      "last_acc": 0.7484,
+      "forgetting_past": 0.08966666666666666,
+      "forgetting_code": 0.0807,
+      "total_time_sec": 302.13,
+      "rls_time_sec": 8.55,
+      "feat_time_sec": 248.46,
+      "git_commit": "7fd0f4abb3945f97a7d7fc58a52ac74fa807d6ca",
+      "wandb_run_id": "3oiftwg6"
+    },
+    {
+      "condition": "C2-B1 (Treatment)",
+      "short_name": "C2 B1 (augreg2_in21k_ft_in1k)",
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "pretrain_data": "ImageNet-21k + IN-1k FT",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 0.9177423015873016,
+      "last_acc": 0.8743000000000001,
+      "forgetting_past": 0.050222222222222244,
+      "forgetting_code": 0.04520000000000002,
+      "total_time_sec": 301.32,
+      "rls_time_sec": 8.49,
+      "feat_time_sec": 248.3,
+      "git_commit": "7fd0f4abb3945f97a7d7fc58a52ac74fa807d6ca",
+      "wandb_run_id": "ne1p16b5"
+    },
+    {
+      "condition": "C1-P1 (Reference)",
+      "short_name": "C1 P1 (augreg_in1k)",
+      "backbone": "vit_base_patch16_224.augreg_in1k",
+      "pretrain_data": "ImageNet-1k",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 0.8328135317460317,
+      "last_acc": 0.7484,
+      "forgetting_past": 0.08966666666666666,
+      "forgetting_code": 0.0807,
+      "total_time_sec": 52.01,
+      "rls_time_sec": 8.59,
+      "feat_time_sec": 245.92,
+      "git_commit": "269f05c",
+      "wandb_run_id": "c1_p1"
+    },
+    {
+      "condition": "Official F-OAL (Author Run)",
+      "short_name": "Official Run (seed 0)",
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "pretrain_data": "ImageNet-21k + IN-1k FT",
+      "seed": 0,
+      "gamma": 1.0,
+      "avg_incremental_acc": 0.9098279365079364,
+      "last_acc": 0.8583999999999999,
+      "forgetting_past": 0.051666666666666666,
+      "forgetting_code": 0.0469,
+      "total_time_sec": null,
+      "rls_time_sec": null,
+      "feat_time_sec": null,
+      "git_commit": "73e4ac1",
+      "wandb_run_id": "3eca8232"
+    },
+    {
+      "condition": "NeurIPS 2024 Paper",
+      "short_name": "NeurIPS 2024 Paper",
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k (implied)",
+      "pretrain_data": "ImageNet-21k + IN-1k FT (implied)",
+      "seed": "average over seeds",
+      "gamma": 1.0,
+      "avg_incremental_acc": 0.911,
+      "last_acc": null,
+      "forgetting_past": null,
+      "forgetting_code": null,
+      "total_time_sec": null,
+      "rls_time_sec": null,
+      "feat_time_sec": null,
+      "git_commit": "NeurIPS 2024",
+      "wandb_run_id": "N/A"
+    }
+  ],
+  "deltas": {
+    "b1_minus_b0": {
+      "avg_incremental_acc_pp": 8.492876984126996,
+      "last_acc_pp": 12.590000000000012,
+      "forgetting_past_pp": -3.9444444444444415,
+      "forgetting_code_pp": -3.5499999999999976
+    },
+    "b0_minus_c1_p1": {
+      "avg_incremental_acc_pp": 0.0,
+      "last_acc_pp": 0.0,
+      "forgetting_past_pp": 0.0,
+      "forgetting_code_pp": 0.0
+    },
+    "b1_minus_official": {
+      "avg_incremental_acc_pp": 0.7914365079365271,
+      "last_acc_pp": 1.5900000000000136,
+      "forgetting_past_pp": -0.14444444444444218,
+      "forgetting_code_pp": -0.16999999999999793
+    },
+    "b1_minus_paper": {
+      "avg_incremental_acc_pp": 0.6742301587301602
+    }
+  }
+}

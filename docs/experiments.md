@@ -399,19 +399,60 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 
 ---
 
-## 7. Thí nghiệm Kiểm soát C2: Căn chỉnh Trọng số Pretrained ViT Backbone (`ImageNet-21K` vs `1K`)
+## 7. Thí nghiệm Kiểm soát C2: Căn chỉnh Trọng số Pretrained ViT Backbone (ImageNet-21K vs 1K)
 
-Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md).
+Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [docs/c2_backbone_alignment_plan.md](c2_backbone_alignment_plan.md).
 
-- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (`vit_base_patch16_224.augreg2_in21k_ft_in1k` trong mã nguồn tác giả vs `vit_base_patch16_224.augreg_in1k` ban đầu của nhóm) đối với khoảng cách $pprox 7.7\text{ pp}$ còn lại sau C1.
-- **Trạng thái hiện tại:** **`READY_FOR_FULL_GPU`**
-  - Kế hoạch nghiên cứu: [`docs/c2_backbone_alignment_plan.md`](c2_backbone_alignment_plan.md) (`PLANNED`).
-  - Triển khai mã nguồn: `src/foal/backbone.py`, `src/foal/model.py`, `src/foal/diagnostics.py` (`IMPLEMENTED`).
-  - Kiểm thử tự động: `tests/test_c2_backbone.py` 5/5 PASSED (`UNIT_TESTED`).
-  - Kiểm chứng Pilot: B0 Pilot 2 tasks trên CPU đạt $\bar{A}=79.00\%$, $A_2=78.00\%$ trùng khớp bitwise với C1 P1 (`PILOT_VERIFIED`).
-  - Notebook Google Colab GPU: [`notebooks/foal_c2_backbone_controlled.ipynb`](../notebooks/foal_c2_backbone_controlled.ipynb) (`READY_FOR_FULL_GPU`).
-  - Thực nghiệm 10 Tasks Full GPU: `PENDING_GPU` (chờ người dùng thực thi trên Google Colab GPU A100).
-- **Nguyên tắc Kiểm soát Đơn Yếu tố:**
-  - Cố định 100% ma trận chiếu $P$ (seed 42, $D=1000$, `official_uniform`, bảo đảm Projection Equality qua cùng mã SHA256).
-  - Cố định 100% tiền xử lý (Bicubic 224x224, `[-1, 1]`), thứ tự lớp (seed 42), batch size 10, gamma 1.0, float64 RLS.
-  - Cô lập bộ nhớ đệm đặc trưng (Cache Safety): Tên tệp và khóa cache tích hợp định danh backbone để ngăn ngừa tải chéo đặc trưng.
+- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (it_base_patch16_224.augreg2_in21k_ft_in1k trong mã nguồn tác giả vs it_base_patch16_224.augreg_in1k ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
+- **Trạng thái hiện tại:** **FULL_GPU_COMPLETED_AND_VERIFIED** (Nghiệm thu thực nghiệm thành công ngày 02/11/2026).
+  - Tệp nén kết quả: oal_c2_backbone_results.zip (SHA256: d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429, 0 lỗi CRC).
+  - Thư mục trích xuất & kiểm chứng: [
+esults/c2_full_gpu_verified/](../results/c2_full_gpu_verified/).
+  - Bảng tổng hợp & hình vẽ phân tích: [
+esults/c2_analysis/](../results/c2_analysis/).
+  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, 	imm 1.0.30).
+  - Bộ kiểm thử hồi quy: 56/56 tests PASSED (100%).
+
+### 7.1. Bảng Kết quả Toàn diện Thí nghiệm Kiểm soát C2
+
+| Chỉ số Thực nghiệm (CIFAR-100, 10 Tasks, Seed 42) | C2-B0 (Control: ugreg_in1k) | C2-B1 (Treatment: ugreg2_in21k_ft_in1k) | Tác động Đơn yếu tố $\Delta(B1 - B0)$ | C1-P1 Ref (ugreg_in1k) | Official Run (seed=0, 73e4ac1) | Paper (NeurIPS 2024 Table 1) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **$\bar{A}$ (Avg Incremental Acc, $\uparrow$)** | **.2814\%$** | **.7742\%$** | **$+8.4929\text{ pp}$** | .2814\%$ | .9828\%$ | .10\%$ |
+| **{10}$ (Last Task Acc, $\uparrow$)** | **.8400\%$** | **.4300\%$** | **$+12.5900\text{ pp}$** | .8400\%$ | .8400\%$ | — |
+| **{10}^{\text{past}}$ (Paper Forgetting, $\downarrow$)** | **.9667\%$** | **.0222\%$** | **$-3.9444\text{ pp}$** | .9667\%$ | .1667\%$ | — |
+| **{10}^{\text{code}}$ (Official Code Forgetting, $\downarrow$)** | **.0700\%$** | **.5200\%$** | **$-3.5500\text{ pp}$** | .0700\%$ | .6900\%$ | .50\%$ |
+| **Thời gian Trích xuất Đặc trưng (s)** | .46\text{ s}$ | .30\text{ s}$ | $-0.16\text{ s}$ | — | — | — |
+| **Thời gian Cập nhật RLS + Eval (s)** | .55\text{ s}$ | .49\text{ s}$ | $-0.06\text{ s}$ | — | — | — |
+| **Tổng Thời gian Chạy (s)** | .13\text{ s}$ ($\approx 5.04\text{ phút}$) | .32\text{ s}$ ($\approx 5.02\text{ phút}$) | $-0.81\text{ s}$ | — | .6\text{ s}$ | .0\text{ s}$ |
+| **W&B Offline Run ID** | 3oiftwg6 | 
+e1p16b5 | — | c1_p1 | 3eca8232 | — |
+
+### 7.2. Quỹ đạo Độ chính xác Qua Từng Giai đoạn (Stage-by-Stage Trajectory)
+
+| Giai đoạn ($) | B0 (ugreg_in1k) | B1 (ugreg2_in21k_ft_in1k) | Ưu thế của B1 ($\Delta_{B1 - B0}$) | C1-P1 Ref | Official Run (seed 0) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Stage 1** | .70\%$ | **.30\%$** | $+4.60\text{ pp}$ | .70\%$ | .60\%$ |
+| **Stage 2** | .60\%$ | **.10\%$** | $+4.50\text{ pp}$ | .60\%$ | .75\%$ |
+| **Stage 3** | .60\%$ | **.13\%$** | $+5.53\text{ pp}$ | .60\%$ | .00\%$ |
+| **Stage 4** | .62\%$ | **.65\%$** | $+7.03\text{ pp}$ | .62\%$ | .15\%$ |
+| **Stage 5** | .74\%$ | **.10\%$** | $+8.36\text{ pp}$ | .74\%$ | .78\%$ |
+| **Stage 6** | .50\%$ | **.78\%$** | $+9.28\text{ pp}$ | .50\%$ | .67\%$ |
+| **Stage 7** | .06\%$ | **.04\%$** | $+9.99\text{ pp}$ | .06\%$ | .89\%$ |
+| **Stage 8** | .76\%$ | **.12\%$** | $+11.36\text{ pp}$ | .76\%$ | .10\%$ |
+| **Stage 9** | .39\%$ | **.08\%$** | $+11.69\text{ pp}$ | .39\%$ | .06\%$ |
+| **Stage 10 (Final)** | .84\%$ | **.43\%$** | $+12.59\text{ pp}$ | .84\%$ | .84\%$ |
+| **Trung bình ($\bar{A}$)** | **.28\%$** | **.77\%$** | **$+8.49\text{ pp}$** | **.28\%$** | **.98\%$** |
+
+### 7.3. Kết luận Khoa học Then chốt từ Thí nghiệm C2
+1. **Khẳng định Giả thuyết H1 (H1_SUPPORTED_BY_C2):**
+   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (ugreg2_in21k_ft_in1k) là **nhân tố gốc rễ quyết định** tạo ra bước nhảy vọt hiệu năng:
+     - Tăng $\bar{A}$ thêm **$+8.49\text{ pp}$** (.28\% \to 91.77\%$).
+     - Tăng {10}$ thêm **$+12.59\text{ pp}$** (.84\% \to 87.43\%$).
+     - Giảm tỷ lệ quên {10}^{\text{past}}$ từ .97\%$ xuống .02\%$ (giảm $-3.94\text{ pp}$).
+2. **Khép lại Hoàn toàn Khoảng cách Tái hiện (Gap Closed):**
+   - Khoảng cách còn lại sau C1 là .70\text{ pp}$ (.98\% - 83.28\%$).
+   - Mức tăng của B1 là $+8.49\text{ pp}$, giải thích **.3\%$** khoảng cách còn lại.
+   - Hiệu năng của B1 (.77\%$) chính thức **vượt qua cả kết quả công bố trong Paper (.10\%$)** và kết quả chạy mã tác giả (.98\%$).
+3. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
+   - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác \%$ đến từng số thập phân với C1-P1.
+   - Ma trận chiếu $ được kiểm chứng đồng nhất tuyệt đối qua mã băm SHA256 (6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b), bảo đảm tính công bằng đơn yếu tố tuyệt đối (Single-Factor Control Fairness).
