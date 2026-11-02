@@ -206,3 +206,36 @@ def test_summarize_runs_mixed_none_and_int_limits_and_csv_columns():
         assert {rows[0]['limit_test'], rows[1]['limit_test']} == {'full', '100'}
 
 
+
+def test_official_foal_run_completion_without_pt_checkpoint():
+    """Verify that official_foal runs are marked COMPLETE when cifar100_FOAL.csv and official_stdout.log confirm completion."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        base_dir = Path(tmpdir)
+        off_dir = base_dir / 'official_foal_cifar100_seed0'
+        off_dir.mkdir()
+        (off_dir / 'metadata.json').write_text(json.dumps({
+            'method': 'official_foal',
+            'experiment_type': 'official_reproduction',
+            'official_commit_sha': '73e4ac1b4c965030973a2b77f05c57c2f44f49f5',
+            'training_protocol': {'max_tasks': 10, 'limit_train_per_task': None, 'limit_test_per_task': None, 'device': 'cuda'},
+            'model_config': {'backbone': 'vit_base_patch16_224', 'projection_dim': 1000, 'gamma': 1.0, 'rls_dtype': 'float64'},
+            'seeds': {'base': 0, 'class_order': 0, 'projection': 0, 'stream': 0}
+        }))
+        (off_dir / 'metrics.json').write_text(json.dumps({
+            'num_tasks': 10,
+            'task_matrix': [[0.9] * (i + 1) for i in range(10)],
+            'average_incremental_accuracy': 0.9098279365079364,
+            'last_accuracy': 0.8584,
+            'forgetting': 0.051666666666666666,
+            'official_forgetting_10_tasks': 0.0469,
+            'total_duration_seconds': 3056.24
+        }))
+        (off_dir / 'cifar100_FOAL.csv').write_text('avg_end_acc,0.8584,nan,-,avg_acc,0.9098,nan\n', encoding='utf-8')
+        (off_dir / 'official_stdout.log').write_text('----------- Total 1 run: 3047.59s -----------\nRecords have been written\n', encoding='utf-8')
+
+        loaded = load_run(off_dir)
+        assert loaded is not None
+        assert loaded['is_complete'] is True
+        assert loaded['status'] == 'COMPLETE'
+        assert loaded['git_commit'] == '73e4ac1'
+        assert loaded['average_incremental_accuracy'] == pytest.approx(0.9098279365079364)

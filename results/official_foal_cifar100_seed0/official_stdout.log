@@ -1,0 +1,112 @@
+/content/official-F-OAL/utils/buffer/mir_retrieve.py:36: SyntaxWarning: invalid escape sequence '\d'
+  computes \theta-\delta\theta
+/content/official-F-OAL/utils/buffer/mgi_retrieve.py:62: SyntaxWarning: invalid escape sequence '\d'
+  computes \theta-\delta\theta
+Namespace(num_runs=1, seed=0, val_size=0.1, num_val=3, num_runs_val=3, error_analysis=False, verbose=True, store=False, save_path=None, agent='FOAL', update='random', retrieve='random', optimizer='SGD', learning_rate=0.1, epoch=1, batch=10, test_batch=10, weight_decay=0, num_tasks=10, fix_order=False, plot_sample=False, data='cifar100', cl_type='nc', ns_factor=(0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.6), ns_type='noise', ns_task=(1, 1, 2, 2, 2, 2), online=True, mem_size=10000, eps_mem_batch=10, dl_weight=4.0, lambda_=100, alpha=0.9, fisher_update_after=50, subsample=50, gss_mem_strength=10, gss_batch_size=10, k=5, aser_type='asvm', n_smp_cls=2.0, stm_capacity=1000, classifier_chill=0.01, log_alpha=-300, minlr=0.0005, clip=10.0, mem_epoch=70, projection=1000, labels_trick=False, separated_softmax=False, kd_trick=False, kd_trick_star=False, review_trick=False, ncm_trick=False, mem_iters=1, min_delta=0.0, patience=0, cumulative_delta=False, temp=0.07, buffer_tracker=False, warmup=4, head='mlp', cuda=True)
+Setting up data stream
+data setup time: 4.04228663444519
+Task: 0, Labels:[np.int64(26), np.int64(86), np.int64(2), np.int64(55), np.int64(75), np.int64(93), np.int64(16), np.int64(73), np.int64(54), np.int64(95)]
+Task: 1, Labels:[np.int64(53), np.int64(92), np.int64(78), np.int64(13), np.int64(7), np.int64(30), np.int64(22), np.int64(24), np.int64(33), np.int64(8)]
+Task: 2, Labels:[np.int64(43), np.int64(62), np.int64(3), np.int64(71), np.int64(45), np.int64(48), np.int64(6), np.int64(99), np.int64(82), np.int64(76)]
+Task: 3, Labels:[np.int64(60), np.int64(80), np.int64(90), np.int64(68), np.int64(51), np.int64(27), np.int64(18), np.int64(56), np.int64(63), np.int64(74)]
+Task: 4, Labels:[np.int64(1), np.int64(61), np.int64(42), np.int64(41), np.int64(4), np.int64(15), np.int64(17), np.int64(40), np.int64(38), np.int64(5)]
+Task: 5, Labels:[np.int64(91), np.int64(59), np.int64(0), np.int64(34), np.int64(28), np.int64(50), np.int64(11), np.int64(35), np.int64(23), np.int64(52)]
+Task: 6, Labels:[np.int64(10), np.int64(31), np.int64(66), np.int64(57), np.int64(79), np.int64(85), np.int64(32), np.int64(84), np.int64(14), np.int64(89)]
+Task: 7, Labels:[np.int64(19), np.int64(29), np.int64(49), np.int64(97), np.int64(98), np.int64(69), np.int64(20), np.int64(94), np.int64(72), np.int64(77)]
+Task: 8, Labels:[np.int64(25), np.int64(37), np.int64(81), np.int64(46), np.int64(39), np.int64(65), np.int64(58), np.int64(12), np.int64(88), np.int64(70)]
+Task: 9, Labels:[np.int64(87), np.int64(36), np.int64(21), np.int64(83), np.int64(9), np.int64(96), np.int64(67), np.int64(64), np.int64(47), np.int64(44)]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+-----------run 0 training batch 0-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.999
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.997
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.996
+[0.966 0.    0.    0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 1-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.300
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.844
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.882
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.908
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.921
+[0.949 0.966 0.    0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 2-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.150
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.704
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.811
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.854
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.879
+[0.935 0.94  0.945 0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 3-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.601
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.723
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.777
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.809
+[0.925 0.922 0.937 0.902 0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 4-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.050
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.667
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.778
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.820
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.849
+[0.912 0.919 0.926 0.896 0.936 0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 5-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.302
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.512
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.609
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.664
+[0.893 0.91  0.924 0.877 0.927 0.849 0.    0.    0.    0.   ]
+-----------run 0 training batch 6-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.398
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.573
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.664
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.712
+[0.885 0.905 0.92  0.874 0.918 0.839 0.881 0.    0.    0.   ]
+-----------run 0 training batch 7-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.420
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.593
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.678
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.726
+[0.867 0.901 0.911 0.861 0.908 0.815 0.872 0.913 0.    0.   ]
+-----------run 0 training batch 8-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.278
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.443
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.551
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.617
+[0.866 0.879 0.908 0.855 0.893 0.79  0.872 0.904 0.868 0.   ]
+-----------run 0 training batch 9-------------
+size: (5000, 32, 32, 3), (5000,)
+==>>> it: 1, avg. loss: 0.000000, running train acc: 0.000
+==>>> it: 101, avg. loss: 0.000000, running train acc: 0.219
+==>>> it: 201, avg. loss: 0.000000, running train acc: 0.418
+==>>> it: 301, avg. loss: 0.000000, running train acc: 0.520
+==>>> it: 401, avg. loss: 0.000000, running train acc: 0.592
+[0.861 0.869 0.903 0.842 0.889 0.758 0.866 0.901 0.872 0.823]
+-----------run 0-----------avg_end_acc 0.8583999999999999-----------train time 3043.551120042801
+/content/official-F-OAL/experiment/metrics.py:20: SmallSampleWarning: One or more sample arguments is too small; all returned values will be NaN. See documentation for sample size requirements.
+  avg_end_acc = (np.mean(avg_acc_per_run), t_coef * sem(avg_acc_per_run))
+/content/official-F-OAL/experiment/metrics.py:26: SmallSampleWarning: One or more sample arguments is too small; all returned values will be NaN. See documentation for sample size requirements.
+  avg_end_fgt = (np.mean(avg_fgt), t_coef * sem(avg_fgt))
+/content/official-F-OAL/experiment/metrics.py:31: SmallSampleWarning: One or more sample arguments is too small; all returned values will be NaN. See documentation for sample size requirements.
+  avg_acc = (np.mean(acc_per_run), t_coef * sem(acc_per_run))
+/content/official-F-OAL/experiment/metrics.py:39: SmallSampleWarning: One or more sample arguments is too small; all returned values will be NaN. See documentation for sample size requirements.
+  avg_bwtp = (np.mean(bwtp_per_run), t_coef * sem(bwtp_per_run))
+/content/official-F-OAL/experiment/metrics.py:43: SmallSampleWarning: One or more sample arguments is too small; all returned values will be NaN. See documentation for sample size requirements.
+  avg_fwt = (np.mean(fwt_per_run), t_coef * sem(fwt_per_run))
+----------- Total 1 run: 3047.5977776050568s -----------
+----------- Avg_End_Acc (np.float64(0.8583999999999999), np.float64(nan)) Avg_End_Fgt (np.float64(0.0469), np.float64(nan)) Avg_Acc (np.float64(0.9098279365079364), np.float64(nan)) Avg_Bwtp (np.float64(0.0), np.float64(nan)) Avg_Fwt (np.float64(0.0), np.float64(nan))-----------
+Records have been written

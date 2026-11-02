@@ -4,8 +4,9 @@ Tài liệu này quy định giao thức thực nghiệm, phạm vi tái hiện 
 **F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning (NeurIPS 2024).**
 
 * **Repository nhóm:** `https://github.com/caoban123/F-OAL`
-* **Repository gốc của tác giả:** `https://github.com/liuyuchen-cz/F-OAL`
+* **Repository gốc của tác giả:** `https://github.com/liuyuchen-cz/F-OAL` (Commit đã xác minh: `73e4ac1b4c965030973a2b77f05c57c2f44f49f5`)
 * **Tài liệu kiểm toán kỹ thuật:** [`docs/FOAL_AUDIT_AND_FIX_PLAN.md`](FOAL_AUDIT_AND_FIX_PLAN.md)
+* **Tài liệu đối chiếu giao thức Original vs. Ours (`A19`/`A20`):** [`docs/original_vs_ours_protocol.md`](original_vs_ours_protocol.md)
 
 ---
 
@@ -20,19 +21,19 @@ Trong bài báo gốc, tác giả thực hiện:
 * **Additional Analysis:** Khảo sát ảnh hưởng của kích thước mini-batch ($B$), số chiều chiếu ($D$) và hệ số chính quy hóa ($\gamma$).
 
 ### 1.2. Đề xuất Phạm vi Cốt lõi của Nhóm (Proposed Core Scope — Chờ Nhóm/GV Xác nhận)
-Do giới hạn tài nguyên tính toán trên Google Colab / Kaggle GPU miễn phí (mỗi lượt chạy CIFAR-100 10 tasks trên NVIDIA T4 tốn $\approx 29$ phút), nhóm đề xuất **Core Scope** tập trung vào trọng tâm khoa học của bài báo với đầy đủ **3 trụ cột thực nghiệm**:
+Do giới hạn tài nguyên tính toán trên Google Colab / Kaggle GPU miễn phí (mỗi lượt chạy CIFAR-100 10 tasks trên NVIDIA T4 tốn $\approx 29\text{–}51$ phút), nhóm đề xuất **Core Scope** tập trung vào trọng tâm khoa học của bài báo với đầy đủ **3 trụ cột thực nghiệm**:
 
 1. **Experiment 1 — Headline Comparison & Resource Profiling (Table 2, Table 3, Figure 2 trên CIFAR-100):**
    * Thiết lập: CIFAR-100 chia thành **10 tasks $\times$ 10 classes**, streaming **one-pass** (1 epoch duy nhất, zero-replay), `batch_size = 10`.
    * Đối chiếu 3 nguồn của **F-OAL**:
-     * `PAPER_REPORTED`: Kết quả công bố trong Table 2 & Table 3 của bài báo.
-     * `ORIGINAL_REPRODUCED` (**A19**): Kết quả chạy trực tiếp repository gốc của tác giả (`liuyuchen-cz/F-OAL`) trên cùng môi trường GPU của nhóm.
-     * `OUR_REPRODUCED` (**A10**, **A12**): Kết quả chạy mã nguồn tự hiện thực của nhóm (`src/foal/`) trên 3 random seeds `[42, 123, 2026]` ($Mean \pm Std$).
+     * `PAPER_REPORTED`: Kết quả công bố trong Table 2 & Table 3 của bài báo ($3$ runs).
+     * `ORIGINAL_REPRODUCED` (**A19 — Đã hoàn tất & xác minh**): Kết quả chạy trực tiếp repository gốc của tác giả (`liuyuchen-cz/F-OAL @ 73e4ac1`) trên cùng môi trường GPU NVIDIA T4 của nhóm.
+     * `OUR_REPRODUCED` (**A10**, **A12**): Kết quả chạy mã nguồn tự hiện thực của nhóm (`src/foal/`) — bao gồm bản chạy đơn seed đầu tiên (`aad7500`, `seed=42`) và các thí nghiệm kiểm soát biến số (`C1`–`C4`) + 3 random seeds `[42, 123, 2026]` ($Mean \pm Std$).
    * Đối chiếu với các Baseline đại diện trên cùng Frozen ViT backbone và cùng chia tách task:
      * **Baseline 1 (`A15`):** Frozen ViT + Feature Fusion + Smooth Projection + **Linear/FC Classifier huấn luyện bằng Backpropagation (SGD/Adam, 1-pass)** (tái hiện thí nghiệm Section 5.3 của paper).
      * **Baseline 2 (`A16`):** Frozen ViT + **Linear Ridge Analytic Classifier** (không dùng Smooth Projection phi tuyến).
      * **Baseline 3 (`A17`):** Frozen ViT + **Experience Replay (ER)**.
-   * Đo đạc đồng thời: **Average Incremental Accuracy ($\bar{A}$)**, **Last Accuracy ($A_{10}$)**, **Forgetting Rate ($F_{10}$)**, **Training Time (giây)** và **Peak GPU Memory (GB)** (**A18**).
+   * Đo đạc đồng thời: **Average Incremental Accuracy ($\bar{A}$)**, **Last Accuracy ($A_{10}$)**, **Forgetting Rate ($F$)**, **Training Time (giây)** và **Peak GPU Memory (GB)** (**A18**).
 
 2. **Experiment 2 — Ablation Study (Table 4 trên CIFAR-100 & tùy chọn DTD):**
    * Chạy đủ 4 tổ hợp qua `scripts/ablation.py` (**A11**):
@@ -43,7 +44,7 @@ Do giới hạn tài nguyên tính toán trên Google Colab / Kaggle GPU miễn 
 
 3. **Experiment 3 — Additional & Sensitivity Analysis (Kiểm chứng Lý thuyết & Độ nhạy Siêu tham số):**
    * **Analysis 3A (Batch-Size Invariance):** Chạy F-OAL với $B \in \{5, 10, 25, 50, 100\}$ trên cùng seed để kiểm chứng thực nghiệm tính chất toán học của cập nhật Woodbury RLS: nghiệm giải tích cuối mỗi task không phụ thuộc vào kích thước mini-batch $B$, trong khi thời gian thực thi thay đổi theo $B$.
-   * **Analysis 3B (Projection Scaling, Dimension & Regularization Sensitivity):** Khảo sát ảnh hưởng của hệ số tỷ lệ khởi tạo ma trận chiếu ($\sigma_{\text{init}} = 1.0$ vs $1/\sqrt{768}$), số chiều chiếu $D \in \{500, 1000, 2000\}$ và hệ số Ridge regularization $\gamma \in \{0.1, 1.0, 10.0\}$.
+   * **Analysis 3B (Projection Scaling, Dimension & Regularization Sensitivity):** Khảo sát ảnh hưởng của hệ số tỷ lệ khởi tạo ma trận chiếu ($\sigma_{\text{init}} = 1.0$ vs $\mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$), số chiều chiếu $D \in \{500, 1000, 2000\}$ và hệ số Ridge regularization $\gamma \in \{0.1, 1.0, 10.0\}$.
 
 ---
 
@@ -53,42 +54,43 @@ Giả sử quá trình học tăng dần gồm $T = 10$ giai đoạn (tasks). G�
 
 1. **Stage Accuracy tại giai đoạn $k$ ($A_k$):**
    $$A_k = \frac{1}{k} \sum_{j=1}^{k} a_{k, j}$$
+   *(Lưu ý: Trên CIFAR-100, mỗi task có đúng $1,000$ mẫu test nên trung bình vĩ mô $A_k$ trùng khớp tuyệt đối với độ chính xác gộp trên toàn bộ mẫu test đã thấy).*
 2. **Average Incremental Accuracy ($\bar{A}$ hoặc $A_{\text{avg}}$, $\uparrow$ cao hơn là tốt hơn):**
    $$\bar{A} = \frac{1}{T} \sum_{k=1}^{T} A_k$$
 3. **Last Task Accuracy ($A_T$ hoặc $A_{\text{last}}$, $\uparrow$ cao hơn là tốt hơn):**
    $$A_T = \frac{1}{T} \sum_{j=1}^{T} a_{T, j}$$
-4. **Average Forgetting Rate ($F_T$ hoặc $F$, $\downarrow$ thấp hơn là tốt hơn):**
-   $$f_j^T = \max_{\ell \in \{j, \dots, T-1\}} a_{\ell, j} - a_{T, j}, \qquad F_T = \frac{1}{T-1} \sum_{j=1}^{T-1} f_j^T$$
+4. **Average Forgetting Rate — Hai định nghĩa cần phân biệt rõ (`H7b`):**
+   * **Định nghĩa chuẩn Continual Learning (`F_ours_definition`, cài đặt trong `src/foal/metrics.py`):** Chia trung bình trên $T - 1 = 9$ task cũ và lấy cực đại trên các giai đoạn trước $k \in \{j, \dots, T-1\}$:
+     $$f_{j,\text{ours}}^T = \max_{\ell \in \{j, \dots, T-1\}} a_{\ell, j} - a_{T, j}, \qquad F_{\text{ours}} = \frac{1}{T-1} \sum_{j=1}^{T-1} f_{j,\text{ours}}^T$$
+   * **Định nghĩa trong Code Gốc Tác giả (`F_official_definition`, cài đặt trong `experiment/metrics.py:49–54`):** Chia trung bình trên tất cả $T = 10$ tasks (bao gồm cả Task $T$ có độ quên bằng $0$) và lấy cực đại trên $\ell \in \{1, \dots, T\}$ (tự động chặn dưới mức quên âm về $0$):
+     $$f_{j,\text{official}}^T = \max_{\ell \in \{1, \dots, T\}} a_{\ell, j} - a_{T, j}, \qquad F_{\text{official}} = \frac{1}{T} \sum_{j=1}^{T} f_{j,\text{official}}^T$$
+   * **Quy tắc đối chiếu công bằng:** Khi so sánh với con số $5.50\%$ của Paper và `cifar100_FOAL.csv` của Code gốc, phải đặt cùng công thức $F_{\text{official}}$ cạnh nhau; khi so sánh nội bộ theo chuẩn 9-task, đặt cùng $F_{\text{ours}}$ cạnh nhau.
 5. **Chênh lệch tuyệt đối ($\Delta_{\text{pp}}$, tính bằng điểm phần trăm — percentage points):**
-   $$\Delta_{\text{pp}} = \text{Ours} - \text{Paper}$$
+   $$\Delta_{\text{pp}}(A, B) = A - B$$
 6. **Độ lệch tương đối ($\Delta_{\text{rel}}\%$):**
-   $$\Delta_{\text{rel}}(\%) = \frac{\text{Ours} - \text{Paper}}{\text{Paper}} \times 100\%$$
-   *(Lưu ý: Đối với $\bar{A}$ và $A_T$, $\Delta < 0$ nghĩa là kết quả tái hiện thấp hơn paper. Đối với Forgetting $F_T$, vì giá trị càng nhỏ càng tốt nên $\Delta > 0$ nghĩa là mô hình bị quên nhiều hơn so với paper).*
+   $$\Delta_{\text{rel}}(A, B) = \frac{A - B}{B} \times 100\%$$
 
 ---
 
 ## 3. Lệnh Thực thi Chuẩn (Reproducible Commands)
 
 ```bash
-# 1. Chạy kiểm thử đơn vị (33 unit tests trên CPU)
+# 1. Chạy kiểm thử đơn vị (35 unit tests trên CPU)
 python -m pytest -v
 
 # 2. Chạy Pilot Smoke Test trên CPU (2 tasks, 100 mẫu/task — KHÔNG phải full reproduction)
 python -m scripts.train --config configs/cifar100.yaml --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --run-name smoke_test_post_fix
 
-# 3. Chạy Full Single-Seed Reproduction trên GPU (10 tasks x 10 classes, 50.000 train, 10.000 test)
+# 3. Chạy Full Single-Seed Reproduction của Nhóm trên GPU (10 tasks x 10 classes, 50.000 train, 10.000 test)
 python -m scripts.train --config configs/cifar100.yaml --device cuda --seed 42 --wandb --run-name foal_full_cifar100_seed42
 
-# 4. Đánh giá độc lập Checkpoint cuối
+# 4. Đánh giá độc lập Checkpoint cuối của Nhóm
 python -m scripts.evaluate --checkpoint results/foal_full_cifar100_seed42/task_10.pt --device cuda
 
-# 5. Chạy Multi-Seed (3 seeds: 42, 123, 2026) và tổng hợp Mean +/- Std
-python -m scripts.run_seeds --seeds 42 123 2026 --config configs/cifar100.yaml --device cuda --wandb --run-name-prefix foal_cifar100 --skip-completed
+# 5. Chạy Code Gốc của Tác giả (liuyuchen-cz/F-OAL @ 73e4ac1) trên Colab GPU
+# Mở và chạy tuần tự Cell 1 -> Cell 10 trong: notebooks/foal_official_cifar100_reproduction.ipynb
 
-# 6. Chạy 4 cấu hình Ablation Study trên GPU
-python -m scripts.ablation --config configs/cifar100.yaml --device cuda --wandb
-
-# 7. Tổng hợp toàn bộ kết quả hợp lệ trong thư mục results/
+# 6. Tổng hợp toàn bộ kết quả hợp lệ trong thư mục results/
 python -m scripts.summarize_runs --results-dir results
 ```
 
@@ -107,35 +109,23 @@ python -m scripts.summarize_runs --results-dir results
 
 ---
 
-### 4.2. Kết quả Single-Seed Full Reproduction trên GPU (P1.2 — CIFAR-100, 10 Tasks, Seed 42)
+### 4.2. Kết quả Single-Seed Full Reproduction của Nhóm trên GPU (P1.2 — CIFAR-100, 10 Tasks, Seed 42, Commit `aad7500`)
 
-> **Ghi chú Sửa lỗi Tài liệu & Trạng thái Bằng chứng (01/11/2026):**
-> 1. Các số liệu dưới đây được khôi phục chính xác từ [`results/foal_full_cifar100_seed42/metrics.json`](../results/foal_full_cifar100_seed42/metrics.json), khắc phục lỗi mất chữ số đầu do nội suy biến `$` của PowerShell trong commit `c74b0de`.
-> 2. **Trạng thái hiện vật (`VERIFIED` trên đĩa cục bộ & Git):** Gói kết quả [`foal_cifar100_single_seed42_results.zip`](../foal_cifar100_single_seed42_results.zip) ($109.8\text{ MB}$) đã được giải nén và kiểm chứng đầy đủ:
->    * Các tệp kết quả nhẹ ([`metrics.json`](../results/foal_full_cifar100_seed42/metrics.json), [`metadata.json`](../results/foal_full_cifar100_seed42/metadata.json), [`task_accuracy.csv`](../results/foal_full_cifar100_seed42/task_accuracy.csv), [`summary_runs.csv`](../results/summary_runs.csv), [`summary_aggregated.csv`](../results/summary_aggregated.csv)) được lưu trực tiếp trên Git.
->    * 10 tệp checkpoint nhị phân `task_01.pt` .. `task_10.pt` ($\approx 11.5\text{ MB}$/tệp; đã kiểm chứng `task_10.pt` có $\|R - R^\top\|_{\max} = 0.0$, `all_finite = True`) và gói W&B offline `wandb/offline-run-20261101_084136-2cdeiptv/run-2cdeiptv.wandb` ($188\text{ KB}$) được lưu trên đĩa cục bộ (loại khỏi Git để tránh giới hạn $100\text{ MB}$/tệp của GitHub).
+* **Thiết bị & Môi trường:** Google Colab GPU — NVIDIA Tesla T4 (`CUDA 13.0`, `Python 3.13.16`, `torch 2.11.0+cu130`, `timm 1.0.30`).
+* **Git Commit thực thi:** `aad7500c425bd13ece2fd7d4d21014616344ec81` (`aad7500`).
+* **Giao thức & Siêu tham số:** CIFAR-100 (`uoft-cs/cifar100`), 10 tasks $\times$ 10 classes, `batch_size = 10`, one-pass (`50,000` train, `10,000` test), `seed = 42` (`class_order_seed = projection_seed = stream_seed = 42`), backbone `vit_base_patch16_224.augreg_in1k` (bicubic $224 \times 224$, `mean=(0.5,0.5,0.5)`, `std=(0.5,0.5,0.5)`), Smooth Projection $\mathcal{N}(0, 1)$ (`gaussian_std = 1.0`, $D = 1000$), RLS `gamma = 1.0` (`float64`).
+* **Hiện vật đã xác minh (`VERIFIED`):**
+  * Gói nén gốc: `foal_cifar100_single_seed42_results.zip` (`109,814,583 bytes`, 0 lỗi CRC).
+  * Thư mục kết quả: [`results/foal_full_cifar100_seed42/`](../results/foal_full_cifar100_seed42/) (`metrics.json`, `metadata.json`, `task_accuracy.csv`, cùng 10 checkpoints `task_01.pt`..`task_10.pt` trên đĩa cục bộ).
+  * **W&B Online Run (`2cdeiptv` — Đã đồng bộ):** [`https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv).
+* **Kết quả tổng hợp (`n=1, std=N/A`):**
+  * **Average Incremental Accuracy ($\bar{A}$):** **$79.33\%$** (`0.7933317063492064`)
+  * **Last Accuracy ($A_{10}$):** **$70.92\%$** (`0.7091999999999999`)
+  * **Forgetting (`F_ours_definition`, 9-task):** **$9.21\%$** (`0.09211111111111112`)
+  * **Forgetting (`F_official_definition`, 10-task):** **$8.29\%$** (`0.0829`)
+  * **Thời gian chạy (`total_duration_seconds`):** **$1735.3\text{ s}$** ($\approx 28.92\text{ phút}$)
 
-#### A. Cấu hình Thực thi Chính xác (`configs/cifar100.yaml`)
-* **Thiết bị:** Google Colab GPU — NVIDIA T4 (`device = cuda`).
-* **Giao thức:** CIFAR-100, 10 tasks $\times$ 10 classes, `batch_size = 10`, one-pass (50.000 mẫu train, 10.000 mẫu test, không giới hạn số mẫu).
-* **Seeds:** `seed = 42` (`class_order_seed = 42`, `projection_seed = 42`, `stream_seed = 42`).
-* **Kiến trúc & Siêu tham số:**
-  * Backbone: `vit_base_patch16_224.augreg_in1k` (đóng băng 100%, resize bicubic $224 \times 224$, `mean = (0.5, 0.5, 0.5)`, `std = (0.5, 0.5, 0.5)`).
-  * Feature Fusion: Trung bình cộng CLS token của 12 transformer blocks + `network.norm` (final LayerNorm).
-  * Smooth Projection: Ma trận Gaussian cố định $W_{\text{proj}} \in \mathbb{R}^{768 \times 1000}$ (`projection_dim = 1000`, `gaussian_std = 1.0`) + hàm kích hoạt Sigmoid $\sigma(x W_{\text{proj}})$.
-  * Analytic Classifier (Online Ridge RLS): Cập nhật Woodbury trên `rls_dtype = float64` với hệ số chính quy hóa L2 **`gamma = 1.0`** ($R_0 = \gamma^{-1} I = I$). *(Đính chính: không có tham số `lambda = 0.1` trong mã nguồn).*
-* **Thời gian huấn luyện (`total_duration_seconds`):** **$1735.3\text{ giây}$ ($\approx 28.92\text{ phút}$)**.
-
-#### B. Bảng So sánh Chuẩn 3 Nguồn trên CIFAR-100 (Headline Comparison Table)
-
-| Phương pháp & Nguồn Kết quả | Loại Nguồn | Số Seeds | $\bar{A}$ ($A_{\text{avg}}$, $\uparrow$) | $A_{10}$ ($A_{\text{last}}$, $\uparrow$) | $F_{10}$ ($F$, $\downarrow$) | $\Delta_{\text{pp}}(\bar{A})$ | $\Delta_{\text{rel}}(\bar{A})$ | $\Delta_{\text{pp}}(A_{10})$ | $\Delta_{\text{rel}}(A_{10})$ | $\Delta_{\text{pp}}(F_{10})$ | $\Delta_{\text{rel}}(F_{10})$ | Thời gian (s) | Peak VRAM (GB) | W&B Run Link & Trạng thái Xác minh |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| **F-OAL (Paper Table 2 & 3)** | `PAPER_REPORTED` | 3 runs | **91.10%** | **86.50%** | **5.50%** | $0.00\text{ pp}$ | $0.00\%$ | $0.00\text{ pp}$ | $0.00\%$ | $0.00\text{ pp}$ | $0.00\%$ | $261\text{ s}$ (RTX 4070 Ti) | $1.9\text{ GB}$ | Số liệu công bố trong bài báo NeurIPS 2024. |
-| **F-OAL (Author Repo `liuyuchen-cz/F-OAL @ 73e4ac1`)** | `ORIGINAL_REPRODUCED` | `PENDING` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Đã chuẩn bị [`notebooks/foal_official_cifar100_reproduction.ipynb`](../notebooks/foal_official_cifar100_reproduction.ipynb) (**A19**). |
-| **F-OAL (Ours — Colab T4, code commit `aad7500`)** | `OUR_REPRODUCED` *(1-seed v1)* | `n=1, std=N/A` (`seed=42`) | **79.33%** (`n=1, std=N/A`) | **70.92%** (`n=1, std=N/A`) | **9.21%** (`n=1, std=N/A`) | **$-11.77\text{ pp}$** | **$-12.92\%$** | **$-15.58\text{ pp}$** | **$-18.01\%$** | **$+3.71\text{ pp}$** | **$+67.45\%$** | $1735.3\text{ s}$ (Colab T4) | `NOT LOGGED` | `offline-run-2cdeiptv` (`PENDING_USER_AUTH` để `wandb sync`); hiện vật gốc tại `results/foal_full_cifar100_seed42/` (`VERIFIED`). |
-| **F-OAL (Ours — Sau điều tra A20 & 3 Seeds)** | `OUR_REPRODUCED` *(3-seed)* | 3 (`42, 123, 2026`) | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` — Sẽ thực thi tại Stage D (**A12**, **A21**). |
-
-#### C. Ma trận Độ chính xác $10 \times 10$ Đầy đủ (`OUR_REPRODUCED`, Seed 42)
+#### Ma trận Độ chính xác $10 \times 10$ Đầy đủ (`OUR_REPRODUCED`, Seed 42, Commit `aad7500`)
 
 | Giai đoạn (Sau Task $k$) | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 | Task 6 | Task 7 | Task 8 | Task 9 | Task 10 | **Stage Accuracy ($A_k$)** |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -149,16 +139,91 @@ python -m scripts.summarize_runs --results-dir results
 | **Stage 8** | 67.40% | 80.90% | 75.50% | 74.30% | 72.70% | 71.70% | 75.90% | **73.70%** | — | — | **74.01%** |
 | **Stage 9** | 64.70% | 78.60% | 74.80% | 73.80% | 71.30% | 71.10% | 75.60% | 71.60% | **69.30%** | — | **72.31%** |
 | **Stage 10 (Final)** | 60.50% | 76.20% | 74.00% | 73.50% | 70.50% | 69.50% | 74.20% | 71.00% | 68.40% | **71.40%** | **70.92%** ($A_{10}$) |
-| **Task Forgetting ($f_j^{10}$)** | **29.10%** | **15.00%** | **10.60%** | **8.00%** | **7.30%** | **6.00%** | **3.30%** | **2.70%** | **0.90%** | — | **Mean $F_{10} = 9.21\%$** |
+| **Task Forgetting ($f_j^{10}$)** | **29.10%** | **15.00%** | **10.60%** | **8.00%** | **7.30%** | **6.00%** | **3.30%** | **2.70%** | **0.90%** | $0.00\%$ | **$9.21\%$ (9-task) / $8.29\%$ (10-task)** |
 
-#### D. Nhận định Học thuật & Các Giả thuyết Cần Kiểm chứng về Khoảng cách Kết quả (`79.33%` vs `91.10%`)
-* **Tính đúng đắn kỹ thuật đã được xác nhận:** Quá trình chạy đã hoàn tất toàn bộ 10 tasks (50.000 mẫu train, 10.000 mẫu test) mà không phát sinh lỗi `NaN`/`Inf`, đồng thời ma trận $10 \times 10$ thỏa mãn chính xác các đẳng thức của $\bar{A} = 79.33\%$, $A_{10} = 70.92\%$ và $F_{10} = 9.21\%$.
-* **Tại sao khoảng cách $-11.77\text{ pp}$ trên $\bar{A}$ và $-15.58\text{ pp}$ trên $A_{10}$ cần được điều tra sâu hơn ngoài thứ tự lớp (`A04`):**
-  * Về mặt toán học, tại thời điểm kết thúc Task 10 (khi mô hình đã đi qua toàn bộ 50.000 mẫu huấn luyện của 100 lớp), nghiệm giải tích của bài toán Ridge Regression $W_{10}^* = (\gamma I + H^\top H)^{-1} H^\top Y$ **hoàn toàn bất biến với thứ tự chia lớp (`class_order`) hay thứ tự trộn mẫu (`stream_seed`)**!
-  * Do đó, việc độ chính xác cuối cùng $A_{10}$ của nhóm đạt $70.92\%$ so với $86.50\%$ của bài báo ($\Delta_{\text{pp}} = -15.58\text{ pp}$) chứng minh rằng nguyên nhân cốt lõi **nằm ở biểu diễn đặc trưng đưa vào bộ phân loại RLS**, bao gồm các giả thuyết chính sẽ được kiểm chứng trong **A19** và **A20**:
-    1. **Giả thuyết H1 (Pretrained ViT Checkpoint — `A01`):** Tác giả có thể sử dụng trọng số ViT-B/16 được pre-train trên ImageNet-21K rồi fine-tune trên ImageNet-1K (`vit_base_patch16_224.augreg_in21k_ft_in1k`) thay vì chỉ `augreg_in1k`.
-    2. **Giả thuyết H2 (Sự bão hòa Sigmoid trong Smooth Projection — `A03`):** Trong `src/foal/projection.py`, ma trận chiếu được khởi tạo $W_{\text{proj}} \sim \mathcal{N}(0, 1)^{768 \times 1000}$ (`gaussian_std = 1.0`). Khi nhân với vector đặc trưng $768$ chiều sau LayerNorm, tích vô hướng trước Sigmoid có độ lệch chuẩn $\approx \sqrt{768} \approx 27.7$, làm hàm $\sigma(\cdot)$ bão hòa về $0$ hoặc $1$. Trong code gốc của tác giả, phép chiếu có thể được khởi tạo với độ lệch chuẩn $1/\sqrt{768}$ (như mặc định của `nn.Linear`) hoặc chuẩn hóa L2 vector đặc trưng trước khi chiếu.
-    3. **Giả thuyết H3–H5 (Vị trí LayerNorm / Chuẩn hóa L2 trong Feature Fusion, Preprocessing, hoặc quy ước $\gamma$ trong RLS):** Sẽ được đối chiếu từng dòng lệnh với repo gốc `liuyuchen-cz/F-OAL` tại Stage B & Stage C.
+---
+
+### 4.3. Official F-OAL CIFAR-100 Reproduction Results (`A19` — Code Gốc Tác giả `liuyuchen-cz/F-OAL @ 73e4ac1`, Seed 0)
+
+#### A. Thiết lập Thực nghiệm & Xác minh Nguồn gốc (`COMPATIBILITY-PATCHED ORIGINAL` — Zero Algorithmic Modification)
+* **Repository gốc:** `https://github.com/liuyuchen-cz/F-OAL.git`
+* **Commit SHA đã checkout & xác minh:** `73e4ac1b4c965030973a2b77f05c57c2f44f49f5` (`73e4ac1`).
+* **Phân loại Mức độ Chỉnh sửa:** **`COMPATIBILITY-PATCHED ORIGINAL` (Không chỉnh sửa bất kỳ tệp nào trong `/content/official-F-OAL`, không thay đổi thuật toán/siêu tham số):**
+  * Tệp `utils/name_match.py:21` trong repo tác giả import sẵn `from agents.exp_replay_dvc import ExperienceReplay_DVC`, tệp này gọi `from loss import agmax_loss, cross_entropy_loss` (`agents/exp_replay_dvc.py:10`), nhưng tác giả quên không đưa tệp `loss.py` của phương pháp DVC lên GitHub. Vì thuật toán `FOAL` hoàn toàn không sử dụng `ExperienceReplay_DVC`, nhóm đã cung cấp một tệp shim bên ngoài tại `/content/official_foal_shim/loss.py` qua biến môi trường `PYTHONPATH` để Python vượt qua bước import đầu chương trình mà giữ nguyên `git status` sạch 100% trong `/content/official-F-OAL`.
+  * Sử dụng đúng tên cờ `--projection 1000` theo `general_main.py:164` (thay vì lỗi đánh máy `--projection_size` trong `README.md` của tác giả).
+* **Lệnh thực thi:**
+  ```bash
+  /usr/bin/python3 -u general_main.py --data cifar100 --cl_type nc --agent FOAL --batch 10 --test_batch 10 --projection 1000 --num_runs 1 --seed 0 --verbose True
+  ```
+* **Phần cứng & Phần mềm:** Google Colab NVIDIA Tesla T4 (`CUDA 13.0`, `Python 3.13.16`, `torch 2.11.0+cu130`, `torchvision 0.26.0+cu130`, `timm 1.0.30`, `kornia 0.9.0`).
+* **Tập dữ liệu & Thứ tự lớp (`seed = 0`):** CIFAR-100 (`torchvision.datasets.CIFAR100`), 100 lớp, 50.000 mẫu train ($5,000$/task), 10.000 mẫu test ($1,000$/task), 10 tasks $\times$ 10 classes, one-pass (`epoch = 1`), `batch = 10`, `test_batch = 10`. Hoán vị lớp sinh bởi `np.random.seed(0); np.random.permutation(100)`:
+  * `Task 0`: `[26, 86, 2, 55, 75, 93, 16, 73, 54, 95]`
+  * `Task 1`: `[53, 92, 78, 13, 7, 30, 22, 24, 33, 8]`
+  * `Task 2`: `[43, 62, 3, 71, 45, 48, 6, 99, 82, 76]`
+  * `Task 3`: `[60, 80, 90, 68, 51, 27, 18, 56, 63, 74]`
+  * `Task 4`: `[1, 61, 42, 41, 4, 15, 17, 40, 38, 5]`
+  * `Task 5`: `[91, 59, 0, 34, 28, 50, 11, 35, 23, 52]`
+  * `Task 6`: `[10, 31, 66, 57, 79, 85, 32, 84, 14, 89]`
+  * `Task 7`: `[19, 29, 49, 97, 98, 69, 20, 94, 72, 77]`
+  * `Task 8`: `[25, 37, 81, 46, 39, 65, 58, 12, 88, 70]`
+  * `Task 9`: `[87, 36, 21, 83, 9, 96, 67, 64, 47, 44]`
+* **Hiện vật đã xác minh (`VERIFIED`):**
+  * Gói nén: `foal_official_cifar100_results.zip` (`19,080 bytes`, SHA256 `e3bc5c1e8637da7f16d0c29de9d617908632ac908ae62d92ba8e1a4763b787e4`, 12 tệp, 0 lỗi CRC).
+  * Thư mục lưu trữ: [`results/official_foal_cifar100_seed0/`](../results/official_foal_cifar100_seed0/) (`metrics.json`, `metadata.json`, `task_accuracy.csv`, `cifar100_FOAL.csv`, `official_stdout.log`). *(Lưu ý: Code gốc của tác giả trong `experiment/run.py` không lưu tệp `.pt` checkpoint).*
+  * **W&B Online Run (`3eca8232` — Đã đồng bộ):** [`https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232).
+
+#### B. Kiểm chứng Toán học Độc lập (`Official Log` vs. `Extracted JSON` vs. `Independent Recalculation`)
+
+| Metric | Official Log (`official_stdout.log` & `cifar100_FOAL.csv`) | Extracted JSON (`metrics.json`) | Independent Recalculation | Match? |
+|---|---:|---:|---:|:---:|
+| **Average Incremental Accuracy ($\bar{A}$)** | `0.9098279365079364` (`90.98%`) | `0.9098279365079364` | `0.9098279365079364` ($\text{diff} = 0.0$) | **`EXACT MATCH`** |
+| **Last Accuracy ($A_{10}$)** | `0.8583999999999999` (`85.84%`) | `0.8583999999999999` | `0.8583999999999999` ($\text{diff} = 0.0$) | **`EXACT MATCH`** |
+| **Forgetting — Official 10-Task Def ($F_{\text{official}}$)** | `0.0469` (`4.69%`) | `0.0469` | `0.0469` (`0.469 / 10`, $\text{diff} = 0.0$) | **`EXACT MATCH`** |
+| **Forgetting — Standard 9-Task Def ($F_{\text{ours}}$)** | — *(Computed from printed $10 \times 10$ matrix)* | `0.051666666666666666` (`5.17%`) | `0.051666666666666666` (`0.465 / 9`, $\text{diff} = 0.0$) | **`EXACT MATCH`** |
+| **Runtime (Seconds)** | `3047.5978 s` (`train: 1544.96 s`, `test: 1496.42 s`) | `3056.24 s` *(outer subprocess wall-clock)* | `3047.60 s` (internal) / `3056.24 s` (subprocess) | **`VERIFIED`** |
+
+#### C. Ma trận Độ chính xác $10 \times 10$ Đầy đủ của Code Gốc Tác giả (`ORIGINAL_REPRODUCED`, Seed 0, Commit `73e4ac1`)
+
+| Giai đoạn (Sau Task $k$) | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 | Task 6 | Task 7 | Task 8 | Task 9 | Task 10 | **Stage Accuracy ($A_k$)** |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Stage 1** | **96.60%** | — | — | — | — | — | — | — | — | — | **96.60%** |
+| **Stage 2** | 94.90% | **96.60%** | — | — | — | — | — | — | — | — | **95.75%** |
+| **Stage 3** | 93.50% | 94.00% | **94.50%** | — | — | — | — | — | — | — | **94.00%** |
+| **Stage 4** | 92.50% | 92.20% | 93.70% | **90.20%** | — | — | — | — | — | — | **92.15%** |
+| **Stage 5** | 91.20% | 91.90% | 92.60% | 89.60% | **93.60%** | — | — | — | — | — | **91.78%** |
+| **Stage 6** | 89.30% | 91.00% | 92.40% | 87.70% | 92.70% | **84.90%** | — | — | — | — | **89.67%** |
+| **Stage 7** | 88.50% | 90.50% | 92.00% | 87.40% | 91.80% | 83.90% | **88.10%** | — | — | — | **88.89%** |
+| **Stage 8** | 86.70% | 90.10% | 91.10% | 86.10% | 90.80% | 81.50% | 87.20% | **91.30%** | — | — | **88.10%** |
+| **Stage 9** | 86.60% | 87.90% | 90.80% | 85.50% | 89.30% | 79.00% | 87.20% | 90.40% | **86.80%** | — | **87.06%** |
+| **Stage 10 (Final)** | 86.10% | 86.90% | 90.30% | 84.20% | 88.90% | 75.80% | 86.60% | 90.10% | 87.20% | **82.30%** | **85.84%** ($A_{10}$) |
+| **Forgetting $f_{j,\text{ours}}^{10}$ ($\max_{k \le 9}$)** | **10.50%** | **9.70%** | **4.20%** | **6.00%** | **4.70%** | **9.10%** | **1.50%** | **1.20%** | **$-0.40\%$** | — | **Mean $F_{\text{ours}} = 5.17\%$** |
+| **Forgetting $f_{j,\text{official}}^{10}$ ($\max_{k \le 10}$)** | **10.50%** | **9.70%** | **4.20%** | **6.00%** | **4.70%** | **9.10%** | **1.50%** | **1.20%** | **0.00%** | **0.00%** | **Mean $F_{\text{official}} = 4.69\%$** |
+
+---
+
+### 4.4. Bảng Đối chiếu Khoa học 3 Nguồn trên CIFAR-100 (`Paper vs. Official Run vs. Our Run`)
+
+> **Lưu ý về tính công bằng thống kê (`D5`):**
+> * **Paper** báo cáo trung bình qua **3 runs**.
+> * **Official Run** hiện tại là kết quả đơn seed (**`n=1, std=N/A`**, `seed=0`).
+> * **Our Run** hiện tại là kết quả đơn seed (**`n=1, std=N/A`**, `seed=42`).
+> * Mọi phép cộng/trừ độ lệch dưới đây chỉ thực hiện giữa các chỉ số **có cùng định nghĩa toán học**.
+
+| Chỉ số Đánh giá (Metric) | Paper (3-run Mean) | Official Run (`73e4ac1`, `seed=0`, `n=1`) | Our Run (`aad7500`, `seed=42`, `n=1`) | Official vs. Paper ($\Delta_{\text{pp}}$ / $\Delta_{\text{rel}}$) | Ours vs. Official ($\Delta_{\text{pp}}$ / $\Delta_{\text{rel}}$) | Ours vs. Paper ($\Delta_{\text{pp}}$ / $\Delta_{\text{rel}}$) |
+|:---|---:|---:|---:|---:|---:|---:|
+| **Average Incremental Accuracy ($\bar{A}$, $\uparrow$)** | **91.10%** | **90.98%** (`n=1, std=N/A`) | **79.33%** (`n=1, std=N/A`) | **$-0.12\text{ pp}$** (`-0.13%`) | **$-11.65\text{ pp}$** (`-12.80%`) | **$-11.77\text{ pp}$** (`-12.92%`) |
+| **Last Accuracy ($A_{10}$, $\uparrow$)** | **86.50%** | **85.84%** (`n=1, std=N/A`) | **70.92%** (`n=1, std=N/A`) | **$-0.66\text{ pp}$** (`-0.76%`) | **$-14.92\text{ pp}$** (`-17.38%`) | **$-15.58\text{ pp}$** (`-18.01%`) |
+| **Forgetting — Official 10-Task Def ($F_{\text{official}}$, $\downarrow$)** | **5.50%** | **4.69%** (`n=1, std=N/A`) | **8.29%** (`n=1, std=N/A`) | **$-0.81\text{ pp}$** (`-14.73%`) | **$+3.60\text{ pp}$** (`+76.76%`) | **$+2.79\text{ pp}$** (`+50.73%`) |
+| **Forgetting — Standard 9-Task Def ($F_{\text{ours}}$, $\downarrow$)** | — *(Không dùng)* | **5.17%** (`n=1, std=N/A`) | **9.21%** (`n=1, std=N/A`) | — | **$+4.04\text{ pp}$** (`+78.26%`) | — *(Khác mẫu số)* |
+| **Training + Evaluation Time (s)** | $261.0\text{ s}$ (RTX 4070 Ti) | $3047.6\text{ s}$ (Colab T4) | $1735.3\text{ s}$ (Colab T4) | — | $-1312.3\text{ s}$ (`-43.06%`) | — |
+| **W&B Run Link** | — | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | — | — | — |
+
+#### Tóm tắt Các Khác biệt Giao thức Đã Xác minh giữa Official (`73e4ac1`) và Ours (`aad7500`)
+Chi tiết phân tích mã nguồn và kế hoạch thí nghiệm kiểm soát biến số (`C0`–`C4`) được trình bày tại [`docs/original_vs_ours_protocol.md`](original_vs_ours_protocol.md):
+1. **`H1` (Pretrained ViT Checkpoint — `VERIFIED DIFFERENCE`):** Code tác giả gọi `timm.create_model('vit_base_patch16_224', pretrained=True)` (tải `timm/vit_base_patch16_224.augreg2_in21k_ft_in1k`, pre-train trên ImageNet-21K rồi fine-tune trên ImageNet-1K), trong khi bản chạy `aad7500` của nhóm dùng `vit_base_patch16_224.augreg_in1k` (chỉ pre-train trên ImageNet-1K).
+2. **`H2` (Smooth Projection Initialization — `VERIFIED DIFFERENCE`):** Code tác giả dùng `nn.Linear(768, 1000, bias=False)` ($\mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$, $\text{std}(u) \approx 0.578$, tỷ lệ bão hòa Sigmoid $0.00\%$), trong khi bản chạy `aad7500` của nhóm dùng $\mathcal{N}(0, 1)$ ($\text{std}(u) \approx 27.79$, tỷ lệ bão hòa Sigmoid $86.88\%$).
+3. **`H4` (Image Preprocessing — `VERIFIED DIFFERENCE`):** Code tác giả resize Bilinear và giữ pixel trong $[0, 1]$ (không `Normalize`), trong khi nhóm resize Bicubic và chuẩn hóa `mean=0.5, std=0.5` về $[-1, 1]$.
+4. **`H6` & `H7` (Random Seed & Forgetting Formula — `VERIFIED DIFFERENCE`):** Code tác giả dùng `seed=0` (`np.random.seed(0)`) và chia Forgetting cho $T=10$ tasks; nhóm dùng `seed=42` (`default_rng(42)`) và chia Forgetting cho $T-1=9$ tasks.
 
 ---
 
@@ -166,9 +231,9 @@ python -m scripts.summarize_runs --results-dir results
 
 ### 5.1. Bảng Ablation Study (Đối chiếu Table 4 — Feature Fusion & Smooth Projection)
 
-| Cấu hình Ablation | Feature Fusion (FF) | Smooth Projection (SP) | Paper DTD $\bar{A}$ (Tham chiếu Table 4) | Ours CIFAR-100 $\bar{A}$ ($Mean \pm Std$) | Ours CIFAR-100 $A_{10}$ ($Mean \pm Std$) | Ours CIFAR-100 $F_{10}$ ($Mean \pm Std$) | W&B Run Link |
+| Cấu hình Ablation | Feature Fusion (FF) | Smooth Projection (SP) | Paper DTD $\bar{A}$ (Tham chiếu Table 4) | Ours CIFAR-100 $\bar{A}$ | Ours CIFAR-100 $A_{10}$ | Ours CIFAR-100 $F_{\text{ours}}$ | W&B Run Link |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| **1. Full F-OAL** | Có (`True`) | Có (`True`, $D=1000$) | $82.80\%$ | `79.33%` *(1-seed v1)* / `PENDING 3-seed` | `70.92%` *(1-seed v1)* | `9.21%` *(1-seed v1)* | `NOT YET SYNCED` |
+| **1. Full F-OAL (`aad7500` v1)** | Có (`True`) | Có (`True`, $D=1000$) | $82.80\%$ | `79.33% (n=1, std=N/A)` | `70.92% (n=1, std=N/A)` | `9.21% (n=1, std=N/A)` | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) |
 | **2. w/o Feature Fusion** | Không (`False`, last block) | Có (`True`, $D=1000$) | $80.50\%$ | `NOT RUN` *(Stage E)* | `NOT RUN` | `NOT RUN` | `NOT YET SYNCED` |
 | **3. w/o Smooth Projection** | Có (`True`) | Không (`False`, $D=768$) | $79.30\%$ | `NOT RUN` *(Stage E)* | `NOT RUN` | `NOT RUN` | `NOT YET SYNCED` |
 | **4. w/o Both** | Không (`False`) | Không (`False`, $D=768$) | $71.20\%$ | `NOT RUN` *(Stage E)* | `NOT RUN` | `NOT RUN` | `NOT YET SYNCED` |
@@ -178,7 +243,7 @@ python -m scripts.summarize_runs --results-dir results
 | Batch Size ($B$) | Số bước cập nhật RLS / Task | $\bar{A}$ ($A_{\text{avg}}$) | $A_{10}$ ($A_{\text{last}}$) | Sai lệch $\|W_{10}^{(B)} - W_{10}^{(10)}\|_F$ | Thời gian chạy (s) | Peak VRAM (GB) | W&B Run Link |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
 | $B = 5$ | $1000$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
-| $B = 10$ *(Mặc định)* | $500$ | **79.33%** *(v1)* | **70.92%** *(v1)* | $0.0$ (Tham chiếu) | $1735.3\text{ s}$ | `PENDING` | `NOT YET SYNCED` |
+| $B = 10$ *(Mặc định)* | $500$ | **79.33%** *(v1)* | **70.92%** *(v1)* | $0.0$ (Tham chiếu) | $1735.3\text{ s}$ | `PENDING` | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) |
 | $B = 25$ | $200$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 50$ | $100$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 100$ | $50$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |

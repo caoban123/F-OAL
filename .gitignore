@@ -5,6 +5,7 @@ __pycache__/
 .env
 .ipynb_checkpoints/
 wandb/
+artifacts/
 results/*
 !results/.gitkeep
 !results/summary_runs.csv
@@ -12,6 +13,7 @@ results/*
 !results/summary_ablation.csv
 !results/foal_full_cifar100_seed42/
 results/foal_full_cifar100_seed42/*.pt
+!results/official_foal_cifar100_seed0/
 *.zip
 data/
 *.ckpt
