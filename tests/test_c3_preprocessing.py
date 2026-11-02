@@ -227,32 +227,48 @@ def test_cache_key_isolation_and_rejection(tmp_path):
 
 def test_factorial_contrast_calculation():
     """Verify 2x2 factorial contrast formulas for main effects, interaction, and total delta."""
-    # Synthetic accuracy test values:
+    # Synthetic accuracy test values Case 1 (with non-zero interaction):
     # Condition A (Bicubic, Norm): 91.0
     # Condition B (Bilinear, Norm): 91.4 (+0.4 Interp effect in Norm)
     # Condition C (Bicubic, Raw): 90.6 (-0.4 Norm effect in Bicubic)
     # Condition D (Bilinear, Raw): 91.2 (+0.6 Interp effect in Raw; +0.2 Interact)
     a, b, c, d = 91.0, 91.4, 90.6, 91.2
     
-    # Main effect of Interpolation (Bilinear - Bicubic)
-    # 0.5 * [(B - A) + (D - C)] = 0.5 * [(91.4 - 91.0) + (91.2 - 90.6)] = 0.5 * [0.4 + 0.6] = +0.50
+    # 1. Main effect of Interpolation: E_interp = 0.5 * [(B - A) + (D - C)]
     delta_interp = 0.5 * ((b - a) + (d - c))
     assert pytest.approx(delta_interp, abs=1e-5) == 0.50
     
-    # Main effect of Normalization (Raw - Normalized)
-    # 0.5 * [(C - A) + (D - B)] = 0.5 * [(90.6 - 91.0) + (91.2 - 91.4)] = 0.5 * [-0.4 + -0.2] = -0.30
+    # 2. Main effect of Normalization: E_norm = 0.5 * [(C - A) + (D - B)]
     delta_norm = 0.5 * ((c - a) + (d - b))
     assert pytest.approx(delta_norm, abs=1e-5) == -0.30
     
-    # Interaction effect
-    # (D - B) - (C - A) = (-0.2) - (-0.4) = +0.20
-    delta_interact = (d - b) - (c - a)
-    assert pytest.approx(delta_interact, abs=1e-5) == 0.20
+    # 3. Interaction Contrast: Contrast = D - C - B + A = (D - B) - (C - A)
+    contrast = d - c - b + a
+    assert pytest.approx(contrast, abs=1e-5) == 0.20
+    assert pytest.approx((d - b) - (c - a), abs=1e-5) == contrast
     
-    # Total preprocessing delta (D - A)
-    # 91.2 - 91.0 = +0.20
-    # Note mathematical identity: delta_total = delta_interp + delta_norm + 0 (if interaction is zero)
-    # or delta_total = (b - a) + (d - b) = delta_interp + delta_norm = 0.50 - 0.30 = 0.20
+    # In 2x2 factorial design:
+    # - Average interaction effect: Contrast / 2 = 0.10
+    # - Regression coefficient beta_12 under +/-1 effects coding: Contrast / 4 = 0.05
+    avg_interaction_effect = contrast / 2.0
+    beta_12_effects_coding = contrast / 4.0
+    assert pytest.approx(avg_interaction_effect, abs=1e-5) == 0.10
+    assert pytest.approx(beta_12_effects_coding, abs=1e-5) == 0.05
+    
+    # 4. Total Preprocessing Shift: Delta_total = D - A
+    # Mathematical identity: Delta_total = E_interp + E_norm
     delta_total = d - a
     assert pytest.approx(delta_total, abs=1e-5) == 0.20
     assert pytest.approx(delta_total, abs=1e-5) == (delta_interp + delta_norm)
+
+    # Synthetic Case 2: Purely additive factors (Zero interaction)
+    # Factor A adds +1.0, Factor B subtracts -2.0
+    a2 = 90.0
+    b2 = a2 + 1.0  # 91.0
+    c2 = a2 - 2.0  # 88.0
+    d2 = a2 + 1.0 - 2.0  # 89.0
+    contrast2 = d2 - c2 - b2 + a2
+    assert pytest.approx(contrast2, abs=1e-5) == 0.0
+    assert pytest.approx(0.5 * ((b2 - a2) + (d2 - c2)), abs=1e-5) == 1.0
+    assert pytest.approx(0.5 * ((c2 - a2) + (d2 - b2)), abs=1e-5) == -2.0
+    assert pytest.approx(d2 - a2, abs=1e-5) == -1.0

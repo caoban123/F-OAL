@@ -1,14 +1,22 @@
 """C3 Preprocessing Alignment Diagnostics on Matched CIFAR-100 Samples.
 
-Evaluates 200 real CIFAR-100 test samples across the 2x2 factorial preprocessing design:
+Evaluates real CIFAR-100 test samples across the 2x2 factorial preprocessing design:
   - C3-A: Bicubic, Normalize [-1, 1]
   - C3-B: Bilinear, Normalize [-1, 1]
   - C3-C: Bicubic, Raw [0, 1]
   - C3-D: Bilinear, Raw [0, 1]
 Also compares C3-D against the official author transform.
+
+Records:
+  - Exact sample indices, selection seed (42), and indices SHA256
+  - True class labels, count of unique classes, and class composition
+  - Mathematical effective rank with explicit sample-size bounds (N-1)
+  - Pre-activation statistics and Sigmoid saturation fraction
+  - Intra-class vs inter-class cosine separation
 """
 from __future__ import annotations
 import argparse
+import collections
 import hashlib
 import json
 import os
@@ -42,13 +50,33 @@ def get_official_author_transform():
     ])
 
 
-def run_diagnostics(num_samples: int = 200, device: str = 'cpu', output_path: str | None = None) -> dict:
-    print(f"=== C3 Preprocessing Diagnostics ({num_samples} samples, device={device}) ===")
+def run_diagnostics(num_samples: int = 200, seed: int = 42, device: str = 'cpu', output_path: str | None = None) -> dict:
+    diag_type = "SMOKE_TEST_ONLY" if num_samples < 50 else "FULL_MATCHED_DIAGNOSTICS"
     
     # 1. Load CIFAR-100 test data
     _, test_source = load_cifar100()
-    rng = np.random.default_rng(42)
+    rng = np.random.default_rng(seed)
     sample_indices = rng.choice(len(test_source), size=num_samples, replace=False).tolist()
+    sample_indices_sha = hashlib.sha256(json.dumps(sample_indices).encode('utf-8')).hexdigest()
+    
+    # Extract labels and compute class composition
+    sample_labels = [int(test_source[idx]['fine_label']) for idx in sample_indices]
+    unique_classes = sorted(list(set(sample_labels)))
+    class_counts = dict(collections.Counter(sample_labels))
+    labels_tensor = torch.tensor(sample_labels, dtype=torch.long)
+    
+    print("=" * 80)
+    print(f"C3 PREPROCESSING MATCHED DIAGNOSTICS")
+    print(f"Type              : {diag_type}")
+    print(f"Sample Count (N)  : {num_samples}")
+    print(f"Unique Classes    : {len(unique_classes)} / 100")
+    print(f"Sample Seed       : {seed}")
+    print(f"Indices SHA256    : {sample_indices_sha[:16]}...")
+    print(f"Compute Device    : {device}")
+    if num_samples < 50:
+        print(f"WARNING: Smoke test mode (N={num_samples}). Effective rank centered covariance is mathematically")
+        print(f"         bounded by min(N-1, d) = {min(num_samples-1, 768)}! Not representative of full feature space.")
+    print("=" * 80)
     
     # 2. Build 4 condition transforms + official transform
     transforms_dict = {
@@ -102,11 +130,13 @@ def run_diagnostics(num_samples: int = 200, device: str = 'cpu', output_path: st
         features = torch.cat(feats_list, dim=0) # [N, 768]
         features_dict[name] = features
         
-        diag = compute_backbone_feature_diagnostics(features)
+        diag = compute_backbone_feature_diagnostics(features, labels=labels_tensor)
         feature_stats[name] = {
             'norm_mean': diag['l2_norm']['mean'],
             'norm_std': diag['l2_norm']['std'],
             'r_eff': diag['centered_covariance']['effective_rank'],
+            'r_eff_max_bound': min(num_samples - 1, 768),
+            'class_separation': diag.get('class_separation'),
         }
     
     # 6. Pairwise cosine similarity across conditions
@@ -146,7 +176,14 @@ def run_diagnostics(num_samples: int = 200, device: str = 'cpu', output_path: st
         }
     
     results = {
+        'diagnostics_type': diag_type,
         'num_samples': num_samples,
+        'sample_selection_seed': seed,
+        'sample_indices_sha256': sample_indices_sha,
+        'sample_indices': sample_indices,
+        'num_unique_classes': len(unique_classes),
+        'unique_classes': unique_classes,
+        'class_composition': class_counts,
         'device': device,
         'backbone': backbone_name,
         'projection_sha256': p_sha,
@@ -167,7 +204,7 @@ def run_diagnostics(num_samples: int = 200, device: str = 'cpu', output_path: st
         'projection_stats': projection_stats,
     }
     
-    print("\n--- Summary of Tensor & Feature Diagnostics ---")
+    print(f"\n--- Summary of Tensor & Feature Diagnostics [{diag_type}, N={num_samples}] ---")
     print(f"{'Condition':<10} | {'Pixel Range':<18} | {'Feat Norm':<12} | {'r_eff':<8} | {'u std':<8} | {'Sat %':<8}")
     print("-" * 75)
     for k in ['C3-A', 'C3-B', 'C3-C', 'C3-D', 'Official']:
@@ -193,7 +230,8 @@ def run_diagnostics(num_samples: int = 200, device: str = 'cpu', output_path: st
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="C3 Preprocessing Matched Diagnostics")
     parser.add_argument('--num-samples', type=int, default=200, help="Number of test samples")
+    parser.add_argument('--seed', type=int, default=42, help="Sample selection seed")
     parser.add_argument('--device', type=str, default='cpu', help="Compute device")
     parser.add_argument('--output', type=str, default='results/c3_analysis/c3_matched_diagnostics.json')
     args = parser.parse_args()
-    run_diagnostics(num_samples=args.num_samples, device=args.device, output_path=args.output)
+    run_diagnostics(num_samples=args.num_samples, seed=args.seed, device=args.device, output_path=args.output)
