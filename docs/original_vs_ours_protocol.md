@@ -143,5 +143,6 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
   - **P2 (`gaussian_matched_variance`):** $\bar{A} = \mathbf{83.37\%}$, $A_{10} = \mathbf{74.99\%}$, $F_{10}^{\text{past}} = \mathbf{8.81\%}$ ($\Delta_{P2 - P0} = \mathbf{+4.04\text{ pp}}$ trên $\bar{A}$).
 - **Kết luận Giả thuyết H2 (`SUPPORTED BY FULL EXPERIMENT`):**
   - Khởi tạo ma trận chiếu thu nhỏ phương sai giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách $11.65\text{ pp}$ giữa nhóm và tác giả.
-  - Phân phối Uniform và Gaussian khi cùng khớp phương sai cho kết quả gần như trùng khớp tuyệt đối ($\Delta_{P1 - P2} = -0.09\text{ pp}$), chứng minh cơ chế cốt lõi là **quy mô phương sai (variance scale)** ngăn bão hòa Sigmoid chứ không phải dạng hàm phân phối.
+  - Phân phối Uniform và Gaussian khi cùng khớp phương sai cho kết quả gần như tương đồng trên đơn seed ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$, seed 42), cho thấy quy mô phương sai (variance scale) đóng vai trò chi phối trong việc ngăn bão hòa phi tuyến, chứ không phải hình dạng phân phối (Uniform vs. Gaussian).
+  - Phân tích phổ hiệp phương sai chuẩn tâm cho thấy Effective Rank của P1 ($71.26$) và P2 ($71.10$) phản ánh đúng số chiều nội tại của ViT backbone (~71), trong khi giá trị uncentered Gram rank $\approx 1.20$ thuần túy là hiệu ứng phụ của vector trung bình dương $\mathbf{m} \approx 0.5 \times \mathbf{1}$.
   - Khoảng cách còn lại $\approx 7.65\text{ pp}$ được định vị chính xác nằm ở **H1 (Pretrained ViT Checkpoint ImageNet-21K)** và **H4 (Bilinear $[0, 1]$ Preprocessing)**.

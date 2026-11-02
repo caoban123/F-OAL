@@ -298,12 +298,17 @@ Nhóm đã đối chiếu trực tiếp giữa công thức toán học công b�
 | **Trọng số ma trận $\text{std}(P)$** | $1.000661$ | $0.020832$ | $0.020847$ | P1 và P2 khớp phương sai lý thuyết ($\sigma \approx 1/48$) |
 | **Độ lệch chuẩn tiền kích hoạt $\text{std}(u)$ ($u = h P$)** | **$19.2844$** | **$0.3979$** | **$0.4018$** | P0 phóng đại tín hiệu gấp $\approx 48$ lần |
 | **Độ lệch chuẩn sau kích hoạt $\text{std}(z)$ ($z = \sigma(u)$)** | $0.4790$ | $0.0958$ | $0.0967$ | P0 đẩy giá trị về sát 0 hoặc 1 |
-| **Tỷ lệ bão hòa cực đoan ($z < 0.01 \lor z > 0.99$)** | **`81.03%`** | **`0.00%`** | **`0.00%`** | **81.03% chiều đặc trưng của P0 bị triệt tiêu đạo hàm và mất phân biệt!** |
+| **Tỷ lệ bão hòa cực đoan ($z < 0.01 \lor z > 0.99$)** | **`81.03%`** | **`0.00%`** | **`0.00%`** | P0 đẩy $81\%$ chiều vào vùng bão hòa phi tuyến |
 | **Đạo hàm trung bình Sigmoid $\phi(1-\phi)$** | $0.0469$ | $0.2458$ | $0.2457$ | P1/P2 duy trì vùng tuyến tính nhạy cảm nhất ($\approx 0.25$) |
 | **Số điều kiện Gram chính quy hóa $\text{Cond}(G + \gamma I)$** | $65,218.28$ | $50,467.89$ | $50,954.65$ | Gram matrix của P1/P2 ổn định hơn, số điều kiện nhỏ hơn |
-| **Effective Rank $r_{\text{eff}}(G)$** | $8.60$ | $1.20$ | $1.20$ | P1 và P2 phân bổ phổ trị riêng tập trung hơn |
+| **Effective Rank Chưa Chuẩn Hóa Tâm $r_{\text{eff}}(G)$** | $8.60$ | $1.20$ | $1.20$ | Bị chi phối bởi vector trung bình lệch $\mathbf{m} \approx 0.5 \times \mathbf{1}$ |
+| **Effective Rank Hiệp Phương Sai Đã Chuẩn Tâm $r_{\text{eff}}(C)$** | **$115.73$** | **$71.26$** | **$71.10$** | P1/P2 phản ánh trung thực số chiều hữu hiệu của ViT backbone ($\approx 71$) |
 
-> **Phát hiện Khoa học then chốt:** Thí nghiệm chẩn đoán matched-input khẳng định chắc chắn 100% rằng ma trận chiếu $\mathcal{N}(0, 1)$ trong code ban đầu của nhóm đã đẩy $81.03\%$ kích hoạt phi tuyến vào vùng bão hòa chết của hàm Sigmoid. Trong khi đó, khởi tạo $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ của tác giả giữ $100\%$ kích hoạt trong vùng tuyến tính mượt mà ($0.00\%$ bão hòa).
+> **Phát hiện & Hiệu chỉnh Khoa học Then chốt:**
+> 1. **Cơ chế Tác động của Hiện tượng Bão hòa Sigmoid (Saturation Causality):**
+>    Trong mô hình F-OAL, toàn bộ mạng không sử dụng Backpropagation mà giải trực tiếp bài toán bình phương tối thiểu hồi quy (Recursive Least Squares - RLS). Do đó, hiện tượng bão hòa Sigmoid ($81.03\%$ ở P0) **không** gây ra "triệt tiêu đạo hàm gradient" theo nghĩa của Gradient Descent, mà gây ra **sự sụp đổ biểu diễn đặc trưng (feature representation collapse)**: các chiều đặc trưng bị nhị phân hóa về sát $0$ hoặc $1$, làm mất độ nhạy vi phân giữa các lớp và làm suy giảm tính phân tách tuyến tính của không gian đặc trưng.
+> 2. **Giải mã Chỉ số Effective Rank Chưa Chuẩn Hóa Tâm (Centered vs. Uncentered Rank):**
+>    Chỉ số Effective Rank của ma trận Gram chưa trừ tâm $G = Z^T Z$ ở P1 và P2 đo được xấp xỉ $1.20$, nguyên nhân là do toàn bộ vector kích hoạt sau hàm Sigmoid có giá trị trung bình dương lệch chuẩn $\mathbf{m} \approx 0.5 \times \mathbf{1}$, tạo ra một trị riêng trội chiếm tới $97.81\%$ tổng vết của ma trận. Khi tính toán trên **ma trận hiệp phương sai đã chuẩn hóa tâm (Centered Covariance Matrix)** $C = \frac{1}{N-1}(Z - \bar{Z})^T (Z - \bar{Z})$, Effective Rank thực sự của P1 là **$71.26$** và P2 là **$71.10$**, hoàn toàn khớp với số chiều biểu diễn nội tại của backbone ViT ($\approx 71$), trong khi P0 có rank giả tạo phân tán $115.73$ do nhiễu bão hòa ngẫu nhiên.
 
 ---
 
@@ -376,9 +381,17 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 #### D. Kết luận Khoa học Then chốt từ Thí nghiệm C1
 1. **Khẳng định Giả thuyết H2 (`SUPPORTED BY FULL EXPERIMENT`):**
    - Giảm phương sai ma trận chiếu từ $1.0$ về $1/(3d) \approx 0.000434$ loại bỏ hoàn toàn hiện tượng bão hòa cực đoan của Sigmoid ($81.03\% \rightarrow 0.00\%$), giúp tăng độ chính xác tăng dần trung bình thêm **$+3.95\text{ pp}$** (với Uniform) và **$+4.04\text{ pp}$** (với Matched Gaussian).
-2. **Quy mô phương sai (Scale) là yếu tố quyết định, không phải dạng hàm phân phối (Shape):**
-   - Giữa P1 (Uniform $\mathcal{U}$) và P2 (Gaussian $\mathcal{N}$) khi đã khớp phương sai, độ chính xác gần như trùng khớp hoàn toàn ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$ và $-0.15\text{ pp}$ trên $A_{10}$). Điều này khẳng định dạng phân phối không có ý nghĩa phân biệt, mà bản chất là độ lớn phương sai giữ cho đầu vào nằm trong miền dốc tối ưu của hàm Sigmoid.
+2. **Quy mô phương sai (Scale) là yếu tố quyết định hàng đầu, tương quan mạnh mẽ hơn dạng hàm phân phối (Shape):**
+   - Giữa P1 (Uniform $\mathcal{U}$) và P2 (Gaussian $\mathcal{N}$) khi đã khớp phương sai, độ chính xác gần như tương đồng ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$ và $-0.15\text{ pp}$ trên $A_{10}$). Tuy nhiên, cần lưu ý về **giới hạn thống kê thực nghiệm**: kết luận này được quan sát trên đơn seed ($n=1$, seed 42) trên CIFAR-100; chưa thể suy diễn thành định lý tương đương toán học phổ quát trên mọi seed hay kiến trúc dữ liệu khác nhau.
 3. **Mức độ thu hẹp khoảng cách so với Code Gốc Tác giả:**
    - Khoảng cách ban đầu giữa Official Run ($90.98\%$) và Historical Our Run ($79.33\%$) là $11.65\text{ pp}$.
    - Khởi tạo ma trận chiếu thu hẹp được **$+3.95\text{ pp}$**, tức giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách lệch.
    - Khoảng cách còn lại $\approx 7.6\text{–}7.7\text{ pp}$ thuộc về 2 nhân tố giao thức chưa căn chỉnh: **H1 (Pretrained ViT Checkpoint ImageNet-21K vs. 1K)** và **H4 (Preprocessing Bilinear $[0, 1]$ vs. Bicubic $[-1, 1]$)**.
+
+#### E. Kiểm toán Nguồn gốc Phần cứng & Khả năng Tái hiện Kết quả Lịch sử
+1. **Kiểm toán Nguồn gốc GPU (GPU Provenance):**
+   - *Phân loại:* **`GPU_PROVENANCE_PARTIAL / UNRESOLVED_MEMORY_SPECIFICATION`**.
+   - *Chi tiết:* Trong tệp `metadata.json` của kết quả Colab, trường `environment.gpu` ghi nhận giá trị `None` do module logger môi trường chưa tự động trích xuất chuỗi tên GPU từ PyTorch. Tuy nhiên, bảng thông tin phiên làm việc Colab hiển thị thiết bị NVIDIA A100-SXM4 với dung lượng RAM GPU xấp xỉ ~80GB (thay vì 40GB như phỏng đoán ban đầu). Sự khác biệt về dung lượng VRAM này không ảnh hưởng đến nghiệm toán học giải tích của RLS (chạy float64 trên cùng batch 10).
+2. **Tái hiện Bản chạy Lịch sử P0 (Historical P0 Reproducibility):**
+   - *Phân loại:* **`HISTORICAL_P0_NEAR_REPRODUCED — CAUSE_OF_SMALL_DIFFERENCE_UNDETERMINED`**.
+   - *Chi tiết:* Bản chạy P0 mới trên Colab A100 đạt $\bar{A} = 79.3315\%$, $A_{10} = 70.9500\%$, so với bản chạy lịch sử trên Colab T4 (`aad7500`, Run `2cdeiptv`) đạt $\bar{A} = 79.3332\%$, $A_{10} = 70.9200\%$. Độ lệch tuyệt đối giữa hai môi trường là $-0.0017\text{ pp}$ trên $\bar{A}$ và $+0.0300\text{ pp}$ trên $A_{10}$ (sai số cực vi mô, nhiều khả năng do khác biệt làm tròn số học dấu phẩy động hoặc kernel cuBLAS giữa kiến trúc GPU Turing T4 và Ampere A100).
