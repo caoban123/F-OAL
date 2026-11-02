@@ -1,0 +1,55 @@
+# ==============================================================================
+# Experiment C1 (Configuration P2) — Variance-Matched Gaussian (gaussian_matched_variance)
+#
+# Research Question (C1):
+#   Separate the effect of distribution shape (Gaussian vs Uniform) from
+#   variance/scale by matching the exact population variance of P1 (official_uniform)
+#   while preserving the Gaussian distribution family of P0.
+#
+# Projection Specification (P2):
+#   - Identifier: gaussian_matched_variance
+#   - Distribution: P_{ij} ~ N(0, 1 / (3 * d)), where d = 768
+#   - Population variance: 1 / (3 * 768) = 1 / 2304 ≈ 0.00043403
+#   - Population std: sigma_P = 1 / sqrt(3 * 768) = 1 / 48 ≈ 0.02083333
+# ==============================================================================
+
+seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: uoft-cs/cifar100
+  num_classes: 100
+  classes_per_task: 10
+  class_order: null
+  image_size: 224
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+  interpolation: bicubic
+
+projection:
+  dimension: 1000
+  initialization: gaussian_matched_variance
+  seed: 42
+
+model:
+  backbone: vit_base_patch16_224.augreg_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: gaussian_matched_variance
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  num_workers: 0
+  device: auto
+
+logging:
+  use_wandb: false
+  project: hcmus-foal-reproduction
+  entity: null
+  results_dir: results

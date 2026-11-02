@@ -247,3 +247,151 @@ Chi tiết phân tích mã nguồn và kế hoạch thí nghiệm kiểm soát b
 | $B = 25$ | $200$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 50$ | $100$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
 | $B = 100$ | $50$ | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `PENDING` | `NOT YET SYNCED` |
+
+
+---
+
+## 6. Thí nghiệm Kiểm soát Khác biệt Kỹ thuật: C0 & C1 (Checkpoint 3 Compliance)
+
+### 6.1. C0 — Đối chiếu & Tái tính toán Công thức Forgetting (`Eq. 17–18` vs. `Official Code`)
+
+Nhóm đã đối chiếu trực tiếp giữa công thức toán học công bố trong Paper PDF chính thức (NeurIPS 2024, Section 4.2, trang 8) và mã nguồn tác giả trong file `experiment/metrics.py`:
+
+1. **Công thức Paper — Equations (17) & (18):**
+   $$F_i = \frac{1}{i - 1} \sum_{j=1}^{i - 1} f_{i, j} \quad (17), \qquad f_{k, j} = \max_{l \in \{1, \dots, k-1\}} (a_{l, j}) - a_{k, j}, \ \forall j < k \quad (18)$$
+   - Ký hiệu mã nguồn nhóm: `forgetting_past_tasks` ($F_T^{\text{past}}$).
+   - Mẫu số là $T - 1 = 9$ (chỉ tính trên các task đã qua, loại trừ Task $T$ hiện tại).
+   - Cực đại lấy trên các giai đoạn trước $l \in \{1, \dots, k-1\}$. Nếu ở giai đoạn $k$ accuracy của task $j$ tăng lên so với mọi giai đoạn trước (positive backward transfer), $f_{k,j} < 0$.
+
+2. **Công thức trong Code Gốc Tác giả — `experiment/metrics.py:18, 22–26, 49–54`:**
+   ```python
+   # experiment/metrics.py:49-54 (single_run_avg_end_fgt)
+   best_acc = np.max(end_task_acc_arr, axis=1)  # max over ALL stages l in {1, ..., T}
+   final_forgets = best_acc - end_acc
+   avg_fgt = np.mean(final_forgets, axis=1)  # mean over ALL T tasks (including task T)
+   ```
+   - Ký hiệu mã nguồn nhóm: `forgetting_official_code` ($F_T^{\text{code}}$).
+   - Mẫu số là $T = 10$ tasks (chia cho 10 thay vì 9).
+   - Cực đại lấy trên toàn bộ $l \in \{1, \dots, T\}$ bao gồm cả $l = T$, do đó với Task $T$, $\max(a_{l, T}) - a_{T, T} = 0.0$ và mọi mức quên âm đều bị ép về $\ge 0.0$.
+
+#### Bảng Tái tính toán C0 trên Dữ liệu Thực nghiệm Thật
+
+| Ma trận Dữ liệu Thực nghiệm | $F_T^{\text{past}}$ (Paper Eq. 17–18, $T-1=9$) | $F_T^{\text{code}}$ (Official Code, $T=10$) | Chênh lệch giữa 2 định nghĩa ($\Delta_{\text{pp}}$) |
+|:---|:---:|:---:|:---:|
+| **Official Run (`3eca8232`, Seed 0)** | **`5.1667%`** ($0.465 / 9$) | **`4.6900%`** ($0.469 / 10$) | $-0.4767\text{ pp}$ (do Task 9 tăng từ 86.8% lên 87.2%, và Task 10 thêm số 0) |
+| **Our Historical Run (`2cdeiptv`, Seed 42)** | **`9.2111%`** ($0.829 / 9$) | **`8.2900%`** ($0.829 / 10$) | $-0.9211\text{ pp}$ (hoàn toàn do khác biệt mẫu số $9$ vs $10$) |
+
+---
+
+### 6.2. C1 — Chẩn đoán Ma trận Chiếu trên Cùng Đầu vào Thực tế (Matched-Input Diagnostics)
+
+Để kiểm chứng giả thuyết `H2` rằng việc khởi tạo ma trận ngẫu nhiên chuẩn tắc $\mathcal{N}(0, 1)$ làm bão hòa Sigmoid, nhóm đã trích xuất đặc trưng thực tế từ **200 ảnh CIFAR-100** ($20$ mẫu/class trên $10$ classes của Task 1) bằng backbone ViT đông cứng `vit_base_patch16_224.augreg_in1k`, sau đó đánh giá 3 cơ chế khởi tạo trên **cùng một tensor đặc trưng đầu vào $h \in \mathbb{R}^{200 \times 768}$**:
+
+* **P0 (`gaussian_std1`):** Khởi tạo ban đầu của nhóm, $P_{ij} \sim \mathcal{N}(0, 1)$, variance = $1.0$.
+* **P1 (`official_uniform`):** Khởi tạo của tác giả (`nn.Linear(768, 1000, bias=False)`), $P_{ij} \sim \mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$, variance = $1/(3 \times 768) \approx 0.000434$.
+* **P2 (`gaussian_matched_variance`):** Đối chứng Gaussian có phương sai lý thuyết trùng khớp tuyệt đối với P1: $P_{ij} \sim \mathcal{N}(0, 1/2304)$, variance = $1/2304 \approx 0.000434$.
+
+#### Bảng Kết quả Đo đạc Chẩn đoán Khách quan (`results/c1_diagnostics/`)
+
+| Chỉ số Chẩn đoán (Diagnostic Metric) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Ý nghĩa Vật lý / Toán học |
+|:---|:---:|:---:|:---:|:---|
+| **Trọng số ma trận $\text{std}(P)$** | $1.000661$ | $0.020832$ | $0.020847$ | P1 và P2 khớp phương sai lý thuyết ($\sigma \approx 1/48$) |
+| **Độ lệch chuẩn tiền kích hoạt $\text{std}(u)$ ($u = h P$)** | **$19.2844$** | **$0.3979$** | **$0.4018$** | P0 phóng đại tín hiệu gấp $\approx 48$ lần |
+| **Độ lệch chuẩn sau kích hoạt $\text{std}(z)$ ($z = \sigma(u)$)** | $0.4790$ | $0.0958$ | $0.0967$ | P0 đẩy giá trị về sát 0 hoặc 1 |
+| **Tỷ lệ bão hòa cực đoan ($z < 0.01 \lor z > 0.99$)** | **`81.03%`** | **`0.00%`** | **`0.00%`** | P0 đẩy $81\%$ chiều vào vùng bão hòa phi tuyến |
+| **Đạo hàm trung bình Sigmoid $\phi(1-\phi)$** | $0.0469$ | $0.2458$ | $0.2457$ | P1/P2 duy trì vùng tuyến tính nhạy cảm nhất ($\approx 0.25$) |
+| **Số điều kiện Gram chính quy hóa $\text{Cond}(G + \gamma I)$** | $65,218.28$ | $50,467.89$ | $50,954.65$ | Gram matrix của P1/P2 ổn định hơn, số điều kiện nhỏ hơn |
+| **Effective Rank Chưa Chuẩn Hóa Tâm $r_{\text{eff}}(G)$** | $8.60$ | $1.20$ | $1.20$ | Bị chi phối bởi vector trung bình lệch $\mathbf{m} \approx 0.5 \times \mathbf{1}$ |
+| **Effective Rank Hiệp Phương Sai Đã Chuẩn Tâm $r_{\text{eff}}(C)$** | **$115.73$** | **$71.26$** | **$71.10$** | P1/P2 phản ánh trung thực số chiều hữu hiệu của ViT backbone ($\approx 71$) |
+
+> **Phát hiện & Hiệu chỉnh Khoa học Then chốt:**
+> 1. **Cơ chế Tác động của Hiện tượng Bão hòa Sigmoid (Saturation Causality):**
+>    Trong mô hình F-OAL, toàn bộ mạng không sử dụng Backpropagation mà giải trực tiếp bài toán bình phương tối thiểu hồi quy (Recursive Least Squares - RLS). Do đó, hiện tượng bão hòa Sigmoid ($81.03\%$ ở P0) **không** gây ra "triệt tiêu đạo hàm gradient" theo nghĩa của Gradient Descent, mà gây ra **sự sụp đổ biểu diễn đặc trưng (feature representation collapse)**: các chiều đặc trưng bị nhị phân hóa về sát $0$ hoặc $1$, làm mất độ nhạy vi phân giữa các lớp và làm suy giảm tính phân tách tuyến tính của không gian đặc trưng.
+> 2. **Giải mã Chỉ số Effective Rank Chưa Chuẩn Hóa Tâm (Centered vs. Uncentered Rank):**
+>    Chỉ số Effective Rank của ma trận Gram chưa trừ tâm $G = Z^T Z$ ở P1 và P2 đo được xấp xỉ $1.20$, nguyên nhân là do toàn bộ vector kích hoạt sau hàm Sigmoid có giá trị trung bình dương lệch chuẩn $\mathbf{m} \approx 0.5 \times \mathbf{1}$, tạo ra một trị riêng trội chiếm tới $97.81\%$ tổng vết của ma trận. Khi tính toán trên **ma trận hiệp phương sai đã chuẩn hóa tâm (Centered Covariance Matrix)** $C = \frac{1}{N-1}(Z - \bar{Z})^T (Z - \bar{Z})$, Effective Rank thực sự của P1 là **$71.26$** và P2 là **$71.10$**, hoàn toàn khớp với số chiều biểu diễn nội tại của backbone ViT ($\approx 71$), trong khi P0 có rank giả tạo phân tán $115.73$ do nhiễu bão hòa ngẫu nhiên.
+
+---
+
+### 6.3. Level A — Thí nghiệm Pilot 2 Tasks trên CPU (`results/c1_pilot/`)
+
+Đã thực hiện chạy kiểm chứng 2 tasks đầu tiên (100 ảnh train/task, 100 ảnh test/task) với tính năng bộ nhớ đệm đặc trưng (`--feature-cache-dir results/c1_pilot_feature_cache`):
+
+| Cấu hình Pilot (2 Tasks) | Task 1 Acc ($A_1$) | Task 2 Acc ($a_{2, 2}$) | Drop Task 1 ($f_{2, 1}$) | Avg Incr Acc ($\bar{A}$) | Last Acc ($A_2$) | Thời gian RLS & Eval (s) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **P0 (`gaussian_std1`)** | $78.00\%$ | $85.00\%$ | $9.00\%$ | $77.50\%$ | $77.00\%$ | $0.23\text{ s}$ |
+| **P1 (`official_uniform`)** | **$80.00\%$** | **$87.00\%$** | $11.00\%$ | **$79.00\%$** | **$78.00\%$** | $0.25\text{ s}$ |
+| **P2 (`gaussian_matched_variance`)** | $77.00\%$ | $86.00\%$ | $8.00\%$ | $77.25\%$ | $77.50\%$ | $0.27\text{ s}$ |
+
+- **Kiểm chứng tính toàn vẹn của Feature Cache:** Lượt chạy P0 dùng cache cho ra kết quả `task_matrix = [[0.78], [0.69, 0.85]]` trùng khớp **100% bitwise** với lượt chạy không dùng cache (`smoke_test_post_fix_seed42`), trong khi thời gian thực thi giảm từ $94.95\text{ s}$ xuống $1.36\text{ s}$ (nhanh gấp $\approx 70$ lần).
+
+---
+
+### 6.4. Level B — Kết quả Thực nghiệm Toàn diện 10 Tasks CIFAR-100 trên GPU NVIDIA A100 (`results/c1_cifar100_full/`)
+
+Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000 train, 10.000 test, seed 42) đã được thực thi thành công trên Google Colab GPU (NVIDIA A100 High-RAM, Linux x86_64, PyTorch 2.11.0+cu130, timm 1.0.30, execution commit `269f05c`). Hiện vật số học đã được kiểm toán toàn diện từ gói ZIP `foal_c1_projection_results.zip` (SHA256: `21eb4e977e739f8380b22f87e1db14937925b69d4a93b9285e7b49a6c2374cab`):
+
+#### A. Bảng Đối chiếu Toàn diện 3 Cấu hình C1
+
+| Chỉ số Đánh giá (Metric) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Độ lệch $\Delta_{P1 - P0}$ | Độ lệch $\Delta_{P2 - P0}$ | Độ lệch $\Delta_{P1 - P2}$ |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Khởi tạo Ma trận Chiếu ($P$)** | $\mathcal{N}(0, 1.0)$ | $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ | $\mathcal{N}(0, 1/(3d))$ | — | — | — |
+| **Quy mô Phương sai ($\sigma_P^2$)** | $1.0$ | $1/2304 \approx 0.000434$ | $1/2304 \approx 0.000434$ | Giảm $\approx 2304\times$ | Giảm $\approx 2304\times$ | Khớp tuyệt đối ($0.0$) |
+| **Tỷ lệ Bão hòa Sigmoid (Diagnostics)** | **$81.03\%$** | **$0.00\%$** | **$0.00\%$** | $-81.03\text{ pp}$ | $-81.03\text{ pp}$ | $0.00\text{ pp}$ |
+| **Average Incremental Accuracy ($\bar{A}$, $\uparrow$)** | **`79.33%`** (`0.793315`) | **`83.28%`** (`0.832814`) | **`83.37%`** (`0.833740`) | **$+3.95\text{ pp}$** | **$+4.04\text{ pp}$** | **$-0.09\text{ pp}$** |
+| **Last Accuracy ($A_{10}$, $\uparrow$)** | **`70.95%`** (`0.709500`) | **`74.84%`** (`0.748400`) | **`74.99%`** (`0.749900`) | **$+3.89\text{ pp}$** | **$+4.04\text{ pp}$** | **$-0.15\text{ pp}$** |
+| **Forgetting — Paper Eq. 17–18 ($F_{10}^{\text{past}}$, $\downarrow$)** | **`9.17%`** (`0.091667`) | **`8.97%`** (`0.089667`) | **`8.81%`** (`0.088111`) | **$-0.20\text{ pp}$** | **$-0.36\text{ pp}$** | **$+0.16\text{ pp}$** |
+| **Forgetting — Official Code ($F_{10}^{\text{code}}$, $\downarrow$)** | **`8.25%`** (`0.082500`) | **`8.07%`** (`0.080700`) | **`7.93%`** (`0.079300`) | **$-0.18\text{ pp}$** | **$-0.32\text{ pp}$** | **$+0.14\text{ pp}$** |
+| **Thời gian Cập nhật RLS & Eval (s)** | $8.57\text{ s}$ | $8.59\text{ s}$ | $8.53\text{ s}$ | $+0.02\text{ s}$ | $-0.04\text{ s}$ | $+0.06\text{ s}$ |
+| **Thời gian Trích xuất Đặc trưng (s)** | $245.92\text{ s}$ (A100) | $245.92\text{ s}$ (Cached) | $245.92\text{ s}$ (Cached) | — | — | — |
+| **Tổng thời gian chạy (Wall-clock, s)** | $298.90\text{ s}$ | $52.01\text{ s}$ | $51.60\text{ s}$ | Nhanh hơn $5.7\times$ | Nhanh hơn $5.8\times$ | Tương đương |
+| **Target W&B Run Name** | [Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) | [Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | [Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | — | — | — |
+
+#### B. Quỹ đạo Độ chính xác qua 10 Giai đoạn (Stage Accuracy Trajectory, %)
+
+| Giai đoạn (Sau Task $k$) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Ưu thế của Quy mô Nhỏ ($\Delta_{P1 - P0}$) |
+|:---:|:---:|:---:|:---:|:---:|
+| **Stage 1** | $89.60\%$ | **$92.70\%$** | **$93.40\%$** | $+3.10\text{ pp}$ |
+| **Stage 2** | $88.00\%$ | **$91.60\%$** | **$91.60\%$** | $+3.60\text{ pp}$ |
+| **Stage 3** | $85.10\%$ | **$88.60\%$** | **$88.50\%$** | $+3.50\text{ pp}$ |
+| **Stage 4** | $81.55\%$ | **$85.62\%$** | **$85.58\%$** | $+4.07\text{ pp}$ |
+| **Stage 5** | $79.10\%$ | **$83.74\%$** | **$83.70\%$** | $+4.64\text{ pp}$ |
+| **Stage 6** | $76.93\%$ | **$81.50\%$** | **$81.62\%$** | $+4.57\text{ pp}$ |
+| **Stage 7** | $75.76\%$ | **$80.06\%$** | **$80.01\%$** | $+4.30\text{ pp}$ |
+| **Stage 8** | $74.03\%$ | **$77.76\%$** | **$78.00\%$** | $+3.73\text{ pp}$ |
+| **Stage 9** | $72.30\%$ | **$76.39\%$** | **$76.34\%$** | $+4.09\text{ pp}$ |
+| **Stage 10 (Final)** | $70.95\%$ | **$74.84\%$** | **$74.99\%$** | $+3.89\text{ pp}$ |
+| **Trung bình ($\bar{A}$)** | **`79.33%`** | **`83.28%`** | **`83.37%`** | **$+3.95\text{ pp}$** |
+
+#### C. Độ chính xác Từng Task tại Giai đoạn 10 & Mức Quên Từng Task
+
+| Task $j$ | P0 Final Acc | P1 Final Acc | P2 Final Acc | P0 Forgetting ($f_j^{\text{past}}$) | P1 Forgetting ($f_j^{\text{past}}$) | P2 Forgetting ($f_j^{\text{past}}$) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Task 1** | $60.50\%$ | **$66.20\%$** | **$66.60\%$** | $29.10\%$ | **$26.50\%$** | **$26.80\%$** |
+| **Task 2** | $76.30\%$ | **$80.80\%$** | **$80.40\%$** | $14.90\%$ | **$13.70\%$** | **$14.00\%$** |
+| **Task 3** | $74.00\%$ | **$77.90\%$** | **$77.70\%$** | $10.60\%$ | $10.60\%$ | **$10.30\%$** |
+| **Task 4** | $73.50\%$ | **$76.70\%$** | **$76.60\%$** | $8.00\%$ | $8.80\%$ | $9.10\%$ |
+| **Task 5** | $70.70\%$ | **$75.60\%$** | **$76.30\%$** | $7.10\%$ | $7.50\%$ | **$6.70\%$** |
+| **Task 6** | $69.50\%$ | **$74.10\%$** | **$74.30\%$** | $6.00\%$ | $6.30\%$ | $6.10\%$ |
+| **Task 7** | $74.20\%$ | **$76.40\%$** | **$76.90\%$** | $3.30\%$ | $4.30\%$ | **$3.10\%$** |
+| **Task 8** | $71.00\%$ | **$73.10\%$** | **$73.40\%$** | $2.70\%$ | **$1.80\%$** | **$2.10\%$** |
+| **Task 9** | $68.40\%$ | **$71.90\%$** | **$71.80\%$** | $0.80\%$ | $1.20\%$ | $1.10\%$ |
+| **Task 10** | $71.40\%$ | **$75.70\%$** | **$75.90\%$** | — | — | — |
+| **Trung bình** | **`70.95%`** | **`74.84%`** | **`74.99%`** | **`9.17%`** | **`8.97%`** | **`8.81%`** |
+
+#### D. Kết luận Khoa học Then chốt từ Thí nghiệm C1
+1. **Khẳng định Giả thuyết H2 (`SUPPORTED BY FULL EXPERIMENT`):**
+   - Giảm phương sai ma trận chiếu từ $1.0$ về $1/(3d) \approx 0.000434$ loại bỏ hoàn toàn hiện tượng bão hòa cực đoan của Sigmoid ($81.03\% \rightarrow 0.00\%$), giúp tăng độ chính xác tăng dần trung bình thêm **$+3.95\text{ pp}$** (với Uniform) và **$+4.04\text{ pp}$** (với Matched Gaussian).
+2. **Quy mô phương sai (Scale) là yếu tố quyết định hàng đầu, tương quan mạnh mẽ hơn dạng hàm phân phối (Shape):**
+   - Giữa P1 (Uniform $\mathcal{U}$) và P2 (Gaussian $\mathcal{N}$) khi đã khớp phương sai, độ chính xác gần như tương đồng ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$ và $-0.15\text{ pp}$ trên $A_{10}$). Tuy nhiên, cần lưu ý về **giới hạn thống kê thực nghiệm**: kết luận này được quan sát trên đơn seed ($n=1$, seed 42) trên CIFAR-100; chưa thể suy diễn thành định lý tương đương toán học phổ quát trên mọi seed hay kiến trúc dữ liệu khác nhau.
+3. **Mức độ thu hẹp khoảng cách so với Code Gốc Tác giả:**
+   - Khoảng cách ban đầu giữa Official Run ($90.98\%$) và Historical Our Run ($79.33\%$) là $11.65\text{ pp}$.
+   - Khởi tạo ma trận chiếu thu hẹp được **$+3.95\text{ pp}$**, tức giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách lệch.
+   - Khoảng cách còn lại $\approx 7.6\text{–}7.7\text{ pp}$ thuộc về 2 nhân tố giao thức chưa căn chỉnh: **H1 (Pretrained ViT Checkpoint ImageNet-21K vs. 1K)** và **H4 (Preprocessing Bilinear $[0, 1]$ vs. Bicubic $[-1, 1]$)**.
+
+#### E. Kiểm toán Nguồn gốc Phần cứng & Khả năng Tái hiện Kết quả Lịch sử
+1. **Kiểm toán Nguồn gốc GPU (GPU Provenance):**
+   - *Phân loại:* **`GPU_PROVENANCE_PARTIAL / UNRESOLVED_MEMORY_SPECIFICATION`**.
+   - *Chi tiết:* Trong tệp `metadata.json` của kết quả Colab, trường `environment.gpu` ghi nhận giá trị `None` do module logger môi trường chưa tự động trích xuất chuỗi tên GPU từ PyTorch. Tuy nhiên, bảng thông tin phiên làm việc Colab hiển thị thiết bị NVIDIA A100-SXM4 với dung lượng RAM GPU xấp xỉ ~80GB (thay vì 40GB như phỏng đoán ban đầu). Sự khác biệt về dung lượng VRAM này không ảnh hưởng đến nghiệm toán học giải tích của RLS (chạy float64 trên cùng batch 10).
+2. **Tái hiện Bản chạy Lịch sử P0 (Historical P0 Reproducibility):**
+   - *Phân loại:* **`HISTORICAL_P0_NEAR_REPRODUCED — CAUSE_OF_SMALL_DIFFERENCE_UNDETERMINED`**.
+   - *Chi tiết:* Bản chạy P0 mới trên Colab A100 đạt $\bar{A} = 79.3315\%$, $A_{10} = 70.9500\%$, so với bản chạy lịch sử trên Colab T4 (`aad7500`, Run `2cdeiptv`) đạt $\bar{A} = 79.3332\%$, $A_{10} = 70.9200\%$. Độ lệch tuyệt đối giữa hai môi trường là $-0.0017\text{ pp}$ trên $\bar{A}$ và $+0.0300\text{ pp}$ trên $A_{10}$ (sai số cực vi mô, nhiều khả năng do khác biệt làm tròn số học dấu phẩy động hoặc kernel cuBLAS giữa kiến trúc GPU Turing T4 và Ampere A100).

@@ -1,0 +1,44 @@
+[
+  {
+    "Variant": "P0: gaussian_std1",
+    "Initialization": "Gaussian N(0, 1.0)",
+    "Variance Scale": "1.0",
+    "Avg Incr Acc (%)": "79.33%",
+    "Last Acc (%)": "70.95%",
+    "Fgt Past-Tasks (%)": "9.17%",
+    "Fgt Official Code (%)": "8.25%",
+    "Pre-sigmoid Std (Diagnostics)": "19.2844",
+    "Sigmoid Saturation (<0.01 | >0.99)": "81.03%",
+    "Feat Extraction Time (s)": "245.92",
+    "RLS & Eval Time (s)": "8.57",
+    "Total Time (s)": "298.90"
+  },
+  {
+    "Variant": "P1: official_uniform",
+    "Initialization": "Uniform U(-1/sqrt(d), +1/sqrt(d))",
+    "Variance Scale": "1/(3*768) \u2248 0.000434",
+    "Avg Incr Acc (%)": "83.28%",
+    "Last Acc (%)": "74.84%",
+    "Fgt Past-Tasks (%)": "8.97%",
+    "Fgt Official Code (%)": "8.07%",
+    "Pre-sigmoid Std (Diagnostics)": "0.3979",
+    "Sigmoid Saturation (<0.01 | >0.99)": "0.00%",
+    "Feat Extraction Time (s)": "245.92 (cached)",
+    "RLS & Eval Time (s)": "8.59",
+    "Total Time (s)": "52.01"
+  },
+  {
+    "Variant": "P2: gaussian_matched_variance",
+    "Initialization": "Gaussian N(0, 1/(3*768))",
+    "Variance Scale": "1/(3*768) \u2248 0.000434",
+    "Avg Incr Acc (%)": "83.37%",
+    "Last Acc (%)": "74.99%",
+    "Fgt Past-Tasks (%)": "8.81%",
+    "Fgt Official Code (%)": "7.93%",
+    "Pre-sigmoid Std (Diagnostics)": "0.4018",
+    "Sigmoid Saturation (<0.01 | >0.99)": "0.00%",
+    "Feat Extraction Time (s)": "245.92 (cached)",
+    "RLS & Eval Time (s)": "8.53",
+    "Total Time (s)": "51.60"
+  }
+]

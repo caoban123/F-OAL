@@ -1,5 +1,7 @@
-protocol_label,method,experiment_type,num_tasks,limit_train,limit_test,completed_runs,total_runs,avg_inc_acc_mean_std,last_acc_mean_std,forgetting_mean_std
-"foal | PILOT | 2 tasks (train<=100, test<=all, D=1000, gamma=1.0, float64)",foal,PILOT,2,100,full,1,1,"70.38% (n=1, std=N/A)","68.65% (n=1, std=N/A)","9.00% (n=1, std=N/A)"
-"foal | PILOT | 2 tasks (train<=100, test<=100, D=1000, gamma=1.0, float64)",foal,PILOT,2,100,100,2,2,77.50 +/- 0.00% (n=2),77.00 +/- 0.00% (n=2),9.00 +/- 0.00% (n=2)
-"foal | REPRODUCTION | 10 tasks (full data, D=1000, gamma=1.0, float64)",foal,REPRODUCTION,10,full,full,1,1,"79.33% (n=1, std=N/A)","70.92% (n=1, std=N/A)","9.21% (n=1, std=N/A)"
-"official_foal | OFFICIAL_REPRODUCTION | 10 tasks (full data, D=1000, gamma=1.0, float64)",official_foal,OFFICIAL_REPRODUCTION,10,full,full,1,1,"90.98% (n=1, std=N/A)","85.84% (n=1, std=N/A)","5.17% (n=1, std=N/A)"
+protocol_label,method,experiment_type,num_tasks,limit_train,limit_test,completed_runs,total_runs,avg_inc_acc_mean_std,last_acc_mean_std,forgetting_mean_std,forgetting_official_code_mean_std
+"foal | PILOT | 2 tasks (train<=100, test<=all, D=1000, gamma=1.0, float64)",foal,PILOT,2,100,full,1,1,"70.38% (n=1, std=N/A)","68.65% (n=1, std=N/A)","9.00% (n=1, std=N/A)","4.50% (n=1, std=N/A)"
+"foal | PILOT | 2 tasks (train<=100, test<=100, D=1000, gamma=1.0, float64) [proj:gaussian_matched_variance]",foal,PILOT,2,100,100,1,1,"77.25% (n=1, std=N/A)","77.50% (n=1, std=N/A)","8.00% (n=1, std=N/A)","4.00% (n=1, std=N/A)"
+"foal | PILOT | 2 tasks (train<=100, test<=100, D=1000, gamma=1.0, float64)",foal,PILOT,2,100,100,3,3,77.50 +/- 0.00% (n=3),77.00 +/- 0.00% (n=3),9.00 +/- 0.00% (n=3),4.50 +/- 0.00% (n=3)
+"foal | PILOT | 2 tasks (train<=100, test<=100, D=1000, gamma=1.0, float64) [proj:official_uniform]",foal,PILOT,2,100,100,1,1,"79.00% (n=1, std=N/A)","78.00% (n=1, std=N/A)","11.00% (n=1, std=N/A)","5.50% (n=1, std=N/A)"
+"foal | REPRODUCTION | 10 tasks (full data, D=1000, gamma=1.0, float64)",foal,REPRODUCTION,10,full,full,1,1,"79.33% (n=1, std=N/A)","70.92% (n=1, std=N/A)","9.21% (n=1, std=N/A)","8.29% (n=1, std=N/A)"
+"official_foal | OFFICIAL_REPRODUCTION | 10 tasks (full data, D=1000, gamma=1.0, float64)",official_foal,OFFICIAL_REPRODUCTION,10,full,full,1,1,"90.98% (n=1, std=N/A)","85.84% (n=1, std=N/A)","5.17% (n=1, std=N/A)","4.69% (n=1, std=N/A)"

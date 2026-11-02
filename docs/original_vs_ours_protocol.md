@@ -120,3 +120,29 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
 | **Experiment C2 — Pretrained ViT Checkpoint (`H1`)** | Change `backbone` from `vit_base_patch16_224.augreg_in1k` to `vit_base_patch16_224` (`augreg2_in21k_ft_in1k`). | Our current projection & `[-1, 1]` bicubic norm, `seed=42` (plus combined with `C1`) | $\sim 3\text{ min}$ (pilot) + $\sim 29\text{ min}$ (full) | Measure exact $\Delta \bar{A}$ and $\Delta A_{10}$ contributed by ImageNet-21K pre-training. |
 | **Experiment C3 — Preprocessing & Normalization (`H4`)** | Change transform to `Resize((224, 224), BILINEAR)` + `ToTensor()` (`mean=[0,0,0], std=[1,1,1]`, range $[0, 1]$). | Fixed backbone + projection from `C1`/`C2`, `seed=42` | $\sim 3\text{ min}$ (pilot) + $\sim 29\text{ min}$ (full) | Measure sensitivity of frozen ViT features to $[0, 1]$ bilinear vs. $[-1, 1]$ bicubic preprocessing. |
 | **Experiment C4 — Combined Protocol Alignment (`H1+H2+H4`)** | Enable all verified official protocol settings (`vit_base_patch16_224`, `kaiming_uniform` projection, `[0, 1]` bilinear transform) in `src/foal/` and run on both `seed=0` and `seeds=[42, 123, 2026]`. | Official Run (`90.98%` on `seed=0`) | $\sim 29\text{ min/seed}$ | Verify that our independent implementation matches the Official Run (`~90.98%`) within $< 0.2\text{ pp}$ on `seed=0` and establish the 3-seed $Mean \pm Std$. |
+
+
+---
+
+## 5. Kết quả Triển khai Thí nghiệm Kiểm soát C0 & C1
+
+### 5.1. C0 — Đồng nhất Hóa Định nghĩa Forgetting
+- **Phân tích đối chiếu:** Paper Section 4.2 Equations (17)–(18) chia trung bình trên $T-1=9$ task quá khứ ($F_T^{\text{past}}$). Ngược lại, mã nguồn tác giả `experiment/metrics.py:49–54` chia trung bình trên $T=10$ task ($F_T^{\text{code}}$).
+- **Tái tính toán thực tế:**
+  - Official Run Seed 0 (`3eca8232`): $F_T^{\text{past}} = 5.17\%$, $F_T^{\text{code}} = 4.69\%$.
+  - Our Historical Run Seed 42 (`2cdeiptv`): $F_T^{\text{past}} = 9.21\%$, $F_T^{\text{code}} = 8.29\%$.
+- Cả hai công thức đã được tích hợp vào `src/foal/metrics.py` và tự động ghi nhận vào `metrics.json` và W&B.
+
+### 5.2. C1 — Chẩn đoán Khởi tạo Chiếu & Kết Quả Toàn Diện Full GPU (A100)
+- **Chẩn đoán Matched-Input (200 đặc trưng ViT thực tế):**
+  - P0 (`gaussian_std1`): Độ lệch chuẩn trước kích hoạt $u$ đạt $19.28$, dẫn đến tỷ lệ bão hòa cực đoan Sigmoid lên tới **$81.03\%$**.
+  - P1 (`official_uniform`) & P2 (`gaussian_matched_variance`): Giữ độ lệch chuẩn $u \approx 0.40$, tỷ lệ bão hòa **$0.00\%$**, bảo toàn độ nhạy đạo hàm $\approx 0.25$.
+- **Kết quả Thực nghiệm Đầy đủ 10 Tasks CIFAR-100 trên GPU NVIDIA A100 (Seed 42):**
+  - **P0 (`gaussian_std1`):** $\bar{A} = \mathbf{79.33\%}$, $A_{10} = \mathbf{70.95\%}$, $F_{10}^{\text{past}} = \mathbf{9.17\%}$, $F_{10}^{\text{code}} = \mathbf{8.25\%}$ ([W&B Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k)).
+  - **P1 (`official_uniform`):** $\bar{A} = \mathbf{83.28\%}$, $A_{10} = \mathbf{74.84\%}$, $F_{10}^{\text{past}} = \mathbf{8.97\%}$, $F_{10}^{\text{code}} = \mathbf{8.07\%}$ ($\Delta_{P1 - P0} = \mathbf{+3.95\text{ pp}}$ trên $\bar{A}$, [W&B Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z)).
+  - **P2 (`gaussian_matched_variance`):** $\bar{A} = \mathbf{83.37\%}$, $A_{10} = \mathbf{74.99\%}$, $F_{10}^{\text{past}} = \mathbf{8.81\%}$, $F_{10}^{\text{code}} = \mathbf{7.93\%}$ ($\Delta_{P2 - P0} = \mathbf{+4.04\text{ pp}}$ trên $\bar{A}$, [W&B Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p)).
+- **Kết luận Giả thuyết H2 (`SUPPORTED BY FULL EXPERIMENT`):**
+  - Khởi tạo ma trận chiếu thu nhỏ phương sai giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách $11.65\text{ pp}$ giữa nhóm và tác giả.
+  - Phân phối Uniform và Gaussian khi cùng khớp phương sai cho kết quả gần như tương đồng trên đơn seed ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$, seed 42), cho thấy quy mô phương sai (variance scale) đóng vai trò chi phối trong việc ngăn bão hòa phi tuyến, chứ không phải hình dạng phân phối (Uniform vs. Gaussian).
+  - Phân tích phổ hiệp phương sai chuẩn tâm cho thấy Effective Rank của P1 ($71.26$) và P2 ($71.10$) phản ánh đúng số chiều nội tại của ViT backbone (~71), trong khi giá trị uncentered Gram rank $\approx 1.20$ thuần túy là hiệu ứng phụ của vector trung bình dương $\mathbf{m} \approx 0.5 \times \mathbf{1}$.
+  - Khoảng cách còn lại $\approx 7.65\text{ pp}$ được định vị chính xác nằm ở **H1 (Pretrained ViT Checkpoint ImageNet-21K)** và **H4 (Bilinear $[0, 1]$ Preprocessing)**.

@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e .
 
-# Chạy toàn bộ 33 unit tests xác minh
+# Chạy toàn bộ 47 unit tests xác minh
 python -m pytest -v
 ```
 
@@ -82,6 +82,27 @@ python -m scripts.ablation --config configs/cifar100.yaml --max-tasks 2 --limit-
 python -m scripts.evaluate --checkpoint results/smoke_test_post_fix/task_02.pt --device cpu --limit-per-task 100
 ```
 
+### 2.7. Thí nghiệm Kiểm soát Khởi tạo Smooth Projection C1 & Chẩn đoán Matched-Input (A20)
+Chạy chẩn đoán ma trận chiếu trên cùng 200 đặc trưng ViT thực tế của CIFAR-100:
+```bash
+python -m scripts.run_c1_diagnostics --output-dir results/c1_diagnostics --device cpu
+```
+
+Chạy thí nghiệm kiểm soát C1 trên 3 cấu hình khởi tạo ma trận chiếu:
+- `P0` (`gaussian_std1`): $\mathcal{N}(0, 1)$ ban đầu của nhóm (variance = 1.0).
+- `P1` (`official_uniform`): $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ của tác giả (variance = $1/(3d)$).
+- `P2` (`gaussian_matched_variance`): Đối chứng $\mathcal{N}(0, 1/(3d))$ khớp phương sai với P1.
+
+```bash
+# Level A Pilot (2 tasks) với bộ nhớ đệm đặc trưng ViT:
+python -m scripts.train --config configs/c1_p0_gaussian_std1.yaml --output-dir results/c1_pilot_p0_gaussian_std1 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+python -m scripts.train --config configs/c1_p1_official_uniform.yaml --output-dir results/c1_pilot_p1_official_uniform --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+python -m scripts.train --config configs/c1_p2_gaussian_matched_variance.yaml --output-dir results/c1_pilot_p2_gaussian_matched_variance --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100 --feature-cache-dir results/c1_pilot_feature_cache
+
+# Level B Full 10 Tasks CIFAR-100 trên GPU (Notebook Colab độc lập):
+# Mở và chạy: notebooks/foal_c1_projection_controlled.ipynb
+```
+
 ---
 
 ## 3. Kiến trúc mã nguồn
@@ -109,7 +130,7 @@ cd F-OAL
 pip install -r requirements.txt
 pip install -e .
 
-# 3. Chạy 33 unit tests
+# 3. Chạy 47 unit tests
 python -m pytest -v
 
 # 4. Huấn luyện Full CIFAR-100 trên GPU
@@ -134,7 +155,9 @@ python -m scripts.train --config configs/cifar100.yaml --device cuda --wandb --r
 | **F-OAL Paper** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% / — | — | — | — | `PAPER_REPORTED` |
 | **F-OAL Official** | Original (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `0` (`n=1, std=N/A`) | **90.98%** | **85.84%** | **4.69%** / **5.17%** | `73e4ac1` | [`results/official_foal_cifar100_seed0/`](results/official_foal_cifar100_seed0/) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | `VERIFIED` (`A19 PASS`) |
 | **F-OAL Full** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.92%** | **8.29%** / **9.21%** | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | `VERIFIED` (`P1.2 PASS`) |
-| **F-OAL Controlled (`C1`–`C4`)** | Ours (`src/foal`) | CIFAR-100 | `42` / `0` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) | `NOT YET SYNCED` | `IN PROGRESS` (`A20`) |
+| **C1: P0 Gaussian std=1** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.95%** | **8.25%** / **9.17%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) | `VERIFIED FULL GPU` (`C1 PASS`) |
+| **C1: P1 Official Uniform** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.28%** | **74.84%** | **8.07%** / **8.97%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | `VERIFIED FULL GPU` (`C1 PASS`) |
+| **C1: P2 Matched Gaussian** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.37%** | **74.99%** | **7.93%** / **8.81%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | `VERIFIED FULL GPU` (`C1 PASS`) |
 | **F-OAL Multi-Seed** | Ours (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
 | **Ablation Study (4 configs)** | Ours (`scripts/ablation.py`) | CIFAR-100 | `42` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A11`) |
 
