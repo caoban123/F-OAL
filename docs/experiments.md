@@ -344,7 +344,7 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 | **Thời gian Cập nhật RLS & Eval (s)** | $8.57\text{ s}$ | $8.59\text{ s}$ | $8.53\text{ s}$ | $+0.02\text{ s}$ | $-0.04\text{ s}$ | $+0.06\text{ s}$ |
 | **Thời gian Trích xuất Đặc trưng (s)** | $245.92\text{ s}$ (A100) | $245.92\text{ s}$ (Cached) | $245.92\text{ s}$ (Cached) | — | — | — |
 | **Tổng thời gian chạy (Wall-clock, s)** | $298.90\text{ s}$ | $52.01\text{ s}$ | $51.60\text{ s}$ | Nhanh hơn $5.7\times$ | Nhanh hơn $5.8\times$ | Tương đương |
-| **Target W&B Run Name** | `c1_cifar100_gaussian_std1_seed42` | `c1_cifar100_official_uniform_seed42` | `c1_cifar100_gaussian_matched_variance_seed42` | — | — | — |
+| **Target W&B Run Name** | [Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) | [Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | [Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | — | — | — |
 
 #### B. Quỹ đạo Độ chính xác qua 10 Giai đoạn (Stage Accuracy Trajectory, %)
 
