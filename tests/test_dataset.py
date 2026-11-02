@@ -18,3 +18,16 @@ def test_task_partition_no_train_replay_and_no_future_test():
     assert set(specs[1].seen_test_indices) == {0, 1, 2, 3}
     assert specs[0].total_seen_classes == 2
     assert specs[1].total_seen_classes == 4
+
+
+def test_cifar100_online_dataset_interface():
+    from src.foal.datasets import CIFAR100OnlineDataset
+    from unittest.mock import patch
+
+    with patch('src.foal.datasets.load_cifar100') as mock_load:
+        mock_load.return_value = (list(range(50)), list(range(10)))
+        ds = CIFAR100OnlineDataset(root='dummy/data', seed=42)
+        assert len(ds.get_train_source()) == 50
+        assert len(ds.get_test_source()) == 10
+        assert len(ds.get_label_mapping()) == 100
+        assert ds.get_transforms() is not None
