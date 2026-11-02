@@ -321,12 +321,64 @@ Nhóm đã đối chiếu trực tiếp giữa công thức toán học công b�
 
 ---
 
-### 6.4. Level B — Thí nghiệm Đầy đủ 10 Tasks CIFAR-100 trên GPU (`PENDING_GPU`)
+### 6.4. Level B — Kết quả Thực nghiệm Toàn diện 10 Tasks CIFAR-100 trên GPU NVIDIA A100 (`results/c1_cifar100_full/`)
 
-| Cấu hình Thí nghiệm C1 (Full 10 Tasks, Seed 42) | Avg Incr Acc ($\bar{A}$) | Last Acc ($A_{10}$) | Forgetting ($F_{10}^{\text{past}}$) | Forgetting ($F_{10}^{\text{code}}$) | Trạng thái Thực thi | W&B Target Run Name |
-|:---|:---:|:---:|:---:|:---:|:---:|:---|
-| **P0 (`gaussian_std1`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_gaussian_std1_seed42` |
-| **P1 (`official_uniform`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_official_uniform_seed42` |
-| **P2 (`gaussian_matched_variance`)** | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | `PENDING_GPU` | Sẵn sàng chạy qua Colab GPU Notebook | `c1_cifar100_gaussian_matched_variance_seed42` |
+Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000 train, 10.000 test, seed 42) đã được thực thi thành công trên Google Colab GPU (NVIDIA A100 High-RAM, Linux x86_64, PyTorch 2.11.0+cu130, timm 1.0.30, execution commit `269f05c`). Hiện vật số học đã được kiểm toán toàn diện từ gói ZIP `foal_c1_projection_results.zip` (SHA256: `21eb4e977e739f8380b22f87e1db14937925b69d4a93b9285e7b49a6c2374cab`):
 
-> *Ghi chú trung thực học thuật:* Kết quả số học cho Level B Full 10 Tasks được đánh dấu rõ ràng là `PENDING_GPU`. Notebook hoàn chỉnh, tự động và độc lập phục vụ việc chạy trên GPU đã được chuẩn bị tại [`notebooks/foal_c1_projection_controlled.ipynb`](../notebooks/foal_c1_projection_controlled.ipynb).
+#### A. Bảng Đối chiếu Toàn diện 3 Cấu hình C1
+
+| Chỉ số Đánh giá (Metric) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Độ lệch $\Delta_{P1 - P0}$ | Độ lệch $\Delta_{P2 - P0}$ | Độ lệch $\Delta_{P1 - P2}$ |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Khởi tạo Ma trận Chiếu ($P$)** | $\mathcal{N}(0, 1.0)$ | $\mathcal{U}(-1/\sqrt{d}, +1/\sqrt{d})$ | $\mathcal{N}(0, 1/(3d))$ | — | — | — |
+| **Quy mô Phương sai ($\sigma_P^2$)** | $1.0$ | $1/2304 \approx 0.000434$ | $1/2304 \approx 0.000434$ | Giảm $\approx 2304\times$ | Giảm $\approx 2304\times$ | Khớp tuyệt đối ($0.0$) |
+| **Tỷ lệ Bão hòa Sigmoid (Diagnostics)** | **$81.03\%$** | **$0.00\%$** | **$0.00\%$** | $-81.03\text{ pp}$ | $-81.03\text{ pp}$ | $0.00\text{ pp}$ |
+| **Average Incremental Accuracy ($\bar{A}$, $\uparrow$)** | **`79.33%`** (`0.793315`) | **`83.28%`** (`0.832814`) | **`83.37%`** (`0.833740`) | **$+3.95\text{ pp}$** | **$+4.04\text{ pp}$** | **$-0.09\text{ pp}$** |
+| **Last Accuracy ($A_{10}$, $\uparrow$)** | **`70.95%`** (`0.709500`) | **`74.84%`** (`0.748400`) | **`74.99%`** (`0.749900`) | **$+3.89\text{ pp}$** | **$+4.04\text{ pp}$** | **$-0.15\text{ pp}$** |
+| **Forgetting — Paper Eq. 17–18 ($F_{10}^{\text{past}}$, $\downarrow$)** | **`9.17%`** (`0.091667`) | **`8.97%`** (`0.089667`) | **`8.81%`** (`0.088111`) | **$-0.20\text{ pp}$** | **$-0.36\text{ pp}$** | **$+0.16\text{ pp}$** |
+| **Forgetting — Official Code ($F_{10}^{\text{code}}$, $\downarrow$)** | **`8.25%`** (`0.082500`) | **`8.07%`** (`0.080700`) | **`7.93%`** (`0.079300`) | **$-0.18\text{ pp}$** | **$-0.32\text{ pp}$** | **$+0.14\text{ pp}$** |
+| **Thời gian Cập nhật RLS & Eval (s)** | $8.57\text{ s}$ | $8.59\text{ s}$ | $8.53\text{ s}$ | $+0.02\text{ s}$ | $-0.04\text{ s}$ | $+0.06\text{ s}$ |
+| **Thời gian Trích xuất Đặc trưng (s)** | $245.92\text{ s}$ (A100) | $245.92\text{ s}$ (Cached) | $245.92\text{ s}$ (Cached) | — | — | — |
+| **Tổng thời gian chạy (Wall-clock, s)** | $298.90\text{ s}$ | $52.01\text{ s}$ | $51.60\text{ s}$ | Nhanh hơn $5.7\times$ | Nhanh hơn $5.8\times$ | Tương đương |
+| **Target W&B Run Name** | `c1_cifar100_gaussian_std1_seed42` | `c1_cifar100_official_uniform_seed42` | `c1_cifar100_gaussian_matched_variance_seed42` | — | — | — |
+
+#### B. Quỹ đạo Độ chính xác qua 10 Giai đoạn (Stage Accuracy Trajectory, %)
+
+| Giai đoạn (Sau Task $k$) | P0 (`gaussian_std1`) | P1 (`official_uniform`) | P2 (`gaussian_matched_variance`) | Ưu thế của Quy mô Nhỏ ($\Delta_{P1 - P0}$) |
+|:---:|:---:|:---:|:---:|:---:|
+| **Stage 1** | $89.60\%$ | **$92.70\%$** | **$93.40\%$** | $+3.10\text{ pp}$ |
+| **Stage 2** | $88.00\%$ | **$91.60\%$** | **$91.60\%$** | $+3.60\text{ pp}$ |
+| **Stage 3** | $85.10\%$ | **$88.60\%$** | **$88.50\%$** | $+3.50\text{ pp}$ |
+| **Stage 4** | $81.55\%$ | **$85.62\%$** | **$85.58\%$** | $+4.07\text{ pp}$ |
+| **Stage 5** | $79.10\%$ | **$83.74\%$** | **$83.70\%$** | $+4.64\text{ pp}$ |
+| **Stage 6** | $76.93\%$ | **$81.50\%$** | **$81.62\%$** | $+4.57\text{ pp}$ |
+| **Stage 7** | $75.76\%$ | **$80.06\%$** | **$80.01\%$** | $+4.30\text{ pp}$ |
+| **Stage 8** | $74.03\%$ | **$77.76\%$** | **$78.00\%$** | $+3.73\text{ pp}$ |
+| **Stage 9** | $72.30\%$ | **$76.39\%$** | **$76.34\%$** | $+4.09\text{ pp}$ |
+| **Stage 10 (Final)** | $70.95\%$ | **$74.84\%$** | **$74.99\%$** | $+3.89\text{ pp}$ |
+| **Trung bình ($\bar{A}$)** | **`79.33%`** | **`83.28%`** | **`83.37%`** | **$+3.95\text{ pp}$** |
+
+#### C. Độ chính xác Từng Task tại Giai đoạn 10 & Mức Quên Từng Task
+
+| Task $j$ | P0 Final Acc | P1 Final Acc | P2 Final Acc | P0 Forgetting ($f_j^{\text{past}}$) | P1 Forgetting ($f_j^{\text{past}}$) | P2 Forgetting ($f_j^{\text{past}}$) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Task 1** | $60.50\%$ | **$66.20\%$** | **$66.60\%$** | $29.10\%$ | **$26.50\%$** | **$26.80\%$** |
+| **Task 2** | $76.30\%$ | **$80.80\%$** | **$80.40\%$** | $14.90\%$ | **$13.70\%$** | **$14.00\%$** |
+| **Task 3** | $74.00\%$ | **$77.90\%$** | **$77.70\%$** | $10.60\%$ | $10.60\%$ | **$10.30\%$** |
+| **Task 4** | $73.50\%$ | **$76.70\%$** | **$76.60\%$** | $8.00\%$ | $8.80\%$ | $9.10\%$ |
+| **Task 5** | $70.70\%$ | **$75.60\%$** | **$76.30\%$** | $7.10\%$ | $7.50\%$ | **$6.70\%$** |
+| **Task 6** | $69.50\%$ | **$74.10\%$** | **$74.30\%$** | $6.00\%$ | $6.30\%$ | $6.10\%$ |
+| **Task 7** | $74.20\%$ | **$76.40\%$** | **$76.90\%$** | $3.30\%$ | $4.30\%$ | **$3.10\%$** |
+| **Task 8** | $71.00\%$ | **$73.10\%$** | **$73.40\%$** | $2.70\%$ | **$1.80\%$** | **$2.10\%$** |
+| **Task 9** | $68.40\%$ | **$71.90\%$** | **$71.80\%$** | $0.80\%$ | $1.20\%$ | $1.10\%$ |
+| **Task 10** | $71.40\%$ | **$75.70\%$** | **$75.90\%$** | — | — | — |
+| **Trung bình** | **`70.95%`** | **`74.84%`** | **`74.99%`** | **`9.17%`** | **`8.97%`** | **`8.81%`** |
+
+#### D. Kết luận Khoa học Then chốt từ Thí nghiệm C1
+1. **Khẳng định Giả thuyết H2 (`SUPPORTED BY FULL EXPERIMENT`):**
+   - Giảm phương sai ma trận chiếu từ $1.0$ về $1/(3d) \approx 0.000434$ loại bỏ hoàn toàn hiện tượng bão hòa cực đoan của Sigmoid ($81.03\% \rightarrow 0.00\%$), giúp tăng độ chính xác tăng dần trung bình thêm **$+3.95\text{ pp}$** (với Uniform) và **$+4.04\text{ pp}$** (với Matched Gaussian).
+2. **Quy mô phương sai (Scale) là yếu tố quyết định, không phải dạng hàm phân phối (Shape):**
+   - Giữa P1 (Uniform $\mathcal{U}$) và P2 (Gaussian $\mathcal{N}$) khi đã khớp phương sai, độ chính xác gần như trùng khớp hoàn toàn ($\Delta_{P1 - P2} = -0.09\text{ pp}$ trên $\bar{A}$ và $-0.15\text{ pp}$ trên $A_{10}$). Điều này khẳng định dạng phân phối không có ý nghĩa phân biệt, mà bản chất là độ lớn phương sai giữ cho đầu vào nằm trong miền dốc tối ưu của hàm Sigmoid.
+3. **Mức độ thu hẹp khoảng cách so với Code Gốc Tác giả:**
+   - Khoảng cách ban đầu giữa Official Run ($90.98\%$) và Historical Our Run ($79.33\%$) là $11.65\text{ pp}$.
+   - Khởi tạo ma trận chiếu thu hẹp được **$+3.95\text{ pp}$**, tức giải thích được **$33.9\%$ (khoảng một phần ba)** khoảng cách lệch.
+   - Khoảng cách còn lại $\approx 7.6\text{–}7.7\text{ pp}$ thuộc về 2 nhân tố giao thức chưa căn chỉnh: **H1 (Pretrained ViT Checkpoint ImageNet-21K vs. 1K)** và **H4 (Preprocessing Bilinear $[0, 1]$ vs. Bicubic $[-1, 1]$)**.

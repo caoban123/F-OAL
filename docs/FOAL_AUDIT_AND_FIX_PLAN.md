@@ -1035,12 +1035,17 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 
 ---
 
-## 24. Cập nhật Thực nghiệm: Hoàn tất C0 & C1 (Level A Pilot & Matched-Input Diagnostics)
+## 24. Cập nhật Thực nghiệm: Hoàn tất C0 & Toàn diện C1 (Full GPU Execution on NVIDIA A100)
 
 - **Trạng thái C0 (Metric Alignment):** **`COMPLETED & VERIFIED`**. Cả hai công thức $F_T^{\text{past}}$ (Paper Eq. 17–18, mẫu số $T-1$) và $F_T^{\text{code}}$ (Official Code `experiment/metrics.py:49–54`, mẫu số $T$) đã được cài đặt độc lập, kiểm thử unit test 100% pass và đối chiếu trên dữ liệu thực:
   - Official Run Seed 0 (`3eca8232`): $F_T^{\text{past}} = 5.17\%$, $F_T^{\text{code}} = 4.69\%$.
   - Our Historical Run Seed 42 (`2cdeiptv`): $F_T^{\text{past}} = 9.21\%$, $F_T^{\text{code}} = 8.29\%$.
 - **Trạng thái C1 (Controlled Smooth Projection):**
-  - **Matched-Input Diagnostics:** **`COMPLETED`**. Đo đạc trực tiếp trên 200 đặc trưng CIFAR-100 ViT thực tế chứng minh P0 ($\mathcal{N}(0, 1)$) gây bão hòa Sigmoid lên tới $81.03\%$ (std $u = 19.28$), trong khi P1 và P2 có mức bão hòa $0.00\%$ (std $u \approx 0.40$), duy trì đạo hàm trung bình Sigmoid tại $0.246$.
-  - **Level A Pilot 2 Tasks:** **`COMPLETED`**. Chạy thành công trên CPU với `--feature-cache-dir`. P1 đạt Accuracy $79.00\%$ so với P0 $77.50\%$. Cache đặc trưng cho kết quả trùng khớp $100\%$ bitwise với chạy không cache và tăng tốc $70$ lần.
-  - **Level B Full 10 Tasks:** **`READY FOR GPU EXECUTION`**. Đã hoàn tất notebook Google Colab GPU [`notebooks/foal_c1_projection_controlled.ipynb`](../notebooks/foal_c1_projection_controlled.ipynb) phục vụ chạy GPU trên T4/L4/A100 và đồng bộ W&B.
+  - **Matched-Input Diagnostics:** **`COMPLETED & VERIFIED`**. Đo đạc trực tiếp trên 200 đặc trưng CIFAR-100 ViT thực tế chứng minh P0 ($\mathcal{N}(0, 1)$) gây bão hòa Sigmoid lên tới $81.03\%$ (std $u = 19.28$), trong khi P1 và P2 có mức bão hòa $0.00\%$ (std $u \approx 0.40$), duy trì đạo hàm trung bình Sigmoid tại $0.246$.
+  - **Level A Pilot 2 Tasks:** **`COMPLETED & VERIFIED`**. Chạy thành công trên CPU với `--feature-cache-dir`. P1 đạt Accuracy $79.00\%$ so với P0 $77.50\%$. Cache đặc trưng cho kết quả trùng khớp $100\%$ bitwise với chạy không cache và tăng tốc $70$ lần.
+  - **Level B Full 10 Tasks GPU Execution:** **`PASS (VERIFIED)`**. Đã chạy hoàn tất trên Google Colab NVIDIA A100 High-RAM qua notebook `notebooks/foal_c1_projection_controlled.ipynb`. Toàn bộ 56 file và 30 checkpoints đã được xác thực an toàn từ `foal_c1_projection_results.zip`:
+    - **P0 (`gaussian_std1`):** $\bar{A} = 79.33\%$, $A_{10} = 70.95\%$, $F_{10}^{\text{past}} = 9.17\%$, $F_{10}^{\text{code}} = 8.25\%$.
+    - **P1 (`official_uniform`):** $\bar{A} = 83.28\%$, $A_{10} = 74.84\%$, $F_{10}^{\text{past}} = 8.97\%$, $F_{10}^{\text{code}} = 8.07\%$ ($\Delta_{P1-P0} = +3.95\text{ pp}$).
+    - **P2 (`gaussian_matched_variance`):** $\bar{A} = 83.37\%$, $A_{10} = 74.99\%$, $F_{10}^{\text{past}} = 8.81\%$, $F_{10}^{\text{code}} = 7.93\%$ ($\Delta_{P2-P0} = +4.04\text{ pp}$).
+  - **Kết luận Giả thuyết H2:** **`SUPPORTED BY FULL EXPERIMENT`**. Phương sai khởi tạo ma trận chiếu thu hẹp được $33.9\%$ khoảng cách giữa nhóm và tác giả. Phân phối Uniform vs Gaussian không gây ra khác biệt đáng kể ($\Delta < 0.1\text{ pp}$); biến số tác động duy nhất là quy mô phương sai (variance scale) ngăn hiện tượng bão hòa Sigmoid.
+- **Trạng thái Ký duyệt C1 (Sign-off):** **`APPROVED FOR PULL REQUEST`**. Nhánh `experiment/c1-projection-initialization` đã có đầy đủ kiểm thử, hiện vật, chẩn đoán, đối chiếu dữ liệu thực tế và tài liệu khoa học, sẵn sàng mở PR vào `main`.
