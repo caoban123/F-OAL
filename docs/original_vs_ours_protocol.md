@@ -164,3 +164,16 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
   - Phân tích chi tiết và hình vẽ: `results/c2_analysis/`.
   - W&B Online Runs trên CoreWeave Forge: [Run `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) (B0), [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) (B1).
   - Trạng thái nghiệm thu: **`C2_SIGNED_OFF_WITH_LIMITATIONS`**.
+
+---
+
+## 4. Giao thức Thí nghiệm C3 (Controlled Preprocessing Alignment)
+
+- **Nhánh:** `experiment/c3-preprocessing-alignment`
+- **Thiết kế:** Giai thừa $2 \times 2$ (Bicubic/Bilinear $\times$ Normalized/Raw)
+- **Kiểm soát cố định:**
+  - Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k`
+  - Ma trận chiếu $P$: `official_uniform`, seed 42, $D=1000$
+  - Optimizer: Woodbury RLS, $\gamma = 1.0$, batch size 10, float64
+  - Thứ tự lớp & task: CIFAR-100, seed 42
+- **Tái sử dụng tính toán:** C3-A tương đương 100% C2-B1 (`C3_A_REUSE_APPROVED`), không cần chạy lại trên GPU.

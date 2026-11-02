@@ -1,7 +1,9 @@
 # F-OAL — C3 Controlled Input Preprocessing & Normalization Alignment Plan ($2 \times 2$ Factorial Design)
 
-> **Trạng thái tài liệu:** `C3_PLANNED — NOT IMPLEMENTED — NOT EXECUTED` (Chỉ lập kế hoạch nghiên cứu khoa học — **TUYỆT ĐỐI CHƯA TẠO NHÁNH, CHƯA SỬA CODE, CHƯA CHẠY GPU TRONG PHIÊN HIỆN TẠI**).  
-> **Kế thừa từ:** C0 (Metric Alignment: `COMPLETED`), C1 (Controlled Projection Initialization: `MERGED INTO MAIN`), C2 (Controlled ViT Backbone Alignment: `C2_SIGNED_OFF_WITH_LIMITATIONS`).
+> **Trạng thái tài liệu:** `C3_READY_FOR_GPU` (Đã hoàn tất toàn bộ triển khai mã nguồn, cấu hình, kiểm thử hồi quy 6/6 tests passing, chẩn đoán mẫu và Colab Notebook. Sẵn sàng chạy Full GPU trên Google Colab / CoreWeave Forge).  
+> **Kế thừa từ:** C0 (Metric Alignment: `COMPLETED`), C1 (Controlled Projection Initialization: `MERGED INTO MAIN`), C2 (Controlled ViT Backbone Alignment: `MERGED INTO MAIN` tại commit `7b76fd7`).  
+> **Nhánh thực nghiệm:** `experiment/c3-preprocessing-alignment`.  
+> **Quyết định tái sử dụng tính toán:** `C3_A_REUSE_APPROVED` (C3-A tương đương 100% bitwise với C2-B1, chỉ cần chạy C3-B, C3-C, C3-D trên GPU).
 
 ---
 
@@ -146,12 +148,14 @@ Trước khi chạy toàn bộ 10 tasks, trích xuất đặc trưng từ 200 �
 
 ## 8. Tiêu chuẩn Nghiệm thu Khoa học (Acceptance Gates for C3)
 
-- [ ] Toàn bộ 4 cấu hình C3-A, C3-B, C3-C, C3-D chạy trên cùng ma trận chiếu $P$ (cùng seed 42, cùng SHA256).
-- [ ] Tính năng Cache Safety cô lập hoàn toàn giữa 4 cấu hình, không tải chéo dữ liệu.
-- [ ] Đo lường đầy đủ 4 chỉ số chính: $\bar{A}$, $A_{10}$, $F_{10}^{\text{past}}$, $F_{10}^{\text{code}}$.
-- [ ] Tính toán đầy đủ tác động chính của nội suy, tác động chính của chuẩn hóa và hiệu ứng tương tác.
-- [ ] Cả 4 lượt chạy được ghi nhận đầy đủ vào Weights & Biases CoreWeave Forge trong group `c3_preprocessing_alignment`.
-- [ ] Toàn bộ checkpoints và ma trận được đóng gói và kiểm chứng độc lập.
+- [x] Toàn bộ 4 cấu hình C3-A, C3-B, C3-C, C3-D được thiết lập trên cùng ma trận chiếu $P$ (`official_uniform`, seed 42, $D=1000$).
+- [x] Tính năng Cache Safety cô lập hoàn toàn giữa 4 cấu hình qua tiền tố tên file `interp_tag` và `norm_tag`, kiểm tra metadata chặt chẽ khi tải.
+- [x] Triển khai thành công chẩn đoán mẫu thực nghiệm (`scripts/run_c3_diagnostics.py`), xác minh sai khác điểm ảnh giữa C3-D và Official Transform bằng chính xác $0.00\text{e+}00$ (tương đương 100%).
+- [x] Kiểm thử tự động hoàn chỉnh (`tests/test_c3_preprocessing.py`, 6/6 tests passing 100%).
+- [x] Quyết định tái sử dụng tính toán được phê duyệt (`C3_A_REUSE_APPROVED`): C3-A bitwise tương đương C2-B1 ($\bar{A}=91.7742\%$, W&B run `ne1p16b5`), tiết kiệm 25% GPU compute.
+- [x] Xây dựng Google Colab Notebook 14 cells hoàn chỉnh (`notebooks/foal_c3_preprocessing_controlled.ipynb`).
+- [ ] Chạy Full GPU cho C3-B, C3-C, C3-D trên Colab (A100) và đồng bộ W&B group `c3_preprocessing_alignment`.
+- [ ] Tính toán phân rã giai thừa thực nghiệm và nghiệm thu báo cáo khoa học C3.
 
 ---
 

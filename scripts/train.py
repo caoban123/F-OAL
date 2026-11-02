@@ -272,12 +272,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(f'max-tasks must be between 1 and {len(specs)}')
 
     mapping = {original: i for i, original in enumerate(order)}
-    mean_tuple = tuple(float(v) for v in data_cfg.get('mean', (0.5, 0.5, 0.5)))
-    std_tuple = tuple(float(v) for v in data_cfg.get('std', (0.5, 0.5, 0.5)))
-    interp_str = str(data_cfg.get('interpolation', 'bicubic'))
+    normalize_val = data_cfg.get('normalize', data_cfg.get('normalization', True))
+    normalize_bool = bool(normalize_val) if normalize_val is not None else True
+    mean_val = data_cfg.get('mean', (0.5, 0.5, 0.5))
+    std_val = data_cfg.get('std', (0.5, 0.5, 0.5))
+    mean_tuple = tuple(float(v) for v in mean_val) if mean_val is not None else (0.5, 0.5, 0.5)
+    std_tuple = tuple(float(v) for v in std_val) if std_val is not None else (0.5, 0.5, 0.5)
+    interp_str = str(data_cfg.get('interpolation', 'bicubic')).lower()
     trans = cifar100_transforms(size=int(data_cfg.get('image_size', 224)),
                                mean=mean_tuple, std=std_tuple,
-                               interpolation=interp_str)
+                               interpolation=interp_str,
+                               normalize=normalize_bool)
 
     use_fusion = bool(model_cfg['feature_fusion']) and not args.no_feature_fusion
     use_projection = bool(model_cfg['smooth_projection']) and not args.no_projection
@@ -424,9 +429,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     prep_meta = {
         'image_size': int(cfg['dataset'].get('image_size', 224)),
-        'mean': list(cfg['dataset'].get('mean', [0.5, 0.5, 0.5])),
-        'std': list(cfg['dataset'].get('std', [0.5, 0.5, 0.5])),
-        'interpolation': str(cfg['dataset'].get('interpolation', 'bicubic')),
+        'normalize': normalize_bool,
+        'mean': list(mean_tuple) if normalize_bool else None,
+        'std': list(std_tuple) if normalize_bool else None,
+        'interpolation': interp_str,
     }
     dataset_name = str(cfg['dataset'].get('name', 'uoft-cs/cifar100'))
 
@@ -442,8 +448,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
             if feature_cache_dir is not None:
                 bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
+                interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
+                norm_tag = "norm" if normalize_bool else "raw"
                 cache_prefix = (
-                    f"{bb_slug}_c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
+                    f"{bb_slug}_{interp_tag}_{norm_tag}_c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
                     f"_tr{args.limit_train_per_task or 'full'}"
                 )
                 train_feats, train_labels, ext_sec, _ = extract_or_load_task_features(
@@ -491,8 +499,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     if previous_spec.task_id not in cached_test_sets:
                         test_ds = IndexedImageDataset(test_source, task_test_ids, mapping, trans)
                         bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
+                        interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
+                        norm_tag = "norm" if normalize_bool else "raw"
                         cache_prefix = (
-                            f"{bb_slug}_c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
+                            f"{bb_slug}_{interp_tag}_{norm_tag}_c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
                             f"_te{args.limit_test_per_task or 'full'}"
                         )
                         t_feats, t_labels, ext_sec, _ = extract_or_load_task_features(

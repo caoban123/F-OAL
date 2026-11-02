@@ -461,3 +461,26 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 6. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
    - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác 100% đến từng số thập phân với C1-P1.
    - Ma trận chiếu $ được kiểm chứng đồng nhất tuyệt đối qua mã băm SHA256 (6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b), bảo đảm tính công bằng đơn yếu tố tuyệt đối (Single-Factor Control Fairness).
+
+---
+
+## 4. Thực nghiệm C3 — Kiểm soát Quy trình Tiền xử lý Hình ảnh (Controlled Preprocessing Alignment)
+
+- **Trạng thái:** `C3_READY_FOR_GPU`
+- **Nhánh thực nghiệm:** `experiment/c3-preprocessing-alignment`
+- **Colab Notebook:** [`notebooks/foal_c3_preprocessing_controlled.ipynb`](file:///d:/Nhập%20môn%20ML/Paper/notebooks/foal_c3_preprocessing_controlled.ipynb)
+- **Thiết kế Nghiên cứu:** Mô hình Giai thừa $2 \times 2$ (Factorial Design)
+  - Factor A (Nội suy không gian): Bicubic vs Bilinear
+  - Factor B (Chuẩn hóa dải pixel): Normalized $[-1.0, 1.0]$ (`mean=0.5, std=0.5`) vs Raw $[0.0, 1.0]$ (`ToTensor()` only)
+- **Bảng 4 Cấu hình Giai thừa:**
+  1. **C3-A (Bicubic, Normalized):** Baseline đối chứng (`configs/c3_a_bicubic_normalized.yaml`). Phê duyệt tái sử dụng kết quả C2-B1 (`C3_A_REUSE_APPROVED`, $\bar{A}=91.7742\%$, $A_{10}=87.4300\%$, W&B run `ne1p16b5`).
+  2. **C3-B (Bilinear, Normalized):** Cô lập tác động nội suy (`configs/c3_b_bilinear_normalized.yaml`).
+  3. **C3-C (Bicubic, Raw):** Cô lập tác động chuẩn hóa (`configs/c3_c_bicubic_raw.yaml`).
+  4. **C3-D (Bilinear, Raw):** Căn chỉnh hoàn toàn với mã nguồn tác giả (`configs/c3_d_bilinear_raw.yaml`). Xác minh chẩn đoán: sai khác điểm ảnh tối đa so với transform gốc là chính xác $0.00\text{e+}00$.
+- **Kiểm soát Cố định 100%:**
+  - Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k`
+  - Ma trận chiếu $P$: `official_uniform`, seed 42, $D=1000$
+  - Optimizer: Online Ridge RLS, $\gamma = 1.0$, `float64`, batch size 10, seed 42
+  - W&B group: `c3_preprocessing_alignment`
+- **An toàn Cache Đặc trưng:** Tách biệt đường dẫn và định danh file cache theo `interp_tag` và `norm_tag`, từ chối nghiêm ngặt các cache sai lệch cấu hình.
+- **Kiểm thử Hồi quy:** `tests/test_c3_preprocessing.py` (6/6 tests passing 100%).

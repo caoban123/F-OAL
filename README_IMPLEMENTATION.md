@@ -176,3 +176,10 @@ python -m scripts.train --config configs/cifar100.yaml --device cuda --wandb --r
   python -m scripts.train --config configs/c2_b0_augreg_in1k.yaml --output-dir results/c2_pilot/b0 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100
   python -m scripts.train --config configs/c2_b1_augreg2_in21k_ft_in1k.yaml --output-dir results/c2_pilot/b1 --max-tasks 2 --limit-train-per-task 100 --limit-test-per-task 100
   ```
+
+### C3 Preprocessing Alignment Experiment (Factorial $2 \times 2$)
+- **Status:** `C3_READY_FOR_GPU` (Branch: `experiment/c3-preprocessing-alignment`)
+- **Configs:** `configs/c3_a_bicubic_normalized.yaml`, `configs/c3_b_bilinear_normalized.yaml`, `configs/c3_c_bicubic_raw.yaml`, `configs/c3_d_bilinear_raw.yaml`
+- **Notebook:** `notebooks/foal_c3_preprocessing_controlled.ipynb`
+- **Tests:** `tests/test_c3_preprocessing.py` (6/6 passing)
+- **Diagnostics:** `scripts/run_c3_diagnostics.py`
