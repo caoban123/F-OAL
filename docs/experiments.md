@@ -502,14 +502,13 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
   - Optimizer: Online Ridge RLS, $\gamma = 1.0$, `float64`, batch size 10, seed 42
   - W&B group: `c3_preprocessing_alignment`
 - **An toàn Cache Đặc trưng:** Tách biệt đường dẫn và định danh file cache theo `interp_tag` và `norm_tag`, từ chối nghiêm ngặt các cache sai lệch cấu hình.
-- **An toàn Cache Đặc trưng:** Tách biệt đường dẫn và định danh file cache theo `interp_tag` và `norm_tag`, từ chối nghiêm ngặt các cache sai lệch cấu hình.
 - **Kiểm thử Hồi quy:** `tests/test_c3_preprocessing.py` (6/6 tests passing 100%).
 
 ---
 
 ## 9. Thực nghiệm Table 4 — Khảo sát Đóng góp Thành phần Kiến trúc (Ablation Study: Feature Fusion $\times$ Smooth Projection)
 
-- **Trạng thái:** `TABLE4_SIGNED_OFF_WITH_LIMITATIONS` (Full GPU hoàn tất trên NVIDIA RTX A5000, 14 artifacts verified, đồng bộ 17 runs W&B trên CoreWeave Forge)
+- **Trạng thái:** `TABLE4_SIGNED_OFF_WITH_LIMITATIONS` (Full GPU hoàn tất trên Google Colab Tesla T4 và NVIDIA A100 cho baseline A0, 14 artifacts verified, đối soát 17 runs W&B trên CoreWeave Forge)
 - **Nhánh thực nghiệm:** `experiment/table4-ablation`
 - **Gói nén lưu trữ:** `foal_table4_ablation_results.zip` (SHA256: `90f191d12b06fbd804779fcb038a12574c9b7cdc2f32369a6975dd6309e09e7a`)
 - **Tài liệu phân tích:** [`results/table4_analysis/`](../results/table4_analysis/) (Bao gồm 7 hình vẽ PNG xuất bản, 7 CSV manifests, 3 JSON manifests)
@@ -517,14 +516,51 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 
 ### 9.1. Bảng Kết quả Thực nghiệm Table 4 (CIFAR-100, 10 Tasks, Seed 42)
 
-| Điều kiện | FF | SP | Số chiều ($D$) | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{10}^{\text{past}}$ (%) | $F_{10}^{\text{code}}$ (%) | T_RLS/Eval (s) | W&B Run ID | W&B Run Link | Ghi chú |
-|:---|:---:|:---:|:---:|---:|---:|---:|---:|---:|:---:|:---:|:---|
-| **A0 (Full F-OAL)** | $\checkmark$ | $\checkmark$ | 1000 | **90.4016%** | **85.7300%** | **5.1556%** | **4.6400%** | 15.54 | [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Reused C3-D | Baseline chuẩn |
-| **A1 (w/o FF)** | $\times$ | $\checkmark$ | 1000 | **90.1004%** | **85.4800%** | **5.4444%** | **4.9000%** | 15.42 | [`shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | [A1 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | Bỏ Feature Fusion |
-| **A2 (w/o SP)** | $\checkmark$ | $\times$ | 768 | **90.3823%** | **85.7200%** | **5.2444%** | **4.7200%** | 11.58 | [`rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | [A2 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | Bỏ Smooth Projection |
-| **A3 (w/o Both)** | $\times$ | $\times$ | 768 | **89.9224%** | **85.4800%** | **5.3222%** | **4.7900%** | 11.90 | [`k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | [A3 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | Bỏ Cả Hai |
+| Điều kiện | FF | SP | Số chiều ($D$) | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{10}^{\text{past}}$ (%) | $F_{10}^{\text{code}}$ (%) | T_RLS/Eval (s) | GPU Hardware | W&B Run ID | W&B Run Link | Ghi chú |
+|:---|:---:|:---:|:---:|---:|---:|---:|---:|---:|:---|:---:|:---:|:---|
+| **A0 (Full F-OAL)** | $\checkmark$ | $\checkmark$ | 1000 | **90.4016%** | **85.7300%** | **5.1556%** | **4.6400%** | 8.50 | A100-SXM4-40GB | [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | [Reused C3-D](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Baseline chuẩn |
+| **A1 (w/o FF)** | $\times$ | $\checkmark$ | 1000 | **90.1004%** | **85.4800%** | **5.4444%** | **4.9000%** | 15.52 | Tesla T4 (14.56 GB) | [`shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | [A1 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | Bỏ Feature Fusion |
+| **A2 (w/o SP)** | $\checkmark$ | $\times$ | 768 | **90.3823%** | **85.7200%** | **5.2444%** | **4.7200%** | 11.59 | Tesla T4 (14.56 GB) | [`rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | [A2 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | Bỏ Smooth Projection |
+| **A3 (w/o Both)** | $\times$ | $\times$ | 768 | **89.9224%** | **85.4800%** | **5.3222%** | **4.7900%** | 11.97 | Tesla T4 (14.56 GB) | [`k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | [A3 Online](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | Bỏ Cả Hai |
 
-### 9.2. Phân rã Tác động Giai thừa $2 \times 2$ (Factorial Effects)
+*Lưu ý tính công bằng thời gian chạy:* A0 được đo trên NVIDIA A100 trong thực nghiệm C3-D; A1, A2, A3 được đo trên cùng GPU Tesla T4. Do đó so sánh thời gian chỉ được kiểm soát đơn yếu tố trong cụm A1 vs A2 vs A3 (D=1000 mất 15.52s, D=768 mất 11.59s–11.97s, tương ứng mức giảm ~25% phù hợp độ phức tạp $O(D^2)$).
+
+### 9.2. Bảng Tiến trình Độ chính xác qua 10 Stages ($A_k$, %)
+
+| Stage | Số Lớp | A0 (Full F-OAL) | A1 (w/o FF) | A2 (w/o SP) | A3 (w/o Both) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **1** | 10 | 96.10% | 96.10% | 96.20% | 95.30% |
+| **2** | 20 | 95.05% | 94.90% | 94.95% | 94.50% |
+| **3** | 30 | 93.27% | 92.83% | 93.20% | 92.63% |
+| **4** | 40 | 91.50% | 91.25% | 91.53% | 91.07% |
+| **5** | 50 | 90.58% | 90.46% | 90.68% | 90.26% |
+| **6** | 60 | 89.45% | 89.03% | 89.33% | 88.92% |
+| **7** | 70 | 88.63% | 88.14% | 88.54% | 88.06% |
+| **8** | 80 | 87.30% | 86.84% | 87.35% | 86.91% |
+| **9** | 90 | 86.41% | 85.97% | 86.32% | 86.09% |
+| **10** | 100 | 85.73% | 85.48% | 85.72% | 85.48% |
+| **Trung bình ($\bar{A}$)** | — | **90.4016%** | **90.1004%** | **90.3823%** | **89.9224%** |
+
+*Kiểm chứng toán học:* Trung bình cộng của 10 giá trị stage accuracy trên mỗi cột khớp chính xác $100\%$ đến $10^{-12}$ với Average Incremental Accuracy $\bar{A}$ tương ứng.
+
+### 9.3. Bảng Độ Quên Từng Task Cũ tại Điểm Cuối ($f_j^{10}$, %)
+
+| Task ($j$) | Lớp trong Task | $f_j$ (A0: Full) | $f_j$ (A1: w/o FF) | $f_j$ (A2: w/o SP) | $f_j$ (A3: w/o Both) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Task 1** | 0 – 9 | 16.30% | 16.40% | 16.30% | 15.80% |
+| **Task 2** | 10 – 19 | 11.90% | 13.00% | 11.00% | 12.50% |
+| **Task 3** | 20 – 29 | 4.90% | 5.80% | 5.30% | 6.00% |
+| **Task 4** | 30 – 39 | 4.20% | 5.30% | 4.50% | 4.70% |
+| **Task 5** | 40 – 49 | 3.00% | 3.60% | 3.70% | 3.80% |
+| **Task 6** | 50 – 59 | 2.80% | 2.80% | 3.10% | 2.30% |
+| **Task 7** | 60 – 69 | 1.50% | 1.30% | 1.20% | 1.20% |
+| **Task 8** | 70 – 79 | 1.10% | 0.80% | 1.50% | 1.10% |
+| **Task 9** | 80 – 89 | 0.70% | 0.00% | 0.60% | 0.50% |
+| **Task 10** | 90 – 99 | 0.00% | 0.00% | 0.00% | 0.00% |
+| **$F_{\text{past}}$ (9 tasks cũ)** | — | **5.1556%** | **5.4444%** | **5.2444%** | **5.3222%** |
+| **$F_{\text{code}}$ (10 tasks)** | — | **4.6400%** | **4.9000%** | **4.7200%** | **4.7900%** |
+
+### 9.4. Phân rã Tác động Giai thừa $2 \times 2$ (Factorial Effects)
 
 - **Tác động đơn (Simple Effects):**
   - $E_{\text{FF}|\text{SP}} = A0 - A1 = \mathbf{+0.3013\text{ pp}}$
@@ -540,7 +576,7 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 - **Lợi ích kết hợp (Joint Benefit):**
   - $\Delta_{\text{Full - Both}} = A0 - A3 = \mathbf{+0.4793\text{ pp}}$ ($= E_{\text{FF}} + E_{\text{SP}}$).
 
-### 9.3. Đối chiếu Xu hướng Khoa học với Bảng 4 Bài báo Gốc (NeurIPS 2024, Trang 10)
+### 9.5. Đối chiếu Xu hướng Khoa học với Bảng 4 Bài báo Gốc (NeurIPS 2024, Trang 10)
 
 | Điều kiện | Paper $\bar{A}$ | Ours $\bar{A}$ (Seed 42) | Paper $\Delta$ | Ours $\Delta$ | Đánh giá Tái hiện Xu hướng |
 |:---|:---:|:---:|:---:|:---:|:---|
@@ -549,4 +585,4 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 | **A2: w/o Smooth Projection** | **90.7%** | **90.3823%** | $-0.4\text{ pp}$ | $-0.0193\text{ pp}$ | $\checkmark$ Suy giảm chính xác |
 | **A3: w/o Both** | **90.6%** | **89.9224%** | $-0.5\text{ pp}$ | $-0.4793\text{ pp}$ | $\checkmark$ Thấp nhất toàn bảng |
 
-- **Kết luận:** Tái hiện thành công **xu hướng kiến trúc** của Table 4 bài báo gốc: cả hai thành phần đều mang lại giá trị gia tăng thực nghiệm, và việc loại bỏ đồng thời cả hai đẩy độ chính xác xuống mức thấp nhất ($89.92\%$). Thứ tự ưu tiên giữa các mô hình được bảo toàn nghiêm ngặt: $A0 > A2 > A1 > A3$.
+- **Kết luận:** Tái hiện thành công **xu hướng kiến trúc** của Table 4 bài báo gốc: cả hai thành phần đều mang lại giá trị gia tăng thực nghiệm, và việc loại bỏ đồng thời cả hai đẩy độ chính xác xuống mức thấp nhất ($89.92\%$). Thứ tự ưu tiên giữa các mô hình trên Seed 42 bảo toàn: $A0 > A2 > A1 > A3$.

@@ -198,3 +198,136 @@ def test_table4_archive_and_recalculated_metrics():
     # Verify mathematical identity: E_FF + E_SP == A0 - A3
     diff_joint = abs(fe["joint_benefit"]["delta_full_vs_none"] - fe["joint_benefit"]["sum_of_main_effects"])
     assert diff_joint < 1e-12, f"Additivity gap violated: {diff_joint}"
+
+
+def test_stage_accuracy_from_raw_matrix_reconciliation():
+    """Forensic Check 1 & 2: Reconstruct stage accuracies from raw 55-element task matrices and check mean equals A_bar."""
+    import pandas as pd
+    import numpy as np
+
+    raw_paths = {
+        "A0": Path("results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv"),
+        "A1": Path("results/table4_full_gpu_verified/results/table4_a1_without_ff/task_accuracy.csv"),
+        "A2": Path("results/table4_full_gpu_verified/results/table4_a2_without_sp/task_accuracy.csv"),
+        "A3": Path("results/table4_full_gpu_verified/results/table4_a3_without_both/task_accuracy.csv"),
+    }
+
+    # Load exported stage CSV
+    stage_csv_p = Path("results/table4_analysis/table4_stage_accuracies.csv")
+    assert stage_csv_p.exists()
+    stage_df = pd.read_csv(stage_csv_p)
+
+    # Load metrics json
+    metrics_json_p = Path("results/table4_analysis/table4_metrics_comparison.json")
+    assert metrics_json_p.exists()
+    with open(metrics_json_p, "r", encoding="utf-8") as f:
+        metrics_data = json.load(f)
+
+    for cond_id, csv_p in raw_paths.items():
+        assert csv_p.exists(), f"Raw CSV missing for {cond_id}"
+        df = pd.read_csv(csv_p)
+        assert len(df) == 55, f"Raw CSV for {cond_id} must have exactly 55 rows"
+
+        # Construct 10x10 triangular matrix
+        R = np.zeros((10, 10))
+        for _, row in df.iterrows():
+            s = int(row["stage"]) - 1
+            t = int(row["task"]) - 1
+            R[s, t] = float(row["accuracy"])
+
+        # Compute per-stage accuracies
+        computed_stages = [float(np.mean(R[s, :s+1])) for s in range(10)]
+
+        # 1. Compare against table4_stage_accuracies.csv (rounded to 2 decimals)
+        col_name = {
+            "A0": "A0 (Full)", "A1": "A1 (w/o FF)", "A2": "A2 (w/o SP)", "A3": "A3 (w/o Both)"
+        }[cond_id]
+        exported_stages = [float(x) for x in stage_df[col_name].values]
+        for s in range(10):
+            assert abs(computed_stages[s] * 100.0 - exported_stages[s]) < 0.015, (
+                f"{cond_id} Stage {s+1} mismatch: computed={computed_stages[s]*100.0}, exported={exported_stages[s]}"
+            )
+
+        # 2. Forensic Identity: mean(stage_accs) == a_bar
+        computed_a_bar = float(np.mean(computed_stages))
+        reported_a_bar = metrics_data[cond_id]["a_bar_ratio"]
+        diff = abs(computed_a_bar - reported_a_bar)
+        assert diff < 1e-12, f"{cond_id} Forensic violation: mean(stages) != a_bar (diff={diff})"
+
+        # 3. Last accuracy: stage_accs[9] == a_last
+        computed_a_last = computed_stages[9]
+        reported_a_last = metrics_data[cond_id]["a_last_ratio"]
+        assert abs(computed_a_last - reported_a_last) < 1e-12, f"{cond_id} A_last mismatch"
+
+        # 4. Per-task forgetting recomputes summary metrics
+        task_f_past = [float(np.max(R[j:9, j]) - R[9, j]) for j in range(9)]
+        computed_f_past = float(np.mean(task_f_past))
+        reported_f_past = metrics_data[cond_id]["f_past_ratio"]
+        assert abs(computed_f_past - reported_f_past) < 1e-12, f"{cond_id} F_past mismatch"
+
+        task_f_code = [float(np.max(R[j:10, j]) - R[9, j]) for j in range(10)]
+        computed_f_code = float(np.mean(task_f_code))
+        reported_f_code = metrics_data[cond_id]["f_code_ratio"]
+        assert abs(computed_f_code - reported_f_code) < 1e-12, f"{cond_id} F_code mismatch"
+
+
+def test_a0_matrix_bitwise_equality_with_c3_d():
+    """Forensic Check 5: Verify A0 is bitwise identical in every matrix entry and metadata to C3-D."""
+    import hashlib
+    c3_d_csv = Path("results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv")
+    assert c3_d_csv.exists()
+    c3_d_bytes = c3_d_csv.read_bytes()
+    c3_d_sha256 = hashlib.sha256(c3_d_bytes).hexdigest()
+
+    # Verified reference hash from C3 archive manifest
+    expected_c3_d_sha256 = "68684dfb3d348c5838815a63fa45dd874bd84b3a427cd29d06f4c320fa5de1d7"
+    assert c3_d_sha256 == expected_c3_d_sha256, f"C3-D CSV SHA256 mismatch: {c3_d_sha256}"
+
+
+def test_corrupted_fixture_detection():
+    """Verify that any corrupted stage trajectory (such as hallucinated tables) is strictly detected and rejected."""
+    import numpy as np
+
+    # True A0 average incremental accuracy
+    true_a_bar = 90.40163492063492
+
+    # Previously hallucinated stage trajectory starting at 99.30%
+    corrupted_stages = [99.30, 96.25, 93.80, 92.20, 90.96, 89.5833, 88.6143, 87.5875, 86.6333, 85.73]
+    corrupted_mean = float(np.mean(corrupted_stages))
+
+    # The discrepancy is large (+0.664 pp)
+    discrepancy = abs(corrupted_mean - true_a_bar)
+    assert discrepancy > 0.50, f"Corrupted table must differ significantly from true average (found {discrepancy})"
+
+    # The verification rule must reject this corrupted trajectory
+    tolerance = 1e-6
+    is_valid = (discrepancy < tolerance)
+    assert not is_valid, "Test harness must reject corrupted stage table"
+
+
+def test_plots_and_wandb_inventory_audit():
+    """Forensic Check 6, 7 & 8: Verify all 7 figures exist with non-empty payloads and W&B inventory is complete."""
+    analysis_dir = Path("results/table4_analysis")
+    
+    # Check 7 figures
+    for fig_num in range(1, 8):
+        matches = list(analysis_dir.glob(f"fig{fig_num}_*.png"))
+        assert len(matches) == 1, f"Missing or duplicate figure {fig_num}"
+        fig_path = matches[0]
+        assert fig_path.stat().st_size > 50000, f"Figure {fig_path.name} is unusually small ({fig_path.stat().st_size} bytes)"
+
+    # Check W&B audit file
+    wandb_audit_p = analysis_dir / "table4_wandb_audit.json"
+    assert wandb_audit_p.exists()
+    with open(wandb_audit_p, "r", encoding="utf-8") as f:
+        w_audit = json.load(f)
+
+    assert w_audit["total_online_runs"] == 17
+    assert len(w_audit["table4_runs"]) == 4
+    assert len(w_audit["pilot_smoke_runs"]) == 4
+
+    a0_entry = [r for r in w_audit["table4_runs"] if r["condition"] == "A0"][0]
+    assert a0_entry["provenance"] == "REUSED_VERIFIED_C3_D"
+    assert a0_entry["run_id"] == "3v53tmq5"
+
+

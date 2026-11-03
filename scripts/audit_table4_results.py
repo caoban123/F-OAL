@@ -264,7 +264,7 @@ def main():
         for cid in ["A0", "A1", "A2", "A3"]:
             c = recalculated[cid]
             dim = 1000 if c["sp"] else 768
-            note = "C3-D on Colab T4 GPU (Reused)" if cid == "A0" else "Colab T4 GPU (New Full GPU)"
+            note = "Colab NVIDIA A100 GPU (Reused from C3-D)" if cid == "A0" else "Colab Tesla T4 GPU (New Full GPU)"
             writer.writerow([cid, c["name"], c["duration_sec"], c["feat_ext_sec"], c["rls_eval_sec"], dim, note])
 
     # 11. W&B Audit Manifest

@@ -208,22 +208,30 @@ plt.close(fig)
 # -------------------------------------------------------------
 # Figure 7: Computational Efficiency: RLS Inversion Duration
 # -------------------------------------------------------------
-fig, ax = plt.subplots(figsize=(7.5, 4.8))
+fig, ax = plt.subplots(figsize=(8.5, 5.2))
 rls_times = [metrics_data[k]['rls_eval_sec'] for k in ['A0', 'A1', 'A2', 'A3']]
-dims = [1000, 1000, 768, 768]
-labels = [f"A0 (Full, D=1000)\n{rls_times[0]:.1f}s", f"A1 (w/o FF, D=1000)\n{rls_times[1]:.1f}s", f"A2 (w/o SP, D=768)\n{rls_times[2]:.1f}s", f"A3 (w/o Both, D=768)\n{rls_times[3]:.1f}s"]
+labels = [
+    f"A0 (Full, D=1000)\n{rls_times[0]:.2f}s\n[A100 GPU - Reused]",
+    f"A1 (w/o FF, D=1000)\n{rls_times[1]:.2f}s\n[Tesla T4 GPU]",
+    f"A2 (w/o SP, D=768)\n{rls_times[2]:.2f}s\n[Tesla T4 GPU]",
+    f"A3 (w/o Both, D=768)\n{rls_times[3]:.2f}s\n[Tesla T4 GPU]"
+]
 
-bars = ax.bar(labels, rls_times, color=['#3a86ff', '#8338ec', '#ff006e', '#fb5607'], width=0.5, edgecolor='black', linewidth=1.2)
-ax.set_ylabel('RLS Inversion & Eval Duration (s)', fontsize=12, fontweight='bold')
-ax.set_title('Figure 7: Computational Cost vs. RLS Feature Dimension', fontsize=13, fontweight='bold', pad=15)
+bars = ax.bar(labels, rls_times, color=['#6c757d', '#8338ec', '#ff006e', '#fb5607'], width=0.52, edgecolor='black', linewidth=1.2)
+ax.set_ylabel('RLS Inversion & Eval Duration (s)', fontsize=11, fontweight='bold')
+ax.set_title('Figure 7: RLS Inversion & Evaluation Duration\n(Note: A0 on A100; A1-A3 controlled on Tesla T4)', fontsize=12, fontweight='bold', pad=12)
 ax.set_ylim(0, 20)
 
 for bar in bars:
     h = bar.get_height()
     ax.annotate(f'{h:.2f} s', (bar.get_x() + bar.get_width()/2, h), xytext=(0, 3), textcoords="offset points", ha='center', fontsize=10, fontweight='bold')
 
+# Add note explaining hardware confounding
+ax.text(0.5, -0.22, '* Controlled single-hardware comparison (Tesla T4): D=1000 (A1) vs D=768 (A2, A3) yields ~25% speedup.\n* A0 runtime reflects faster A100 GPU and cannot be directly compared against A1-A3.',
+        transform=ax.transAxes, ha='center', va='top', fontsize=8.5, style='italic', color='#333333')
+
 plt.tight_layout()
-fig.savefig(analysis_dir / "fig7_runtime_comparison.png")
+fig.savefig(analysis_dir / "fig7_runtime_comparison.png", bbox_inches='tight')
 plt.close(fig)
 
 print("All 7 scientific figures successfully generated in results/table4_analysis/!")
