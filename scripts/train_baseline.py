@@ -266,7 +266,8 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
     print("=" * 60)
 
     # Save output artifacts
-    output_dir = Path(cfg.get("output_dir", f"runs/headline/{agent_type}"))
+    output_dir_override = getattr(args, "output_dir", None)
+    output_dir = Path(output_dir_override or cfg.get("output_dir", f"runs/headline/{agent_type}"))
     output_dir.mkdir(parents=True, exist_ok=True)
 
     result_payload = {
@@ -293,9 +294,10 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Run Continual Learning Baseline (LwF, ER)")
+    p = argparse.ArgumentParser(description="Run Continual Learning Baseline (LwF, ER, Official LwF)")
     p.add_argument("--config", type=str, required=True, help="Path to YAML config")
-    p.add_argument("--agent", type=str, choices=["lwf", "er"], default=None, help="Agent override")
+    p.add_argument("--agent", type=str, choices=["lwf", "er", "official_lwf", "official-lwf"], default=None, help="Agent override")
+    p.add_argument("--output-dir", type=str, default=None, help="Output directory override (useful for pilots)")
     p.add_argument("--device", type=str, default="auto", help="Compute device ('cpu', 'cuda', 'auto')")
     p.add_argument("--seed", type=int, default=None, help="Random seed override")
     p.add_argument("--max-tasks", type=int, default=None, help="Cap number of tasks")

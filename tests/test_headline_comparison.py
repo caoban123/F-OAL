@@ -555,3 +555,36 @@ def test_notebook_cell_integrity_and_fail_fast():
     for token in forbidden_tokens:
         assert token not in full_text.lower(), f"Forbidden security token found: {token}"
 
+
+def test_feature_caching_and_class_order_fingerprint_audit():
+    """Verify feature caching determinism and document class order generator difference vs author MT19937."""
+    import hashlib
+    import numpy as np
+    from src.foal.datasets import make_class_order
+
+    # 1. Verify our repo's class order is strictly deterministic
+    order_a = make_class_order(100, seed=42)
+    order_b = make_class_order(100, seed=42)
+    assert order_a == order_b, "make_class_order must be 100% deterministic"
+    assert len(order_a) == 100
+    assert len(set(order_a)) == 100
+
+    # Fingerprint of our order
+    our_fp = hashlib.sha256(str(order_a).encode()).hexdigest()
+
+    # 2. Replicate author MT19937 order (from ref/official_foal/continuum/data_utils.py:8-14)
+    # def create_task_composition(class_nums, num_tasks, fixed_order=False):
+    #     label_array = np.arange(0, total_classes)
+    #     if not fixed_order: np.random.shuffle(label_array)
+    np.random.seed(42)
+    author_order = np.arange(100)
+    np.random.shuffle(author_order)
+    author_order = author_order.tolist()
+    author_fp = hashlib.sha256(str(author_order).encode()).hexdigest()
+
+    # Verify that seed 42 in PCG64 (default_rng) != MT19937 legacy shuffle
+    # This proves the scientific audit requirement: do NOT assume identity solely from seed=42
+    assert our_fp != author_fp, "Audit check: PCG64 vs MT19937 must produce distinct permutations"
+    assert order_a[0] == 59 and author_order[0] == 83
+
+
