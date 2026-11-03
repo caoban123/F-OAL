@@ -29,7 +29,7 @@ preprocessing:
   size: 224
 
 device: auto
-output_dir: runs/headline/official_lwf
+output_dir: runs/headline/lwf_official_cifar100
 
 reference_values:
   paper_reported:

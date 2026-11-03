@@ -256,9 +256,12 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
     print("\n" + "=" * 60)
     print(f"FINAL BENCHMARK RESULTS: {agent_type.upper()}")
     print("=" * 60)
-    print(f"Average Accuracy (A_avg):     {summary['a_avg_pct']:.4f}% (Paper ref: {'69.3%' if agent_type=='lwf' else '90.1%'})")
-    print(f"Last Task Accuracy (A_last): {summary['a_last_pct']:.4f}% (Paper ref: {'64.8%' if agent_type=='lwf' else '84.6%'})")
-    print(f"Forgetting Rate (F_past):    {summary['f_past_pct']:.4f}% (Paper ref: {'1.3%' if agent_type=='lwf' else '20.7%'})")
+    ref_a_avg = '69.3%' if 'lwf' in agent_type else '90.1%'
+    ref_a_last = '64.8%' if 'lwf' in agent_type else '84.6%'
+    ref_f = '1.3%' if 'lwf' in agent_type else '20.7%'
+    print(f"Average Accuracy (A_avg):     {summary['a_avg_pct']:.4f}% (Paper ref: {ref_a_avg})")
+    print(f"Last Task Accuracy (A_last): {summary['a_last_pct']:.4f}% (Paper ref: {ref_a_last})")
+    print(f"Forgetting Rate (F_past):    {summary['f_past_pct']:.4f}% (Paper ref: {ref_f})")
     print(f"Total Stream Time:           {total_training_seconds:.2f}s")
     print("=" * 60)
 

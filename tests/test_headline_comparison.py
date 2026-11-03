@@ -480,3 +480,78 @@ def test_official_lwf_config_validity():
     assert data["optimizer"] == "sgd"
     assert data["learning_rate"] == 0.001
     assert data["dynamic_loss_weighting"] is True
+    assert data["output_dir"] == "runs/headline/lwf_official_cifar100"
+
+
+def test_official_lwf_preflight_forward_backward_gradient_finite():
+    """Rigorous preflight: test initialization, forward/backward, finite gradients, teacher snapshot."""
+    from src.foal.baselines.official_lwf import OfficialLwFAgent
+    import torch
+
+    torch.manual_seed(42)
+    feat_dim = 32
+    num_classes = 50
+    agent = OfficialLwFAgent(feature_dim=feat_dim, total_classes=num_classes, learning_rate=0.01, device="cpu")
+
+    # 1. Forward/backward on Task 0
+    x0 = torch.randn(10, feat_dim)
+    y0 = torch.randint(0, 10, (10,))
+    agent.optimizer.zero_grad()
+    loss0, m0 = agent.compute_loss(x0, y0)
+    assert torch.isfinite(loss0), f"Task 0 loss non-finite: {loss0}"
+    loss0.backward()
+
+    # Check finite gradients
+    for name, param in agent.model.named_parameters():
+        assert param.grad is not None, f"Parameter {name} has no gradient"
+        assert torch.isfinite(param.grad).all(), f"Parameter {name} has NaN/Inf gradient"
+
+    agent.optimizer.step()
+    agent.after_task()
+    assert agent.task_seen == 1
+
+    # 2. Before Task 1: teacher snapshot must be detached and frozen
+    agent.before_task(task_id=1, total_seen_classes=20)
+    assert agent.teacher_model is not None
+    for param in agent.teacher_model.parameters():
+        assert not param.requires_grad, "Teacher model parameters must have requires_grad=False"
+
+    # 3. Forward/backward on Task 1 with distillation loss
+    x1 = torch.randn(10, feat_dim)
+    y1 = torch.randint(10, 20, (10,))
+    agent.optimizer.zero_grad()
+    loss1, m1 = agent.compute_loss(x1, y1)
+    assert torch.isfinite(loss1), f"Task 1 loss non-finite: {loss1}"
+    assert m1["loss_old"] > 0.0, "Task 1 distillation loss must be positive"
+    loss1.backward()
+
+    for name, param in agent.model.named_parameters():
+        assert torch.isfinite(param.grad).all(), f"Task 1: {name} gradient non-finite"
+
+
+def test_notebook_cell_integrity_and_fail_fast():
+    """Verify that notebook contains CELL 6b, fail-fast assertions, and no secrets/credentials."""
+    import json
+    nb_path = Path(__file__).resolve().parent.parent / "notebooks" / "foal_cifar100_headline_final.ipynb"
+    assert nb_path.exists(), "Notebook not found"
+    nb = json.loads(nb_path.read_text(encoding="utf-8"))
+
+    cell_sources = ["".join(c.get("source", [])) for c in nb["cells"]]
+    full_text = "\n".join(cell_sources)
+
+    # Must contain CELL 6b
+    assert any("CELL 6b" in s for s in cell_sources), "Notebook must contain CELL 6b"
+    assert "lwf_cifar100_official_protocol.yaml" in full_text
+
+    # Must contain fail-fast assertions
+    assert "Expected 10 completed task stages" in full_text
+    assert "FATAL: CUDA GPU is not available!" in full_text
+
+    # Must contain safe output directory
+    assert "runs/headline/lwf_official_cifar100" in full_text
+
+    # Must NOT contain any hardcoded API keys or credentials
+    forbidden_tokens = ["api_key", "secret_key", "wandb.login(key=", "Bearer "]
+    for token in forbidden_tokens:
+        assert token not in full_text.lower(), f"Forbidden security token found: {token}"
+
