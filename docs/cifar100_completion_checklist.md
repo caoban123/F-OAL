@@ -1,6 +1,6 @@
 # CIFAR-100 Scientific Reproduction Completion Checklist
 
-**Document Status:** `CIFAR100_COMPLETED_WITH_LIMITATIONS`  
+**Document Status:** `CIFAR100_REPORT_READY_WITH_LIMITATIONS`  
 **Latest Verified Commit on Main:** `747b828`  
 **Development Branch:** `experiment/headline-comparison`  
 **Lead Auditor:** Senior ML Research Engineer & Scientific Reproducibility Auditor  
@@ -35,7 +35,7 @@ Following the forensic audit and official source comparison (`ref/official_foal/
 | **G02** | Data Integrity | Test Set Scope Isolation: Evaluation on task $t$ only exposes test samples from classes in $\{0, \dots, t\}$. | **PASS** | `src/foal/datasets.py:56`, verified across C0–C3 runs. |
 | **G03** | Data Integrity | Cryptographic Split Fingerprint: Deterministic SHA256 hashes generated for class order and task partitions. | **PASS** | `src/foal/datasets.py`, verified in run manifests. |
 | **G04** | Architecture | Backbone Weights Fidelity: Pre-trained `vit_base_patch16_224.augreg2_in21k_ft_in1k` weights verified via SHA256 checksums. | **PASS** | `src/foal/backbone.py:48-52`, C2 audit sign-off. |
-| **G05** | Architecture | Feature Fusion Alignment: Concatenation of penultimate transformer block and final layer CLS tokens ($D=1536$). | **PASS** | `src/foal/feature_fusion.py`, C2/Table 4 tests. |
+| **G05** | Architecture | Feature Fusion Alignment: Averaging CLS tokens across all 12 transformer blocks followed by final LayerNorm ($D=768$). | **PASS** | `src/foal/feature_fusion.py`, C2/Table 4 tests. |
 | **G06** | Architecture | Smooth Projection Geometry: Fixed random matrix $P \in \mathbb{R}^{D \times M}$ with official uniform sampling $\mathcal{U}[-1, 1]$ and sigmoid activation. | **PASS** | `src/foal/projection.py:72`, C1 audit sign-off. |
 | **G07** | Algorithm | Online Ridge RLS Solvers: Exact recursive least-squares update matching analytic closed form in float64 precision. | **PASS** | `src/foal/rls.py`, tested against pseudo-inverse reference. |
 | **G08** | Algorithm | Batch Size Invariance: Analytical proof and empirical validation that batch size does not alter final RLS state. | **PASS** | `docs/batch_size_invariance_plan.md`, test suite verified. |
@@ -45,7 +45,7 @@ Following the forensic audit and official source comparison (`ref/official_foal/
 | **G12** | Baseline | LwF Baseline Implementation: Official author protocol (static head, dynamic loss weighting, SGD) executed and verified. | **PASS** | GPU run completed on Tesla T4 ($646.35\text{s}$). Reconciled $\bar{A} = 46.29\%$, $A_{10} = 23.34\%$, $F_{\text{past}} = 0.41\%$. |
 | **G13** | Baseline | ER Baseline Implementation: Replay buffer ($M=5000$) with uniform reservoir update and random retrieval. | **PASS** | Verified GPU run ($\bar{A}=86.67\%$, $A_{10}=79.79\%$, $F_{past}=16.74\%$). Reconciled within $-3.43\text{ pp}$ of paper $90.1\%$. |
 | **G14** | Baseline | Full GPU Colab Workflow: Executable Colab notebook with verified results archive extraction and manifest generation. | **PASS** | `notebooks/foal_cifar100_headline_final.ipynb`, verified archive SHA256 `2f5e67ea86b22d36...`. |
-| **G15** | Governance | Scientific Sign-off & Artifact Verification: Full run manifests, regression tests (31/31 passing), and verified offline artifacts. | **PASS** | All artifacts published in `results/headline_analysis/`. Status set to `CIFAR100_COMPLETED_WITH_LIMITATIONS`. |
+| **G15** | Governance | Scientific Sign-off & Artifact Verification: Full run manifests, regression tests (31/31 passing), and verified offline artifacts. | **PASS** | All artifacts published in `results/headline_analysis/`. Status set to `CIFAR100_REPORT_READY_WITH_LIMITATIONS`. |
 
 ---
 

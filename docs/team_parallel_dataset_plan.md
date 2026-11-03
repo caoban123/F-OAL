@@ -19,7 +19,7 @@ Học tăng dần trực tuyến (Online Class-Incremental Learning — OCIL) l�
 - Để khắc phục, người ta thường phải lưu hàng ngàn ảnh cũ trong bộ nhớ đệm (Experience Replay - ER), gây tốn bộ nhớ và vi phạm quyền riêng tư dữ liệu.
 - **Giải pháp của F-OAL (NeurIPS 2024):**
   1. Dùng một mạng Vision Transformer tiền huấn luyện và **đóng băng hoàn toàn (Frozen ViT)** làm bộ trích xuất đặc trưng. Không cập nhật trọng số backbone, loại bỏ hoàn toàn việc tính đạo hàm ngược (Forward-only).
-  2. **Feature Fusion (FF):** Ghép nối đặc trưng token `[CLS]` ở tầng kế cuối (layer 11) và tầng cuối (layer 12) của ViT, tạo vector $D=1536$ chiều mang cả thông tin biểu diễn cấp trung và cấp cao.
+  2. **Feature Fusion (FF):** Lấy trung bình cộng đặc trưng token `[CLS]` qua toàn bộ 12 khối transformer của ViT và áp dụng LayerNorm cuối, tạo vector $D=768$ chiều mang thông tin biểu diễn đa tầng phong phú.
   3. **Smooth Projection (SP):** Chiếu vector đặc trưng qua một ma trận ngẫu nhiên cố định $P$ kết hợp hàm phi tuyến Sigmoid mượt $\sigma(P h)$, đưa vào không gian giàu tính phân tách tuyến tính.
   4. **Analytic Online Classifier:** Thay vì dùng mạng nơ-ron học lặp, F-OAL chuyển bài toán phân loại về **Hồi quy Ridge (Ridge Regression)** với nghiệm giải tích dạng đóng. Khi từng batch dữ liệu mới đến, mô hình cập nhật ma trận hiệp phương sai bằng thuật toán **Recursive Least Squares (RLS)** (công thức Woodbury Sherman-Morrison). Cực nhanh, chính xác và không bao giờ bị quên thảm khốc!
 
@@ -149,10 +149,10 @@ flowchart TD
 ### 4.2. Giá trị Mục tiêu Cần Đối chiếu (Từ Table 4 Bài báo Gốc)
 | Ký hiệu | Cấu hình Thí nghiệm | Feature Fusion (FF) | Smooth Projection (SP) | Target Paper ($\bar{A}$, %) |
 | :---: | :--- | :---: | :---: | :---: |
-| **A0** | **Full F-OAL** | BẬT (dim 1536) | BẬT (dim 1000) | **$82.8\%$** |
-| **A1** | **w/o Feature Fusion** | TẮT (dim 768) | BẬT (dim 1000) | **$80.5\%$** ($-2.3\text{ pp}$) |
-| **A2** | **w/o Smooth Projection** | BẬT (dim 1536) | TẮT (vào thẳng RLS) | **$79.3\%$** ($-3.5\text{ pp}$) |
-| **A3** | **w/o Both (Tuyến tính)** | TẮT (dim 768) | TẮT (vào thẳng RLS) | **$71.2\%$** (**$-11.6\text{ pp}$**) |
+| **A0** | **Full F-OAL** | BẬT (12-block avg, dim 768) | BẬT (dim 1000) | **$82.8\%$** |
+| **A1** | **w/o Feature Fusion** | TẮT (single-block, dim 768) | BẬT (dim 1000) | **$80.5\%$** ($-2.3\text{ pp}$) |
+| **A2** | **w/o Smooth Projection** | BẬT (12-block avg, dim 768) | TẮT (vào thẳng RLS) | **$79.3\%$** ($-3.5\text{ pp}$) |
+| **A3** | **w/o Both (Tuyến tính)** | TẮT (single-block, dim 768) | TẮT (vào thẳng RLS) | **$71.2\%$** (**$-11.6\text{ pp}$**) |
 
 ### 4.3. Các bước thực hiện cụ thể (Thành viên A làm lần lượt theo checklist này)
 
@@ -214,10 +214,10 @@ flowchart TD
 ### 5.2. Giá trị Mục tiêu Cần Đối chiếu & Điểm Bất Thường
 | Ký hiệu | Cấu hình Thí nghiệm | Feature Fusion (FF) | Smooth Projection (SP) | Target Paper ($\bar{A}$, %) | Ghi chú Bất thường Pháp y |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **A0** | **Full F-OAL** | BẬT (dim 1536) | BẬT (dim 1000) | **$62.2\%$** | **Cảnh báo:** Đoạn văn Mục 4.4 ghi $66.2\%$, nhưng Table 2 & Table 4 đều in số **$62.2\%$**! |
-| **A1** | **w/o Feature Fusion** | TẮT (dim 768) | BẬT (dim 1000) | **$60.9\%$** | Giảm $-1.3\text{ pp}$ so với Full |
-| **A2** | **w/o Smooth Projection** | BẬT (dim 1536) | TẮT (vào thẳng RLS) | **$58.7\%$** | Giảm $-3.5\text{ pp}$ so với Full |
-| **A3** | **w/o Both (Tuyến tính)** | TẮT (dim 768) | TẮT (vào thẳng RLS) | **$56.0\%$** | Giảm sâu nhất $-6.2\text{ pp}$ so với Full |
+| **A0** | **Full F-OAL** | BẬT (12-block avg, dim 768) | BẬT (dim 1000) | **$62.2\%$** | **Cảnh báo:** Đoạn văn Mục 4.4 ghi $66.2\%$, nhưng Table 2 & Table 4 đều in số **$62.2\%$**! |
+| **A1** | **w/o Feature Fusion** | TẮT (single-block, dim 768) | BẬT (dim 1000) | **$60.9\%$** | Giảm $-1.3\text{ pp}$ so với Full |
+| **A2** | **w/o Smooth Projection** | BẬT (12-block avg, dim 768) | TẮT (vào thẳng RLS) | **$58.7\%$** | Giảm $-3.5\text{ pp}$ so với Full |
+| **A3** | **w/o Both (Tuyến tính)** | TẮT (single-block, dim 768) | TẮT (vào thẳng RLS) | **$56.0\%$** | Giảm sâu nhất $-6.2\text{ pp}$ so với Full |
 
 ### 5.3. Các bước thực hiện cụ thể (Thành viên B làm lần lượt theo checklist này)
 

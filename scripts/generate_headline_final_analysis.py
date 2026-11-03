@@ -1,4 +1,4 @@
-"""Generate final headline comparison artifacts and figures incorporating Official LwF."""
+"""Generate final headline comparison artifacts and figures incorporating Official LwF with precise scientific auditing."""
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
 import csv
@@ -53,7 +53,6 @@ with open(lwf_off_csv, "r", encoding="utf-8") as f:
 lwf_off_stages = [float(np.mean(r)) for r in lwf_off_mat]
 lwf_off_a_avg = float(np.mean(lwf_off_stages))
 lwf_off_a_last = float(lwf_off_stages[-1])
-# Clipped forgetting
 lwf_off_f_past_clipped = 0.41111111111111115
 lwf_off_f_code_clipped = 0.37000000000000005
 
@@ -76,9 +75,11 @@ metrics_data = [
         "F_code_pct": foal_f_code,
         "Training_Time_s": 229.11,
         "Hardware": "NVIDIA A100-SXM4-40GB",
-        "Optimizer": "Analytic Ridge (Closed-form)",
+        "Feature_Dim": 768,
+        "Classifier_Architecture": "Analytic Closed-Form Ridge W=(H^T H + gamma I)^(-1) H^T Y",
+        "Optimizer": "Analytic Ridge (Closed-form RLS)",
         "Execution_SHA": "d333705 / W&B 3v53tmq5",
-        "Notes": "C3-D verified run. Zero replay, zero backpropagation."
+        "Notes": "C3-D verified run. Zero replay, zero iterative backpropagation."
     },
     {
         "Method": "ER (Adapted, Replay)",
@@ -92,6 +93,8 @@ metrics_data = [
         "F_code_pct": er_f_code,
         "Training_Time_s": 626.846,
         "Hardware": "Tesla T4 (14.56 GB)",
+        "Feature_Dim": 768,
+        "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
         "Optimizer": "AdamW (lr=0.001)",
         "Execution_SHA": "d333705",
         "Notes": "Adapted baseline on frozen ViT features with 5000-exemplar reservoir buffer."
@@ -108,9 +111,11 @@ metrics_data = [
         "F_code_pct": lwf_off_f_code_clipped,
         "Training_Time_s": 646.351,
         "Hardware": "Tesla T4 (14.56 GB)",
+        "Feature_Dim": 768,
+        "Classifier_Architecture": "nn.Linear(768, 100) static head",
         "Optimizer": "SGD (lr=0.001, momentum=0.0, weight_decay=0.0)",
         "Execution_SHA": "c3dd3f23fbf2d8d94d481ec75daceb860190118e",
-        "Notes": "Faithful to official author implementation: dynamic loss weighting 1/(t+1), static 100-class head, T=2.0 distillation."
+        "Notes": "Implements author loss weighting 1/(t+1) and static 100-class head, evaluated on 12-block averaged ViT features (D=768)."
     },
     {
         "Method": "LwF (Adapted, AdamW)",
@@ -124,9 +129,11 @@ metrics_data = [
         "F_code_pct": lwf_ad_f_code,
         "Training_Time_s": 629.517,
         "Hardware": "Tesla T4 (14.56 GB)",
+        "Feature_Dim": 768,
+        "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
         "Optimizer": "AdamW (lr=0.001)",
         "Execution_SHA": "d333705",
-        "Notes": "Historical adapted baseline with dynamic head expansion. Exhibits severe recency collapse without dynamic loss weighting."
+        "Notes": "Historical adapted baseline with dynamic head expansion. Suffered recency collapse under static 1.0/1.0 loss weighting."
     }
 ]
 
@@ -153,7 +160,7 @@ paper_comp = [
         "Paper_F": 5.5,
         "Ours_F_past": round(foal_f_past, 2),
         "Delta_F_past": round(foal_f_past - 5.5, 2),
-        "Scientific_Status": "REPRODUCED (Delta < 1.0 pp across all metrics)"
+        "Scientific_Status": "REPRODUCED (Delta < 0.8 pp on CIFAR-100 seed 42)"
     },
     {
         "Method": "ER (Adapted, Replay)",
@@ -181,7 +188,7 @@ paper_comp = [
         "Paper_F": 1.3,
         "Ours_F_past": round(lwf_off_f_past_clipped, 2),
         "Delta_F_past": round(lwf_off_f_past_clipped - 1.3, 2),
-        "Scientific_Status": "FORGETTING_FAITHFUL (F=0.41% vs 1.3%; A_avg=46.29% reflects stability rigidity)"
+        "Scientific_Status": "RIGIDITY_COLLAPSE (Low forgetting 0.41% reflects under-learning of new tasks; Last Acc 23.34% vs Paper 64.8%)"
     },
     {
         "Method": "LwF (Adapted, AdamW)",
@@ -195,7 +202,7 @@ paper_comp = [
         "Paper_F": 1.3,
         "Ours_F_past": round(lwf_ad_f_past, 2),
         "Delta_F_past": round(lwf_ad_f_past - 1.3, 2),
-        "Scientific_Status": "HISTORICAL_DEFICIT (Suffered recency collapse; superseded by Official Protocol)"
+        "Scientific_Status": "RECENCY_COLLAPSE (Suffered catastrophic forgetting; superseded by Official Protocol run)"
     }
 ]
 
@@ -266,12 +273,20 @@ protocol_rows = [
         "Ours_FOAL": "ViT-B/16 (AugReg 21k->1k)"
     },
     {
-        "Dimension": "Output Head",
-        "Paper_LwF": "100-class static",
-        "Adapted_LwF": "Dynamic expansion (10->100)",
-        "Official_LwF": "100-class static",
-        "Paper_FOAL": "100-class analytic",
-        "Ours_FOAL": "100-class analytic"
+        "Dimension": "Feature Extraction",
+        "Paper_LwF": "Single-layer final CLS token (D=768)",
+        "Adapted_LwF": "12-block CLS average + LayerNorm (D=768)",
+        "Official_LwF": "12-block CLS average + LayerNorm (D=768)",
+        "Paper_FOAL": "12-block CLS average + LayerNorm (D=768)",
+        "Ours_FOAL": "12-block CLS average + LayerNorm (D=768)"
+    },
+    {
+        "Dimension": "Classifier Head",
+        "Paper_LwF": "nn.Linear(768, 100)",
+        "Adapted_LwF": "nn.Linear(768, dynamic_classes)",
+        "Official_LwF": "nn.Linear(768, 100)",
+        "Paper_FOAL": "Ridge Regression Head (D=1000 from SP)",
+        "Ours_FOAL": "Ridge Regression Head (D=1000 from SP)"
     },
     {
         "Dimension": "Loss Weighting",
@@ -286,8 +301,8 @@ protocol_rows = [
         "Paper_LwF": "SGD (lr=0.001)",
         "Adapted_LwF": "AdamW (lr=0.001)",
         "Official_LwF": "SGD (lr=0.001)",
-        "Paper_FOAL": "RLS (gamma=0.1)",
-        "Ours_FOAL": "RLS (gamma=0.1)"
+        "Paper_FOAL": "RLS (gamma=1.0)",
+        "Ours_FOAL": "RLS (gamma=1.0)"
     },
     {
         "Dimension": "Replay Buffer",
@@ -348,7 +363,7 @@ for b in bars:
     w_val = b.get_width()
     plt.text(w_val + 1.2, b.get_y() + b.get_height()/2, f"{w_val:.2f}%", va="center", fontsize=10, fontweight="bold")
 plt.xlabel("Average Incremental Accuracy (%)", fontsize=11)
-plt.title("Headline Comparison: F-OAL Superiority over Replay and Distillation", fontsize=12, fontweight="bold")
+plt.title("Headline Comparison: Empirical Benchmark on CIFAR-100", fontsize=12, fontweight="bold")
 plt.xlim(0, 105)
 plt.tight_layout()
 plt.savefig(out_dir / "fig2_headline_final_foal_vs_baselines.png", dpi=300)
@@ -358,7 +373,7 @@ plt.close()
 plt.figure(figsize=(9, 5))
 stages = range(1, 11)
 plt.plot(stages, [s * 100 for s in lwf_ad_stages], marker="v", linestyle="--", color="#ff7f0e", linewidth=2, label="LwF (Adapted, AdamW): Recency Collapse (Avg 29.63%)")
-plt.plot(stages, [s * 100 for s in lwf_off_stages], marker="^", color="#d62728", linewidth=2.5, label="LwF (Official Protocol, SGD): Near-Zero Forgetting (Avg 46.29%)")
+plt.plot(stages, [s * 100 for s in lwf_off_stages], marker="^", color="#d62728", linewidth=2.5, label="LwF (Official Protocol, SGD): High Stability / Low Plasticity (Avg 46.29%)")
 plt.axhline(69.3, color="#7f7f7f", linestyle=":", label="Paper Reference LwF (69.30%)")
 for i, s in enumerate(stages):
     diff = (lwf_off_stages[i] - lwf_ad_stages[i]) * 100
@@ -422,7 +437,7 @@ for i in range(len(methods_f)):
     plt.text(x[i] - w/2, paper_f[i] + 1.0, f"{paper_f[i]:.1f}%", ha="center", fontsize=9)
     plt.text(x[i] + w/2, ours_f[i] + 1.0, f"{ours_f[i]:.1f}%", ha="center", fontsize=9, fontweight="bold")
 plt.ylabel("Catastrophic Forgetting (%) - Lower is Better", fontsize=11)
-plt.title("CIFAR-100 Catastrophic Forgetting: F-OAL and Official LwF Exhibit Minimal Loss", fontsize=12, fontweight="bold")
+plt.title("CIFAR-100 Catastrophic Forgetting: F-OAL and Official LwF Comparisons", fontsize=12, fontweight="bold")
 plt.xticks(x, methods_f)
 plt.ylim(0, 110)
 plt.legend(frameon=True)
@@ -455,10 +470,13 @@ evidence_manifest = {
     "project": "F-OAL Headline Comparison Final Audit",
     "dataset": "CIFAR-100 (10 tasks x 10 classes)",
     "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "feature_dim": 768,
+    "feature_fusion": "12-block CLS average + LayerNorm (D=768)",
     "preprocessing": "Bilinear interpolation, unnormalized [0, 1]",
     "runs": [
         {
             "method": "F-OAL (Full)",
+            "classification": "OUR_INDEPENDENT_FOAL",
             "source_run_id": "3v53tmq5",
             "source_experiment": "C3-D Bilinear",
             "raw_file": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv",
@@ -467,6 +485,7 @@ evidence_manifest = {
         },
         {
             "method": "ER (Adapted)",
+            "classification": "OUR_ADAPTED_ER",
             "source_run": "runs/headline/er",
             "raw_file": "results/headline_full_gpu_verified/runs/headline/er/task_matrix.csv",
             "sha256": hashlib.sha256(er_csv.read_bytes()).hexdigest(),
@@ -474,6 +493,7 @@ evidence_manifest = {
         },
         {
             "method": "LwF (Official Protocol)",
+            "classification": "OUR_OFFICIAL_PROTOCOL_LWF",
             "source_run": "runs/headline/lwf_official_cifar100",
             "raw_file": "results/headline_official_lwf_verified/runs/headline/lwf_official_cifar100/task_matrix.csv",
             "sha256": hashlib.sha256(lwf_off_csv.read_bytes()).hexdigest(),
@@ -481,6 +501,7 @@ evidence_manifest = {
         },
         {
             "method": "LwF (Adapted)",
+            "classification": "OUR_ADAPTED_LWF",
             "source_run": "runs/headline/lwf",
             "raw_file": "results/headline_full_gpu_verified/runs/headline/lwf/task_matrix.csv",
             "sha256": hashlib.sha256(lwf_ad_csv.read_bytes()).hexdigest(),

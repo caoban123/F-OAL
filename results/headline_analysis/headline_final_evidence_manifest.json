@@ -2,10 +2,13 @@
   "project": "F-OAL Headline Comparison Final Audit",
   "dataset": "CIFAR-100 (10 tasks x 10 classes)",
   "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+  "feature_dim": 768,
+  "feature_fusion": "12-block CLS average + LayerNorm (D=768)",
   "preprocessing": "Bilinear interpolation, unnormalized [0, 1]",
   "runs": [
     {
       "method": "F-OAL (Full)",
+      "classification": "OUR_INDEPENDENT_FOAL",
       "source_run_id": "3v53tmq5",
       "source_experiment": "C3-D Bilinear",
       "raw_file": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv",
@@ -18,6 +21,7 @@
     },
     {
       "method": "ER (Adapted)",
+      "classification": "OUR_ADAPTED_ER",
       "source_run": "runs/headline/er",
       "raw_file": "results/headline_full_gpu_verified/runs/headline/er/task_matrix.csv",
       "sha256": "319b9394d26020422e48611314317dc4a7b4be54b43a3ac09fb70446235f9900",
@@ -29,6 +33,7 @@
     },
     {
       "method": "LwF (Official Protocol)",
+      "classification": "OUR_OFFICIAL_PROTOCOL_LWF",
       "source_run": "runs/headline/lwf_official_cifar100",
       "raw_file": "results/headline_official_lwf_verified/runs/headline/lwf_official_cifar100/task_matrix.csv",
       "sha256": "1e5c7ca267a78f86cff486957f775184551553d8cda96efdf9db9ff43f4f0998",
@@ -40,6 +45,7 @@
     },
     {
       "method": "LwF (Adapted)",
+      "classification": "OUR_ADAPTED_LWF",
       "source_run": "runs/headline/lwf",
       "raw_file": "results/headline_full_gpu_verified/runs/headline/lwf/task_matrix.csv",
       "sha256": "5a10c765158df0bb2c7953091ef6855019cc8c707782e63b672776c77dc42f6d",

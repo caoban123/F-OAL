@@ -11,9 +11,11 @@
     "F_code_pct": 4.64,
     "Training_Time_s": 229.11,
     "Hardware": "NVIDIA A100-SXM4-40GB",
-    "Optimizer": "Analytic Ridge (Closed-form)",
+    "Feature_Dim": 768,
+    "Classifier_Architecture": "Analytic Closed-Form Ridge W=(H^T H + gamma I)^(-1) H^T Y",
+    "Optimizer": "Analytic Ridge (Closed-form RLS)",
     "Execution_SHA": "d333705 / W&B 3v53tmq5",
-    "Notes": "C3-D verified run. Zero replay, zero backpropagation."
+    "Notes": "C3-D verified run. Zero replay, zero iterative backpropagation."
   },
   {
     "Method": "ER (Adapted, Replay)",
@@ -27,6 +29,8 @@
     "F_code_pct": 15.07,
     "Training_Time_s": 626.846,
     "Hardware": "Tesla T4 (14.56 GB)",
+    "Feature_Dim": 768,
+    "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
     "Optimizer": "AdamW (lr=0.001)",
     "Execution_SHA": "d333705",
     "Notes": "Adapted baseline on frozen ViT features with 5000-exemplar reservoir buffer."
@@ -43,9 +47,11 @@
     "F_code_pct": 0.37000000000000005,
     "Training_Time_s": 646.351,
     "Hardware": "Tesla T4 (14.56 GB)",
+    "Feature_Dim": 768,
+    "Classifier_Architecture": "nn.Linear(768, 100) static head",
     "Optimizer": "SGD (lr=0.001, momentum=0.0, weight_decay=0.0)",
     "Execution_SHA": "c3dd3f23fbf2d8d94d481ec75daceb860190118e",
-    "Notes": "Faithful to official author implementation: dynamic loss weighting 1/(t+1), static 100-class head, T=2.0 distillation."
+    "Notes": "Implements author loss weighting 1/(t+1) and static 100-class head, evaluated on 12-block averaged ViT features (D=768)."
   },
   {
     "Method": "LwF (Adapted, AdamW)",
@@ -59,8 +65,10 @@
     "F_code_pct": 85.49,
     "Training_Time_s": 629.517,
     "Hardware": "Tesla T4 (14.56 GB)",
+    "Feature_Dim": 768,
+    "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
     "Optimizer": "AdamW (lr=0.001)",
     "Execution_SHA": "d333705",
-    "Notes": "Historical adapted baseline with dynamic head expansion. Exhibits severe recency collapse without dynamic loss weighting."
+    "Notes": "Historical adapted baseline with dynamic head expansion. Suffered recency collapse under static 1.0/1.0 loss weighting."
   }
 ]
