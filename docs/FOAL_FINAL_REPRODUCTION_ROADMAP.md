@@ -18,8 +18,8 @@ flowchart TD
     M3["Milestone 3: Preprocessing Factorial Alignment<br>(C3: Bilinear vs Bicubic, Raw vs Normalized)<br>STATUS: COMPLETED (90.40% Accuracy)"] --> M4
     M4["Milestone 4: Table 4 Factorial Ablation<br>(A0 Full, A1 w/o FF, A2 w/o SP, A3 w/o Both)<br>STATUS: COMPLETED & MERGED"] --> M5
     M4 --> M6
-    M5["Milestone 5: CIFAR-100 Headline Comparison<br>(F-OAL vs LwF Distillation vs ER Replay)<br>STATUS: COMPLETED & VERIFIED"] --> Final
-    M6["Milestone 6: Parallel Cross-Dataset Validation<br>Member A: DTD Track (Table 4, +11.6pp Drop)<br>Member B: Aircraft Track (Table 4, 62.2% vs 66.2%)<br>STATUS: ACTIVE & READY FOR TEAM HANDOFF"] --> Final
+    M5["Milestone 5: CIFAR-100 Headline Comparison<br>(F-OAL vs LwF Distillation vs ER Replay)<br>STATUS: PENDING BASELINE VALIDATION"] --> Final
+    M6["Milestone 6: Parallel Cross-Dataset Validation<br>Member A: DTD Track (Table 4, +11.6pp Drop)<br>Member B: Aircraft Track (Table 4, 62.2% vs 66.2%)<br>STATUS: ACTIVE (Protocol & Adapter Prep)"] --> Final
     Final["Final Synthesis & HCMUS Submission<br>Unified Paper, Slides, Codebase & Defense<br>STATUS: SCHEDULED"]
 ```
 
@@ -53,10 +53,10 @@ flowchart TD
 
 ### Milestone 5 — Minimum Credible Headline Comparison (`Headline`)
 - **Focus:** Benchmarking F-OAL against the two representative continual learning paradigms from Table 2:
-  1. **LwF (Learning without Forgetting):** Exemplar-free distillation baseline ($T=2.0$, lr $0.001$, paper target $\bar{A} = 69.3\%$). Empirical: $\bar{A} = 29.63\%$, $A_{10} = 11.21\%$, $F_{\text{past}} = 94.99\%$. Catastrophic forgetting under 1-pass online setting explained.
-  2. **ER (Experience Replay):** Replay baseline with buffer capacity 5000 exemplars (paper target $\bar{A} = 90.1\%$). Empirical: $\bar{A} = 86.67\%$, $A_{10} = 79.79\%$, $F_{\text{past}} = 16.74\%$.
+  1. **LwF (Learning without Forgetting):** Exemplar-free distillation baseline ($T=2.0$, lr $0.001$, paper target $\bar{A} = 69.3\%$, $A_{10} = 64.8\%$, $F = 1.3\%$). Empirical: $\bar{A} = 29.63\%$, $A_{10} = 11.21\%$, $F_{\text{past}} = 94.99\%$. Recency bias in online CIL stream diagnosed.
+  2. **ER (Experience Replay):** Replay baseline with buffer capacity 5000 exemplars (paper target $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F = 20.7\%$). Empirical: $\bar{A} = 86.67\%$, $A_{10} = 79.79\%$, $F_{\text{past}} = 16.74\%$.
 - **Deliverables:** `src/foal/baselines/`, `scripts/train_baseline.py`, `configs/headline/`, `results/headline_analysis/`, verified archive SHA256 `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`.
-- **Status:** **`COMPLETED & VERIFIED`** (Formally transitioned CIFAR-100 to `CIFAR100_COMPLETED_WITH_LIMITATIONS`).
+- **Status:** **`PENDING BASELINE VALIDATION`** (Classified under `CIFAR100_PENDING_BASELINE_VALIDATION`; runtime speedup claim retracted due to cross-hardware A100 vs T4 mismatch; LwF baseline implementation protocol under ongoing audit).
 
 ### Milestone 6 — Parallel Cross-Dataset Generalization & Final Report (`DTD & Aircraft`)
 - **Focus:** Validating Table 4 on domains where representation degradation is pronounced:

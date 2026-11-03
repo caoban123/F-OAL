@@ -71,4 +71,4 @@ Following the objective CIFAR-100 completion checklist (`docs/cifar100_completio
 4. **Push-Button Colab Workflow**:
    - `notebooks/foal_cifar100_headline_final.ipynb`: End-to-end executable notebook with environment checks, pilot validation, full GPU runs, comparative synthesis table, and results ZIP export.
 5. **Acceptance Gate**:
-   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_PENDING_BASELINES`.
+   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_PENDING_BASELINE_VALIDATION`.

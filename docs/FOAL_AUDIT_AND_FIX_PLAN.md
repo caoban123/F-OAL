@@ -1148,15 +1148,16 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
 - **Phục hồi & Xác thực Môi trường Thực thi:**
   - Phần cứng: Google Colab Tesla T4 GPU (15,360 MiB VRAM), PyTorch 2.5.1+cu124, Python 3.11.11.
   - Git Commit SHA ghi nhận trong run metadata: `b0658c8837563d845253880da8efb1f0f11387fc`.
-  - Thời gian huấn luyện (10 tasks): LwF = 629.52s (~10.49 min), ER (Buffer 5000) = 626.85s (~10.45 min) (so với F-OAL Full = 53.47s, nhanh hơn gấp ~11.7 lần).
-- **Kết quả Tái hiện Thực nghiệm & Đối chiếu Bài báo Gốc:**
-  - **F-OAL Full (Tái sử dụng C3-D `3v53tmq5`):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{past}} = 5.1556\%$, $F_{\text{code}} = 4.6400\%$, $M = 0$. (Paper Table 2: $\bar{A} = 91.1\%$, $A_{10} = 86.8\%$, $F_{\text{past}} = 4.9\%$).
-  - **LwF (Distillation, $M=0$):** $\bar{A} = 29.6295\%$, $A_{10} = 11.2100\%$, $F_{\text{past}} = 94.9889\%$, $F_{\text{code}} = 85.4900\%$. (Paper Table 2: $\bar{A} = 69.3\%$, $A_{10} = 56.4\%$, $F_{\text{past}} = 39.8\%$).
-    - *Giải thích suy thoái:* Trong stream trực tuyến đơn lượt nghiêm ngặt (1 pass, batch size 10, tổng 5,000 steps), gradient update đầu ra chỉ bảo toàn phân phối mềm qua 500 bước mỗi task. Không có replay buffer hay huấn luyện đa epoch (multi-epoch offline), distillation suy thoái thảm khốc; đến task 10 độ chính xác trên 8 task đầu tiên tụt về 0.00%.
-  - **ER (Experience Replay, $M=5000$):** $\bar{A} = 86.6703\%$, $A_{10} = 79.7900\%$, $F_{\text{past}} = 16.7444\%$, $F_{\text{code}} = 15.0700\%$. (Paper Table 2: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F_{\text{past}} = 20.7\%$).
+  - Thời gian huấn luyện (10 tasks): LwF = 629.52s, ER (Buffer 5000) = 626.85s trên Tesla T4 GPU (bao gồm vòng lặp stream trực tuyến).
+  - Đối chiếu Thời gian F-OAL: Tổng thời gian F-OAL C3-D là 229.11s trên NVIDIA A100 GPU (175.28s trích xuất đặc trưng + 8.50s giải tích RLS & eval). Tuyên bố gia tốc "11.7 lần" trước đây chính thức bị **rút lại** do không tương đương về phần cứng (A100 vs T4) và phạm vi đo lường (cached/offline vs online stream).
+- **Kết quả Tái hiện Thực nghiệm & Đối chiếu Bài báo Gốc (Đã Hiệu chỉnh Chuẩn xác):**
+  - **F-OAL Full (Tái sử dụng C3-D `3v53tmq5`):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{past}} = 5.1556\%$, $F_{\text{code}} = 4.6400\%$, $M = 0$. (Paper Table 2: $\bar{A} = 91.1\%$, $A_{10} = 86.5\%$, $F = 5.5\%$).
+  - **LwF (Distillation, $M=0$):** $\bar{A} = 29.6295\%$, $A_{10} = 11.2100\%$, $F_{\text{past}} = 94.9889\%$, $F_{\text{code}} = 85.4900\%$. (Paper Table 2: $\bar{A} = 69.3\%$, $A_{10} = 64.8\%$, $F = 1.3\%$).
+    - *Giải thích suy thoái:* Trong stream trực tuyến đơn lượt nghiêm ngặt (1 pass, batch size 10), gradient update đầu ra chỉ bảo toàn phân phối mềm qua 500 bước mỗi task. Không có replay buffer hay huấn luyện đa epoch (multi-epoch offline), distillation suy thoái thảm khốc; đến task 10 độ chính xác trên 8 task đầu tiên tụt về 0.00%.
+  - **ER (Experience Replay, $M=5000$):** $\bar{A} = 86.6703\%$, $A_{10} = 79.7900\%$, $F_{\text{past}} = 16.7444\%$, $F_{\text{code}} = 15.0700\%$. (Paper Table 2: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F = 20.7\%$).
     - *Kết luận:* Buffer 5000 ảnh bảo toàn độ chính xác task cũ ở mức $70\text{--}83\%$, nhưng đòi hỏi bộ nhớ lưu trữ lớn ($M=5000$), tốn thời gian tính toán gấp gần 12 lần F-OAL, và tỷ lệ quên lãng $F_{\text{past}}$ vẫn cao gấp 3.2 lần F-OAL.
 - **Hiện vật Kiểm toán:** Xuất bản toàn bộ tại [`results/headline_analysis/`](../results/headline_analysis/) (4 đồ thị chất lượng báo cáo khoa học, 2 manifest JSON, 4 bảng so sánh CSV/JSON).
 - **Quyết định Quản trị & Đóng Pha:** 
-  - Toàn bộ 15/15 cổng kiểm định tại [`docs/cifar100_completion_checklist.md`](cifar100_completion_checklist.md) đạt PASS.
-  - Phê duyệt chính thức trạng thái: **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
-  - **Lệnh đóng:** Toàn đội dừng 100% mọi thực nghiệm CIFAR-100; chuyển giao toàn bộ nguồn lực sang Track DTD và FGVC-Aircraft.
+  - Toàn bộ 18/18 tests kiểm định pháp y trong `tests/test_headline_comparison.py` và 96/96 tests toàn bộ kho lưu trữ vượt qua 100%.
+  - Phê duyệt chính thức trạng thái: **`CIFAR100_PENDING_BASELINE_VALIDATION`**.
+  - **Kế hoạch tiếp theo:** Chuẩn bị bộ chuyển đổi dữ liệu (adapters) và giao thức cho Track DTD và FGVC-Aircraft mà không chạy lại GPU lặp trên CIFAR-100.

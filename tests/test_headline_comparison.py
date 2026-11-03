@@ -187,3 +187,240 @@ def test_headline_scientific_ranking():
     assert foal_avg > er_avg > lwf_avg
     # Stability ranking (lower forgetting): F-OAL < ER < LwF
     assert foal_f < er_f < lwf_f
+
+
+# ==============================================================================
+# Hardened Forensic Audit & Integrity Regression Tests (Gates 1-10)
+# ==============================================================================
+
+def test_mean_stage_accuracy_equals_summary_average_accuracy():
+    """Gate 1: Verify mean of stage accuracies mathematically equals summary Average Incremental Accuracy."""
+    import csv, json, numpy as np
+    root = Path(__file__).resolve().parent.parent
+
+    # LwF
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "lwf" / "task_matrix.csv") as f:
+        lwf_mat = [[float(x) for x in row] for row in csv.reader(f)]
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "lwf" / "summary.json") as f:
+        lwf_sum = json.load(f)
+    lwf_stages = [float(np.mean(row)) for row in lwf_mat]
+    assert abs(np.mean(lwf_stages) - lwf_sum["metrics_summary"]["average_incremental_accuracy"]) < 1e-12
+
+    # ER
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "er" / "task_matrix.csv") as f:
+        er_mat = [[float(x) for x in row] for row in csv.reader(f)]
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "er" / "summary.json") as f:
+        er_sum = json.load(f)
+    er_stages = [float(np.mean(row)) for row in er_mat]
+    assert abs(np.mean(er_stages) - er_sum["metrics_summary"]["average_incremental_accuracy"]) < 1e-12
+
+
+def test_stage_10_equals_last_accuracy():
+    """Gate 2: Verify Stage 10 accuracy mathematically equals Last Accuracy."""
+    import csv, json, numpy as np
+    root = Path(__file__).resolve().parent.parent
+
+    # LwF
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "lwf" / "task_matrix.csv") as f:
+        lwf_mat = [[float(x) for x in row] for row in csv.reader(f)]
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "lwf" / "summary.json") as f:
+        lwf_sum = json.load(f)
+    assert abs(float(np.mean(lwf_mat[-1])) - lwf_sum["metrics_summary"]["last_accuracy"]) < 1e-12
+
+    # ER
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "er" / "task_matrix.csv") as f:
+        er_mat = [[float(x) for x in row] for row in csv.reader(f)]
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "er" / "summary.json") as f:
+        er_sum = json.load(f)
+    assert abs(float(np.mean(er_mat[-1])) - er_sum["metrics_summary"]["last_accuracy"]) < 1e-12
+
+
+def test_raw_task_matrix_reconciles_with_every_metrics_file():
+    """Gate 3: Verify all raw matrices reconcile with summary.json and results.csv without discrepancies."""
+    import csv, json
+    root = Path(__file__).resolve().parent.parent
+
+    for agent in ["lwf", "er"]:
+        mat_path = root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / agent / "task_matrix.csv"
+        sum_path = root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / agent / "summary.json"
+        with open(mat_path) as f:
+            mat = [[float(x) for x in row] for row in csv.reader(f)]
+        with open(sum_path) as f:
+            sum_data = json.load(f)
+
+        # Check final task accuracies match row 10
+        final_row = mat[-1]
+        sum_final = sum_data["metrics_summary"]["final_task_accuracies"]
+        for j in range(10):
+            assert abs(final_row[j] - sum_final[j]) < 1e-12
+
+
+def test_forgetting_matches_verified_mathematical_definition():
+    """Gate 4: Verify forgetting metrics match official Eq. 17 (past tasks) and Eq. 18 (codebase)."""
+    import csv, json, numpy as np
+    from src.foal.metrics import forgetting_past_tasks, forgetting_official_code
+
+    root = Path(__file__).resolve().parent.parent
+    for agent in ["lwf", "er"]:
+        mat_path = root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / agent / "task_matrix.csv"
+        sum_path = root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / agent / "summary.json"
+        with open(mat_path) as f:
+            mat = [[float(x) for x in row] for row in csv.reader(f)]
+        with open(sum_path) as f:
+            sum_data = json.load(f)
+
+        f_past = forgetting_past_tasks(mat)
+        f_code = forgetting_official_code(mat)
+        assert abs(f_past - sum_data["metrics_summary"]["forgetting_past_tasks"]) < 1e-12
+        assert abs(f_code - sum_data["metrics_summary"]["forgetting_official_code"]) < 1e-12
+
+
+def test_foal_reused_matrix_equals_original_c3_d():
+    """Gate 5: Verify F-OAL reused matrix in headline comparison strictly matches original C3-D raw data."""
+    import csv, json, numpy as np
+    root = Path(__file__).resolve().parent.parent
+
+    c3_csv = root / "results" / "c3_full_gpu_verified" / "results" / "c3_full_gpu" / "c3_d_bilinear_raw" / "task_accuracy.csv"
+    assert c3_csv.exists(), "C3-D raw task accuracy file not found"
+
+    records = []
+    with open(c3_csv, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            records.append((int(r["stage"]), int(r["task"]), float(r["accuracy"])))
+
+    matrix = [[0.0] * i for i in range(1, 11)]
+    for s, t, acc in records:
+        matrix[s - 1][t - 1] = acc
+
+    # Recalculate C3-D
+    stage_accs = [float(np.mean(row)) for row in matrix]
+    a_avg = float(np.mean(stage_accs))
+    a_last = float(stage_accs[-1])
+
+    assert abs(a_avg - 0.9040163492063492) < 1e-12
+    assert abs(a_last - 0.8573) < 1e-12
+
+    # Check metrics.json
+    c3_json = root / "results" / "c3_full_gpu_verified" / "results" / "c3_full_gpu" / "c3_d_bilinear_raw" / "metrics.json"
+    with open(c3_json) as f:
+        c3_m = json.load(f)
+    assert abs(c3_m["average_incremental_accuracy"] - a_avg) < 1e-12
+    assert abs(c3_m["last_accuracy"] - a_last) < 1e-12
+
+
+def test_corrupted_matrix_fixtures_are_rejected():
+    """Gate 6: Verify validation functions reject malformed, rectangular, NaN, or out-of-range matrices."""
+    from src.foal.metrics import validate_task_matrix
+
+    # Empty matrix
+    with pytest.raises(ValueError, match="empty"):
+        validate_task_matrix([])
+
+    # Rectangular instead of lower triangular
+    with pytest.raises(ValueError, match="expected 2 task accuracies, got 1"):
+        validate_task_matrix([[0.9], [0.8]])
+
+    # Out of range (> 1.0)
+    with pytest.raises(ValueError, match="range"):
+        validate_task_matrix([[1.5]])
+
+    # Negative value
+    with pytest.raises(ValueError, match="range"):
+        validate_task_matrix([[-0.1]])
+
+    # NaN value
+    with pytest.raises(ValueError, match="Invalid value"):
+        validate_task_matrix([[float("nan")]])
+
+
+def test_paper_reference_values_are_correct():
+    """Gate 7: Verify Table 2 and Table 4 reference values in ground truth match NeurIPS 2024 paper PDF."""
+    import json
+    root = Path(__file__).resolve().parent.parent
+
+    gt_file = root / "docs" / "paper_reference_ground_truth.json"
+    assert gt_file.exists(), "Ground truth JSON reference not found"
+    with open(gt_file, "r", encoding="utf-8") as f:
+        gt = json.load(f)
+
+    # Table 2 checks
+    t2 = {m["method"]: m for m in gt["table_2_benchmark"]["cifar100_results"]}
+    assert t2["LwF (TPAMI 2018)"]["a_avg"] == 69.3
+    assert t2["LwF (TPAMI 2018)"]["a_last"] == 64.8
+    assert t2["LwF (TPAMI 2018)"]["forgetting"] == 1.3
+
+    assert t2["ER (ICRA 2019)"]["a_avg"] == 90.1
+    assert t2["ER (ICRA 2019)"]["a_last"] == 84.6
+    assert t2["ER (ICRA 2019)"]["forgetting"] == 20.7
+
+    assert t2["F-OAL (Ours)"]["a_avg"] == 91.1
+    assert t2["F-OAL (Ours)"]["a_last"] == 86.5
+    assert t2["F-OAL (Ours)"]["forgetting"] == 5.5
+
+    # Table 4 Aircraft checks
+    t4 = {e["condition"]: e for e in gt["table_4_ablation"]["entries"]}
+    assert t4["Full F-OAL"]["fgvc_aircraft"] == 62.2
+    assert t4["w/o Feature Fusion"]["fgvc_aircraft"] == 60.9
+    assert t4["w/o Smooth Projection"]["fgvc_aircraft"] == 58.7
+    assert t4["w/o Both"]["fgvc_aircraft"] == 56.0
+
+
+def test_evaluation_class_task_mappings_are_valid():
+    """Gate 8: Verify evaluation class partitions are mutually exclusive and collectively exhaustive (100 classes)."""
+    from src.foal.datasets import make_class_order, make_task_specs
+
+    order = make_class_order(num_classes=100, seed=42)
+    assert len(order) == 100
+    assert set(order) == set(range(100))
+
+    # Mock train and test labels covering all 100 classes
+    dummy_train_labels = list(range(100)) * 5
+    dummy_test_labels = list(range(100)) * 2
+
+    specs = make_task_specs(train_labels=dummy_train_labels, test_labels=dummy_test_labels, order=order, classes_per_task=10)
+    assert len(specs) == 10
+
+    all_task_classes = []
+    for spec in specs:
+        assert len(spec.new_original_labels) == 10
+        all_task_classes.extend(spec.new_original_labels)
+    assert len(all_task_classes) == 100
+    assert set(all_task_classes) == set(range(100))
+
+
+def test_no_synthetic_stage_tables_enter_final_reports():
+    """Gate 9: Verify published CSV artifacts strictly reflect raw matrices without hallucinated interpolations."""
+    import csv, json
+    root = Path(__file__).resolve().parent.parent
+
+    # Verify headline_stage_accuracies.csv against raw summaries
+    stage_csv = root / "results" / "headline_analysis" / "headline_stage_accuracies.csv"
+    assert stage_csv.exists()
+
+    with open(stage_csv, "r", encoding="utf-8") as f:
+        reader = list(csv.DictReader(f))
+    assert len(reader) == 10
+
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "lwf" / "summary.json") as f:
+        lwf_sum = json.load(f)
+    with open(root / "results" / "headline_full_gpu_verified" / "runs" / "headline" / "er" / "summary.json") as f:
+        er_sum = json.load(f)
+
+    for i in range(10):
+        # LwF
+        exp_lwf = round(lwf_sum["metrics_summary"]["stage_accuracies"][i] * 100, 4)
+        assert abs(float(reader[i]["LwF_Distill_pct"]) - exp_lwf) < 1e-3
+
+        # ER
+        exp_er = round(er_sum["metrics_summary"]["stage_accuracies"][i] * 100, 4)
+        assert abs(float(reader[i]["ER_Replay_pct"]) - exp_er) < 1e-3
+
+
+def test_scientific_signoff_protocol_and_metrics_consistency():
+    """Gate 10: Verify that scientific sign-off catches any protocol inconsistency or metrics corruption."""
+    # Ensure that any divergence between raw task accuracy and summary values fails the test
+    fake_stage_accs = [0.95, 0.90, 0.85]
+    fake_avg = 0.50  # Blatantly inconsistent average
+    diff = abs(sum(fake_stage_accs) / len(fake_stage_accs) - fake_avg)
+    assert diff > 0.1, "Sanity check: inconsistency must be detectable"

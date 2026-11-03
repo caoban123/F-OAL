@@ -129,6 +129,24 @@ def recalculate_metrics(matrix: list[list[float]]) -> dict[str, Any]:
     }
 
 
+def load_c3_d_raw_matrix() -> list[list[float]]:
+    """Load the original verified C3-D / A0 raw task matrix from task_accuracy.csv."""
+    c3_csv = ROOT / "results" / "c3_full_gpu_verified" / "results" / "c3_full_gpu" / "c3_d_bilinear_raw" / "task_accuracy.csv"
+    if not c3_csv.exists():
+        raise FileNotFoundError(f"Missing C3-D raw task accuracy file: {c3_csv}")
+
+    records = []
+    with open(c3_csv, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            records.append((int(r["stage"]), int(r["task"]), float(r["accuracy"])))
+
+    matrix = [[0.0] * i for i in range(1, 11)]
+    for s, t, acc in records:
+        matrix[s - 1][t - 1] = acc
+    return matrix
+
+
 def run_full_audit():
     archive_manifest = audit_archive()
 
@@ -137,20 +155,34 @@ def run_full_audit():
     with open(gt_path, "r", encoding="utf-8") as f:
         ground_truth = json.load(f)
 
-    # Historical verified F-OAL reference (C3-D Run 3v53tmq5)
+    # Historical verified F-OAL reference (C3-D Run 3v53tmq5) loaded directly from raw data
+    c3_d_matrix = load_c3_d_raw_matrix()
+    c3_d_recalc = recalculate_metrics(c3_d_matrix)
+
+    c3_metrics_file = ROOT / "results" / "c3_full_gpu_verified" / "results" / "c3_full_gpu" / "c3_d_bilinear_raw" / "metrics.json"
+    with open(c3_metrics_file, "r", encoding="utf-8") as f:
+        c3_m_json = json.load(f)
+
+    # Reconcile C3-D recalculated vs JSON metrics
+    assert abs(c3_d_recalc["a_avg"] - c3_m_json["average_incremental_accuracy"]) < 1e-12
+    assert abs(c3_d_recalc["a_last"] - c3_m_json["last_accuracy"]) < 1e-12
+    assert abs(c3_d_recalc["f_past"] - c3_m_json["forgetting_past_tasks"]) < 1e-12
+
     foal_reproduced = {
         "method": "F-OAL (Full)",
         "agent": "foal",
         "buffer_size": 0,
         "is_replay": False,
-        "a_avg_pct": 90.401635,
-        "a_last_pct": 85.7300,
-        "f_past_pct": 5.155556,
-        "f_code_pct": 4.640000,
-        "stage_accuracies_pct": [96.10, 95.05, 93.27, 91.50, 90.58, 89.45, 88.63, 87.30, 86.41, 85.73],
-        "task_forgetting_past_pct": [16.30, 11.90, 4.90, 4.20, 3.00, 2.80, 1.50, 1.10, 0.70],
-        "hardware": "NVIDIA A100-SXM4-40GB / RTX A5000",
-        "training_time_seconds": 53.47,
+        "a_avg_pct": c3_d_recalc["a_avg_pct"],
+        "a_last_pct": c3_d_recalc["a_last_pct"],
+        "f_past_pct": c3_d_recalc["f_past_pct"],
+        "f_code_pct": c3_d_recalc["f_code_pct"],
+        "stage_accuracies_pct": c3_d_recalc["stage_accuracies_pct"],
+        "task_forgetting_past_pct": c3_d_recalc["task_forgetting_past_pct"],
+        "hardware": "NVIDIA A100-SXM4-40GB (Google Colab / Cloud GPU)",
+        "training_time_seconds": c3_m_json.get("total_duration_seconds", 229.11),
+        "feature_extraction_seconds": c3_m_json.get("feature_extraction_seconds", 175.28),
+        "rls_and_eval_seconds": c3_m_json.get("rls_and_eval_seconds", 8.50),
         "wandb_id": "3v53tmq5",
         "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5",
     }
@@ -258,9 +290,11 @@ def run_full_audit():
             "F_past_Ours_pct": foal_reproduced["f_past_pct"],
             "F_code_Ours_pct": foal_reproduced["f_code_pct"],
             "F_Paper_pct": paper_refs["foal"]["f"],
-            "Delta_F_pp": foal_reproduced["f_code_pct"] - paper_refs["foal"]["f"],
+            "Delta_F_past_pp": foal_reproduced["f_past_pct"] - paper_refs["foal"]["f"],
+            "Delta_F_code_pp": foal_reproduced["f_code_pct"] - paper_refs["foal"]["f"],
             "Training_Time_s": foal_reproduced["training_time_seconds"],
             "Hardware": foal_reproduced["hardware"],
+            "Timing_Scope_Note": "Total duration 229.11s (175.28s feature extraction + 8.50s RLS & eval on A100 GPU)",
         },
         {
             "Method": "ER (Replay)",
@@ -276,9 +310,11 @@ def run_full_audit():
             "F_past_Ours_pct": recalc_results["er"]["f_past_pct"],
             "F_code_Ours_pct": recalc_results["er"]["f_code_pct"],
             "F_Paper_pct": paper_refs["er"]["f"],
-            "Delta_F_pp": recalc_results["er"]["f_code_pct"] - paper_refs["er"]["f"],
+            "Delta_F_past_pp": recalc_results["er"]["f_past_pct"] - paper_refs["er"]["f"],
+            "Delta_F_code_pp": recalc_results["er"]["f_code_pct"] - paper_refs["er"]["f"],
             "Training_Time_s": raw_results["er"]["total_training_seconds"],
             "Hardware": "Tesla T4 (14.56 GB)",
+            "Timing_Scope_Note": "Total streaming loop 626.85s on Tesla T4 GPU (online extraction + replay)",
         },
         {
             "Method": "LwF (Distill)",
@@ -294,9 +330,11 @@ def run_full_audit():
             "F_past_Ours_pct": recalc_results["lwf"]["f_past_pct"],
             "F_code_Ours_pct": recalc_results["lwf"]["f_code_pct"],
             "F_Paper_pct": paper_refs["lwf"]["f"],
-            "Delta_F_pp": recalc_results["lwf"]["f_code_pct"] - paper_refs["lwf"]["f"],
+            "Delta_F_past_pp": recalc_results["lwf"]["f_past_pct"] - paper_refs["lwf"]["f"],
+            "Delta_F_code_pp": recalc_results["lwf"]["f_code_pct"] - paper_refs["lwf"]["f"],
             "Training_Time_s": raw_results["lwf"]["total_training_seconds"],
             "Hardware": "Tesla T4 (14.56 GB)",
+            "Timing_Scope_Note": "Total streaming loop 629.52s on Tesla T4 GPU (online extraction + distillation)",
         },
     ]
 
