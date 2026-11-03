@@ -1,0 +1,37 @@
+# Headline Benchmark Comparison: Experience Replay (ER) Baseline (CIFAR-100)
+# Reference: Chaudhry et al. (ICRA 2019), NeurIPS 2024 Table 2
+# Official author command: python general_main.py --data cifar100 --cl_type nc --agent ER --retrieve random --update random --mem_size 5000 --learning_rate 0.001
+dataset: cifar100
+data_dir: ./data
+num_classes: 100
+classes_per_task: 10
+seed: 42
+class_order_seed: 42
+
+agent: er
+buffer_capacity: 5000
+retrieve_policy: random
+update_policy: random
+learning_rate: 0.001
+weight_decay: 0.0001
+batch_size: 10
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+device: auto
+output_dir: runs/headline/er
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 (Page 7)"
+    method: "ER (ICRA 2019)"
+    buffer_size: 5000
+    a_avg_pct: 90.1
+    a_last_pct: 84.6
+    forgetting_pct: 20.7

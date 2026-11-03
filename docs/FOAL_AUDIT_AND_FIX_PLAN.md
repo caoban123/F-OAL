@@ -1116,3 +1116,26 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   - Toàn bộ 6/6 tests trong `tests/test_table4_ablation.py` và 69/69 regression tests trong toàn bộ repository vượt qua 100%.
   - Đã xuất bản 7 đồ thị phân tích và các bảng manifest đối chiếu tại [`results/table4_analysis/`](../results/table4_analysis/).
   - Xác nhận tái hiện thành công xu hướng khoa học của Table 4 bài báo gốc: $A0 > A2 > A1 > A3$.
+
+
+---
+
+## 28. Chốt Pha CIFAR-100, Headline Comparison & Phân công Nhóm Song song
+
+- **Merge Table 4 vào `main`:** Commit `747b828` (`Merge branch 'experiment/table4-ablation' into main`).
+- **Nhánh phát triển mới:** `experiment/headline-comparison` (tracked tại `origin/experiment/headline-comparison`).
+- **Tiêu chuẩn Khép lại Pha CIFAR-100:**
+  - Thiết lập cổng kiểm toán 15 tiêu chí khách quan tại [`docs/cifar100_completion_checklist.md`](cifar100_completion_checklist.md).
+  - Trạng thái: **`CIFAR100_PENDING_BASELINES`** (C0–C3 và Table 4 đã hoàn tất 100%; chờ chạy GPU Colab cho LwF và ER).
+- **Hiện thực Baseline Headline (Table 2 Parity):**
+  - **LwF (Learning without Forgetting):** [`src/foal/baselines/lwf.py`](../src/foal/baselines/lwf.py), [`configs/headline/lwf_cifar100.yaml`](../configs/headline/lwf_cifar100.yaml).
+  - **ER (Experience Replay, buffer=5000):** [`src/foal/baselines/er.py`](../src/foal/baselines/er.py), [`configs/headline/er_cifar100.yaml`](../configs/headline/er_cifar100.yaml).
+  - **Runner kiểm thử hợp nhất:** [`scripts/train_baseline.py`](../scripts/train_baseline.py).
+  - **Notebook Google Colab GPU hoàn chỉnh:** [`notebooks/foal_cifar100_headline_final.ipynb`](../notebooks/foal_cifar100_headline_final.ipynb).
+- **Khung Dataset Adapter Dùng chung & Phân công Nhóm Đa Tập Dữ liệu:**
+  - Khung adapter kế thừa an toàn: [`src/foal/dataset_adapters/base.py`](../src/foal/dataset_adapters/base.py) (không xâm lấn `src/foal/datasets.py`).
+  - **Track DTD (Thành viên A):** [`src/foal/dataset_adapters/dtd.py`](../src/foal/dataset_adapters/dtd.py), 40 lớp texture, 10 tasks $\times$ 4 lớp, kiểm chứng mức suy giảm 11.6 pp.
+  - **Track FGVC-Aircraft (Thành viên B):** [`src/foal/dataset_adapters/fgvc_aircraft.py`](../src/foal/dataset_adapters/fgvc_aircraft.py), 100 lớp aircraft variants, 10 tasks $\times$ 10 lớp, điều tra đối chiếu bất đồng Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
+  - Kế hoạch phân công và quản trị nhóm: [`docs/team_parallel_dataset_plan.md`](team_parallel_dataset_plan.md).
+  - Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).
+- **Kiểm thử tự động:** Đã bổ sung 10 unit tests trong [`tests/test_headline_comparison.py`](../tests/test_headline_comparison.py) và [`tests/test_dataset_adapters.py`](../tests/test_dataset_adapters.py); toàn bộ 83/83 tests toàn repository đều vượt qua 100%.

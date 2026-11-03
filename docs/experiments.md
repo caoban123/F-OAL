@@ -586,3 +586,26 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 | **A3: w/o Both** | **90.6%** | **89.9224%** | $-0.5\text{ pp}$ | $-0.4793\text{ pp}$ | $\checkmark$ Thấp nhất toàn bảng |
 
 - **Kết luận:** Tái hiện thành công **xu hướng kiến trúc** của Table 4 bài báo gốc: cả hai thành phần đều mang lại giá trị gia tăng thực nghiệm, và việc loại bỏ đồng thời cả hai đẩy độ chính xác xuống mức thấp nhất ($89.92\%$). Thứ tự ưu tiên giữa các mô hình trên Seed 42 bảo toàn: $A0 > A2 > A1 > A3$.
+
+
+---
+
+## 10. Giai đoạn Kế tiếp: Headline Comparison (Table 2) & Phân công Nhóm Song song Đa Tập Dữ liệu
+
+### 10.1. Tình trạng Hiện tại & Khép lại Pha CIFAR-100
+- C0 (Metric Alignment), C1 (Random Projection Init), C2 (Pretrained ViT Backbone Alignment), C3 (Preprocessing Alignment) và Table 4 (Architectural Ablation) đã được hoàn thành, kiểm toán pháp y toàn diện và merge vào nhánh `main` tại commit `747b828`.
+- Bộ tiêu chuẩn hoàn tất 15 tiêu chí (`docs/cifar100_completion_checklist.md`) chuyển trạng thái sang `CIFAR100_PENDING_BASELINES`.
+
+### 10.2. Triển khai Headline Comparison (Table 2 CIFAR-100)
+- Đã hiện thực hai baseline trung tâm từ Table 2 của paper trên cùng đặc trưng ViT trích xuất:
+  1. **LwF (Li & Hoiem TPAMI 2018):** `src/foal/baselines/lwf.py`, config `configs/headline/lwf_cifar100.yaml` (Exemplar-free, Distillation $T=2.0$, paper ref: $\bar{A} = 69.3\%$, $A_{10} = 64.8\%$, $F = 1.3\%$).
+  2. **ER (Chaudhry et al. ICRA 2019):** `src/foal/baselines/er.py`, config `configs/headline/er_cifar100.yaml` (Replay buffer $M=5000$, reservoir update, paper ref: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F = 20.7\%$).
+- Runner hợp nhất: `scripts/train_baseline.py`.
+- Notebook thực thi push-button Colab GPU: `notebooks/foal_cifar100_headline_final.ipynb`.
+
+### 10.3. Khung Dataset Adapter Dùng chung & Phân công Nhóm Đa Tập Dữ liệu
+- Khung adapter cơ sở: `src/foal/dataset_adapters/base.py` (bảo đảm không làm ảnh hưởng `src/foal/datasets.py`, bảo toàn tính phân hoạch chặt, zero replay, deterministic fingerprinting).
+- Phân công song song hai thành viên (`docs/team_parallel_dataset_plan.md`):
+  - **Thành viên A (Track DTD):** `src/foal/dataset_adapters/dtd.py`, branch `experiment/dtd-ablation`. Đo đạc 4 cấu hình Table 4 trên 40 lớp texture (10 tasks $\times$ 4 lớp), kiểm chứng mức suy giảm $11.6\text{ pp}$ khi bỏ SP.
+  - **Thành viên B (Track FGVC-Aircraft):** `src/foal/dataset_adapters/fgvc_aircraft.py`, branch `experiment/fgvc-aircraft-ablation`. Đo đạc 4 cấu hình Table 4 trên 100 lớp aircraft variants (10 tasks $\times$ 10 lớp), điều tra đối chiếu bất đồng số liệu giữa Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
+- Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).

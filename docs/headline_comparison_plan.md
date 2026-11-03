@@ -35,34 +35,40 @@ Table 2 in the paper evaluates twelve methods under the 10-task class-incrementa
 > - In preliminary notes, LwF was erroneously transcribed as 65.4% (actual: **69.3%**).
 > - ER was erroneously transcribed as 78.2% (actual: **90.1%**).
 > - EWC was listed as 50.1% (actual: **49.9%**).
-> - **DER++ is NOT in Table 2.** The exemplar-based baselines evaluated in Table 2 are specifically iCaRL, ER, ASER, SCR, DVC, and PCR. DER++ may be referenced in broader CL literature or explored as an optional extension, but it is not an official Table 2 baseline.
+> - **DER++ is NOT in Table 2.** The exemplar-based baselines evaluated in Table 2 are specifically iCaRL, ER, ASER, SCR, DVC, and PCR.
 
 ---
 
-## 3. Method Selection for Reproduction & Fairness Boundaries
+## 3. Prioritized Headline Baseline Suite (Table 2 Parity)
 
-Within the computational boundaries of Google Colab (single GPU, 1-pass online stream), our empirical Headline Comparison will implement and benchmark the following four representative paradigms:
+Following the objective CIFAR-100 completion checklist (`docs/cifar100_completion_checklist.md`), our Headline Comparison implements and directly benchmarks the two core continual learning paradigms evaluated in NeurIPS 2024 Table 2 on identical frozen ViT representations:
 
-| Paradigm | Selected Method | Buffer | Mechanism | Computational Cost |
-| :--- | :--- | :---: | :--- | :---: |
-| **Analytic Forward-Only (Proposed)** | **F-OAL (Full)** | 0 (Zero) | ViT + Feature Fusion + Smooth Projection + Online RLS | ~1 min |
-| **Linear Analytic (Ablation A3)** | **Linear Ridge** | 0 (Zero) | ViT + Online Ridge RLS (no projection, no non-linearity) | ~1 min |
-| **First-Order / Backprop** | **1-Pass SGD / AdamW** | 0 (Zero) | Frozen ViT + Fully Connected Head (Cross-Entropy, 1-pass) | ~2 min |
-| **Literature Replay Benchmark** | **ER / iCaRL / DVC** | Exemplars | Literature figures from NeurIPS 2024 Table 2 | Reference Parity |
+| Method | Venue & Type | Buffer Size | Hyperparameters / Provenance | Table 2 Ref $\bar{A}$ | Table 2 Ref $A_{10}$ | Table 2 Ref $F$ |
+| :--- | :--- | :---: | :--- | :---: | :---: | :---: |
+| **F-OAL (Full)** | NeurIPS 2024 (Analytic) | 0 (Zero) | Official uniform SP, Feature Fusion, $\gamma=1.0$, float64 | **91.1%** | **86.5%** | **5.5%** |
+| **ER (Replay)** | ICRA 2019 (Replay) | 5000 | Reservoir update, random retrieval, lr 0.001, AdamW | **90.1%** | **84.6%** | **20.7%** |
+| **LwF (Distill)** | TPAMI 2018 (Distill) | 0 (Zero) | Distillation loss $T=2.0$, $\lambda=1.0$, lr 0.001, AdamW | **69.3%** | **64.8%** | **1.3%** |
 
 ### 3.1 Strict Standardization Protocol
 - **Frozen Backbone**: `vit_base_patch16_224.augreg2_in21k_ft_in1k`.
-- **Input Stream**: CIFAR-100, 10 tasks $\times$ 10 classes, identical seed (42), identical class order.
+- **Input Stream**: CIFAR-100, 10 tasks $\times$ 10 classes, seed 42, identical class order.
 - **Preprocessing**: Bilinear resizing, Raw $[0, 1]$ tensor normalization.
-- **Single Pass Protocol**: Each training instance is seen exactly once during stream execution.
+- **Single Pass Protocol**: Each training instance is seen exactly once during stream execution (batch size 10).
 
 ---
 
-## 4. Integration with Completed Table 4 Ablation Evidence
+## 4. Empirical Implementation & Verification Deliverables
 
-The Table 4 Ablation study (`experiment/table4-ablation`) provides pre-verified empirical anchors for Headline Comparison baselines:
-- **Analytic Linear Ridge without SP (Condition A2)**: $\bar{A} = 90.3823\%$, $A_{10} = 85.7200\%$, $F_{\text{code}} = 4.7200\%$ ([rkedlkkk](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk)).
-- **Analytic Linear Ridge without Both FF & SP (Condition A3)**: $\bar{A} = 89.9224\%$, $A_{10} = 85.4800\%$, $F_{\text{code}} = 4.7900\%$ ([k01pp8st](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st)).
-- **Full F-OAL (Condition A0 / C3-D)**: $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{code}} = 4.6400\%$ ([3v53tmq5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5)).
-
-Next priority is executing the 1-Pass SGD / AdamW Backpropagation baseline on the identical frozen feature cache to establish the core comparative claim of NeurIPS 2024 Section 5.3 and Table 2.
+1. **Baseline Agents**:
+   - `src/foal/baselines/lwf.py`: Full LwF implementation with incremental classifier expansion and distillation.
+   - `src/foal/baselines/er.py`: Full ER implementation with reservoir memory buffer (capacity 5000) and uniform sampling.
+2. **Unified Runner**:
+   - `scripts/train_baseline.py`: Standalone CLI runner with full parity to `scripts/train.py`, evaluating cumulative task accuracy matrix $R_{i,j}$ and computing $A_{avg}$, $A_{last}$, $F_{past}$.
+3. **Configurations**:
+   - `configs/headline/foal_cifar100_reference.yaml`: Anchored to verified C3-D / A0 run (`3v53tmq5`, $\bar{A}=90.4016\%$, $A_{10}=85.7300\%$, $F_{code}=4.6400\%$).
+   - `configs/headline/lwf_cifar100.yaml`: Configured with author-specified parameters.
+   - `configs/headline/er_cifar100.yaml`: Configured with author-specified parameters.
+4. **Push-Button Colab Workflow**:
+   - `notebooks/foal_cifar100_headline_final.ipynb`: End-to-end executable notebook with environment checks, pilot validation, full GPU runs, comparative synthesis table, and results ZIP export.
+5. **Acceptance Gate**:
+   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_PENDING_BASELINES`.
