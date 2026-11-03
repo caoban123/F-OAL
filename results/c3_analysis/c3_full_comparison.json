@@ -1,0 +1,86 @@
+[
+  {
+    "condition": "NeurIPS 2024 Paper",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k (implied)",
+    "interpolation": "bilinear (official repo)",
+    "normalization": "raw [0, 1] (official repo)",
+    "seed": "average over seeds",
+    "avg_incremental_acc": 0.911,
+    "last_acc": null,
+    "forgetting_past": null,
+    "forgetting_code": null,
+    "wandb_run_id": "N/A"
+  },
+  {
+    "condition": "Official Author Run (seed 0)",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bilinear",
+    "normalization": "raw [0, 1]",
+    "seed": 0,
+    "avg_incremental_acc": 0.9098279365079364,
+    "last_acc": 0.8584,
+    "forgetting_past": 0.051666666666666666,
+    "forgetting_code": 0.0469,
+    "wandb_run_id": "3eca8232"
+  },
+  {
+    "condition": "C3-D (Full Official Alignment)",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bilinear",
+    "normalization": "raw [0, 1]",
+    "seed": 42,
+    "avg_incremental_acc": 0.9040163492063492,
+    "last_acc": 0.8573000000000001,
+    "forgetting_past": 0.05155555555555556,
+    "forgetting_code": 0.04640000000000001,
+    "wandb_run_id": "3v53tmq5"
+  },
+  {
+    "condition": "C3-C (Bicubic, Raw)",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bicubic",
+    "normalization": "raw [0, 1]",
+    "seed": 42,
+    "avg_incremental_acc": 0.9087623412698413,
+    "last_acc": 0.8634999999999999,
+    "forgetting_past": 0.05233333333333334,
+    "forgetting_code": 0.04710000000000001,
+    "wandb_run_id": "4m4uir7h"
+  },
+  {
+    "condition": "C3-B (Bilinear, Normalized)",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bilinear",
+    "normalization": "normalized [-1, 1]",
+    "seed": 42,
+    "avg_incremental_acc": 0.9139184920634922,
+    "last_acc": 0.8695,
+    "forgetting_past": 0.048888888888888905,
+    "forgetting_code": 0.04400000000000002,
+    "wandb_run_id": "ts2wh4e3"
+  },
+  {
+    "condition": "C3-A / C2-B1 (Bicubic, Normalized)",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bicubic",
+    "normalization": "normalized [-1, 1]",
+    "seed": 42,
+    "avg_incremental_acc": 0.9177423015873016,
+    "last_acc": 0.8743000000000001,
+    "forgetting_past": 0.050222222222222244,
+    "forgetting_code": 0.04520000000000002,
+    "wandb_run_id": "ne1p16b5"
+  },
+  {
+    "condition": "C2-B0 (augreg_in1k Control)",
+    "backbone": "vit_base_patch16_224.augreg_in1k",
+    "interpolation": "bicubic",
+    "normalization": "normalized [-1, 1]",
+    "seed": 42,
+    "avg_incremental_acc": 0.8328135317460317,
+    "last_acc": 0.7484,
+    "forgetting_past": 0.08966666666666666,
+    "forgetting_code": 0.0807,
+    "wandb_run_id": "3oiftwg6"
+  }
+]

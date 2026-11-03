@@ -272,3 +272,36 @@ def test_factorial_contrast_calculation():
     assert pytest.approx(0.5 * ((b2 - a2) + (d2 - c2)), abs=1e-5) == 1.0
     assert pytest.approx(0.5 * ((c2 - a2) + (d2 - b2)), abs=1e-5) == -2.0
     assert pytest.approx(d2 - a2, abs=1e-5) == -1.0
+
+
+def test_c3_full_gpu_results_audit():
+    """Verify empirical C3 Full GPU audit, matrix shapes, and factorial effects."""
+    audit_path = Path("results/c3_audit_parsed.json")
+    if not audit_path.exists():
+        pytest.skip("C3 results audit file results/c3_audit_parsed.json not found")
+        
+    with open(audit_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        
+    runs = data["runs"]
+    for k in ["C3-A", "C3-B", "C3-C", "C3-D"]:
+        assert k in runs
+        recalc = runs[k]["recalc"]
+        assert recalc["entries_count"] == 55
+        assert len(recalc["stage_accuracies"]) == 10
+        assert len(recalc["per_task_final_accuracy"]) == 10
+        assert len(recalc["per_task_past_forgetting"]) == 9
+        assert len(recalc["per_task_code_forgetting"]) == 10
+        
+    recon = data["reconciliation"]
+    for k in ["C3-A", "C3-B", "C3-C", "C3-D"]:
+        assert recon[k]["avg_inc_acc_match"] is True
+        assert recon[k]["max_abs_diff"] < 1e-10
+        
+    eff = data["factorial_effects"]["average_incremental_accuracy"]
+    # Check empirical identities
+    e_interp = eff["main_interp"]
+    e_norm = eff["main_norm"]
+    d_total = eff["delta_total"]
+    assert pytest.approx(e_interp + e_norm, abs=1e-10) == d_total
+

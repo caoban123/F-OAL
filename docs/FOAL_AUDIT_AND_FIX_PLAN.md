@@ -1084,7 +1084,14 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   2. **C3-B (Bilinear, Normalized):** Cô lập tác động nội suy.
   3. **C3-C (Bicubic, Raw):** Cô lập tác động chuẩn hóa.
   4. **C3-D (Bilinear, Raw):** Căn chỉnh hoàn toàn với mã nguồn tác giả. Sai khác điểm ảnh so với transform gốc là chính xác $0.00\text{e+}00$.
-- **Trạng thái Thực nghiệm C3:** **`C3_READY_FOR_GPU`**
+- **Trạng thái Thực nghiệm C3:** **`C3_SIGNED_OFF_WITH_LIMITATIONS`**
+  - Đã chạy hoàn tất Full GPU trên Google Colab NVIDIA A100-SXM4-40GB; xác thực toàn vẹn gói nén `foal_c3_preprocessing_results.zip` (SHA256: `a44b00ca2f12fcc895dedbefe6712087f7d1b17ebf977002e35b13b023361fa6`).
+  - **C3-A (Bicubic, Normalized):** $\bar{A} = 91.7742\%$, $A_{10} = 87.4300\%$, $F_{10}^{\text{past}} = 5.0222\%$, $F_{10}^{\text{code}} = 4.5200\%$ ([ne1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5)).
+  - **C3-B (Bilinear, Normalized):** $\bar{A} = 91.3918\%$, $A_{10} = 86.9500\%$, $F_{10}^{\text{past}} = 4.8889\%$, $F_{10}^{\text{code}} = 4.4000\%$ ([ts2wh4e3](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3)).
+  - **C3-C (Bicubic, Raw):** $\bar{A} = 90.8762\%$, $A_{10} = 86.3500\%$, $F_{10}^{\text{past}} = 5.2333\%$, $F_{10}^{\text{code}} = 4.7100\%$ ([4m4uir7h](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h)).
+  - **C3-D (Bilinear, Raw — Official Aligned):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{10}^{\text{past}} = 5.1556\%$, $F_{10}^{\text{code}} = 4.6400\%$ ([3v53tmq5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5)).
+  - **Phân rã giai thừa $2 \times 2$:** $E_{\text{interp}} = -0.4285\text{ pp}$, $E_{\text{norm}} = -0.9441\text{ pp}$, $E_{\text{IN}} = -0.0922\text{ pp}$, $\Delta_{\text{total}} = -1.3726\text{ pp}$.
+  - Toàn bộ 7/7 unit tests trong `tests/test_c3_preprocessing.py` và 63/63 tests toàn bộ repo vượt qua 100%.
   - Đã xây dựng 4 file cấu hình YAML hoàn chỉnh trong `configs/`.
   - Đã tích hợp tham số `normalize` trong `src/foal/datasets.py` và bảo vệ cache trong `scripts/train.py`.
   - Đã xây dựng script chẩn đoán `scripts/run_c3_diagnostics.py`.
