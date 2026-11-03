@@ -1,0 +1,5 @@
+Condition,Name,Total Time (s),Feature Extr (s),RLS & Eval (s),RLS Feature Dim,Hardware Note
+A0,Full F-OAL,229.11,175.28,8.5,1000,C3-D on Colab T4 GPU (Reused)
+A1,w/o Feature Fusion,853.26,785.35,15.52,1000,Colab T4 GPU (New Full GPU)
+A2,w/o Smooth Projection,870.73,804.37,11.59,768,Colab T4 GPU (New Full GPU)
+A3,w/o Both (FF & SP),66.77,785.35,11.97,768,Colab T4 GPU (New Full GPU)

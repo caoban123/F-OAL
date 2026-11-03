@@ -1,0 +1,66 @@
+{
+  "project": "hcmus-foal-reproduction",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "endpoint": "https://api.forge.coreweave.com",
+  "total_online_runs": 17,
+  "table4_runs": [
+    {
+      "condition": "A0",
+      "name": "c3_d_bilinear_raw",
+      "run_id": "3v53tmq5",
+      "group": "c3_preprocessing_alignment",
+      "status": "finished",
+      "provenance": "REUSED_VERIFIED_C3_D",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5"
+    },
+    {
+      "condition": "A1",
+      "name": "table4_a1_without_ff_seed42",
+      "run_id": "shl4p10l",
+      "group": "foal_no_fusion_ablation",
+      "status": "finished",
+      "provenance": "NEW_FULL_GPU_COLAB",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l"
+    },
+    {
+      "condition": "A2",
+      "name": "table4_a2_without_sp_seed42",
+      "run_id": "rkedlkkk",
+      "group": "foal_no_projection_ablation",
+      "status": "finished",
+      "provenance": "NEW_FULL_GPU_COLAB",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk"
+    },
+    {
+      "condition": "A3",
+      "name": "table4_a3_without_both_seed42",
+      "run_id": "k01pp8st",
+      "group": "foal_neither_ablation",
+      "status": "finished",
+      "provenance": "NEW_FULL_GPU_COLAB",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st"
+    }
+  ],
+  "pilot_smoke_runs": [
+    {
+      "run_id": "172e2y2y",
+      "name": "foal_no_fusion_seed42_pilot",
+      "group": "foal_no_fusion_pilot"
+    },
+    {
+      "run_id": "b4bao7ql",
+      "name": "foal_no_fusion_seed42_pilot",
+      "group": "foal_no_fusion_pilot"
+    },
+    {
+      "run_id": "euwibfmj",
+      "name": "foal_no_projection_seed42_pilot",
+      "group": "foal_no_projection_pilot"
+    },
+    {
+      "run_id": "zzzeg0k6",
+      "name": "foal_neither_seed42_pilot",
+      "group": "foal_neither_pilot"
+    }
+  ]
+}

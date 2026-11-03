@@ -55,3 +55,14 @@ Within the computational boundaries of Google Colab (single GPU, 1-pass online s
 - **Input Stream**: CIFAR-100, 10 tasks $\times$ 10 classes, identical seed (42), identical class order.
 - **Preprocessing**: Bilinear resizing, Raw $[0, 1]$ tensor normalization.
 - **Single Pass Protocol**: Each training instance is seen exactly once during stream execution.
+
+---
+
+## 4. Integration with Completed Table 4 Ablation Evidence
+
+The Table 4 Ablation study (`experiment/table4-ablation`) provides pre-verified empirical anchors for Headline Comparison baselines:
+- **Analytic Linear Ridge without SP (Condition A2)**: $\bar{A} = 90.3823\%$, $A_{10} = 85.7200\%$, $F_{\text{code}} = 4.7200\%$ ([rkedlkkk](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk)).
+- **Analytic Linear Ridge without Both FF & SP (Condition A3)**: $\bar{A} = 89.9224\%$, $A_{10} = 85.4800\%$, $F_{\text{code}} = 4.7900\%$ ([k01pp8st](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st)).
+- **Full F-OAL (Condition A0 / C3-D)**: $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{code}} = 4.6400\%$ ([3v53tmq5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5)).
+
+Next priority is executing the 1-Pass SGD / AdamW Backpropagation baseline on the identical frozen feature cache to establish the core comparative claim of NeurIPS 2024 Section 5.3 and Table 2.

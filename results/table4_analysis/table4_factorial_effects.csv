@@ -1,0 +1,10 @@
+Effect Description,Symbol,Value (pp)
+Feature Fusion Benefit (SP ON),E_FF|SP,+0.3013
+Feature Fusion Benefit (SP OFF),E_FF|~SP,+0.4600
+Smooth Projection Benefit (FF ON),E_SP|FF,+0.0193
+Smooth Projection Benefit (FF OFF),E_SP|~FF,+0.1780
+Average Feature Fusion Main Effect,E_FF,+0.3806
+Average Smooth Projection Main Effect,E_SP,+0.0987
+Difference-in-Differences Interaction Contrast,I_FFxSP,-0.1587
+Interaction Regression Coefficient (+-1 coding),beta_FFxSP,-0.0397
+Joint Benefit (Full F-OAL vs Without Both),Delta_full_none,+0.4793

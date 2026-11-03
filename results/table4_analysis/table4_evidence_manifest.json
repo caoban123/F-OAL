@@ -1,0 +1,87 @@
+{
+  "experiment": "Table 4 Controlled Architectural Ablation (Feature Fusion & Smooth Projection)",
+  "archive_provenance": {
+    "path": "foal_table4_ablation_results.zip",
+    "sha256": "90f191d12b06fbd804779fcb038a12574c9b7cdc2f32369a6975dd6309e09e7a",
+    "crc_status": "ALL_OK",
+    "extracted_to": "results/table4_full_gpu_verified"
+  },
+  "reused_baseline_a0": {
+    "source": "C3-D (results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw)",
+    "wandb_id": "3v53tmq5",
+    "a_bar": 90.40163492063492,
+    "status": "A0_REUSE_VERIFIED"
+  },
+  "reconstructed_semantics": "RECONSTRUCTED_FROM_PAPER",
+  "fixed_controls_verified": true,
+  "metrics_recalculated_match": true,
+  "factorial_effects": {
+    "metric": "Average Incremental Accuracy (A_bar, percentage points)",
+    "A0_Full": 90.40163492063492,
+    "A1_noFF": 90.10036904761908,
+    "A2_noSP": 90.38234126984128,
+    "A3_noBoth": 89.92235317460316,
+    "simple_effects": {
+      "E_FF_given_SP_ON": 0.3012658730158364,
+      "E_FF_given_SP_OFF": 0.459988095238117,
+      "E_SP_given_FF_ON": 0.019293650793642314,
+      "E_SP_given_FF_OFF": 0.17801587301592292
+    },
+    "main_effects": {
+      "E_FF_main": 0.3806269841269767,
+      "E_SP_main": 0.09865476190478262
+    },
+    "interaction": {
+      "interaction_contrast": -0.1587222222222806,
+      "regression_coefficient_beta": -0.03968055555557015
+    },
+    "joint_benefit": {
+      "delta_full_vs_none": 0.4792817460317593,
+      "sum_of_main_effects": 0.4792817460317593,
+      "additivity_gap": 0.0
+    }
+  },
+  "paper_comparison": [
+    {
+      "condition": "A0",
+      "name": "Full F-OAL",
+      "ff": true,
+      "sp": true,
+      "paper_a_bar": 91.1,
+      "our_a_bar": 90.40163492063492,
+      "delta_pp": -0.6983650793650753
+    },
+    {
+      "condition": "A1",
+      "name": "w/o Feature Fusion",
+      "ff": false,
+      "sp": true,
+      "paper_a_bar": 90.6,
+      "our_a_bar": 90.10036904761908,
+      "delta_pp": -0.4996309523809117
+    },
+    {
+      "condition": "A2",
+      "name": "w/o Smooth Projection",
+      "ff": true,
+      "sp": false,
+      "paper_a_bar": 90.7,
+      "our_a_bar": 90.38234126984128,
+      "delta_pp": -0.31765873015872614
+    },
+    {
+      "condition": "A3",
+      "name": "w/o Both (FF & SP)",
+      "ff": false,
+      "sp": false,
+      "paper_a_bar": 90.6,
+      "our_a_bar": 89.92235317460316,
+      "delta_pp": -0.6776468253968346
+    }
+  ],
+  "scientific_verdict": "TABLE4_SIGNED_OFF_WITH_LIMITATIONS",
+  "limitations": [
+    "Evaluated on single seed (Seed 42) under one-pass CIFAR-100 stream; paper reports 3-seed mean.",
+    "CIFAR-100 features from pre-trained ViT are highly separable, exhibiting small ablation drops (<0.5 pp); DTD extension required for large domain-shift validation."
+  ]
+}

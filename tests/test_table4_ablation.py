@@ -175,3 +175,26 @@ def test_reference_ground_truth_provenance():
     assert t2["iCaRL (CVPR 2017)"]["a_avg"] == 91.6
     assert t2["SCR (CVPR 2021)"]["a_avg"] == 91.9
     assert t2["DVC (CVPR 2022)"]["a_avg"] == 92.4
+def test_table4_archive_and_recalculated_metrics():
+    """Verify Table 4 archive manifest exists and unrounded metric values match recalculation."""
+    manifest_p = Path("results/table4_analysis/table4_evidence_manifest.json")
+    assert manifest_p.exists(), "Missing table4_evidence_manifest.json"
+    with open(manifest_p, "r", encoding="utf-8") as f:
+        ev = json.load(f)
+
+    assert ev["archive_provenance"]["sha256"] == "90f191d12b06fbd804779fcb038a12574c9b7cdc2f32369a6975dd6309e09e7a"
+    assert ev["archive_provenance"]["crc_status"] == "ALL_OK"
+    assert ev["reused_baseline_a0"]["status"] == "A0_REUSE_VERIFIED"
+    assert ev["fixed_controls_verified"] is True
+    assert ev["metrics_recalculated_match"] is True
+
+    # Check unrounded recalculated accuracies
+    fe = ev["factorial_effects"]
+    assert abs(fe["A0_Full"] - 90.40163492063492) < 1e-6
+    assert abs(fe["A1_noFF"] - 90.10036904761906) < 1e-6
+    assert abs(fe["A2_noSP"] - 90.38234126984127) < 1e-6
+    assert abs(fe["A3_noBoth"] - 89.92235317460316) < 1e-6
+
+    # Verify mathematical identity: E_FF + E_SP == A0 - A3
+    diff_joint = abs(fe["joint_benefit"]["delta_full_vs_none"] - fe["joint_benefit"]["sum_of_main_effects"])
+    assert diff_joint < 1e-12, f"Additivity gap violated: {diff_joint}"

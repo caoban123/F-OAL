@@ -1,0 +1,5 @@
+Condition,Name,FF,SP,Paper A_bar (%),Our A_bar (%),Delta (pp)
+A0,Full F-OAL,ON,ON,91.1,90.4016,-0.6984
+A1,w/o Feature Fusion,OFF,ON,90.6,90.1004,-0.4996
+A2,w/o Smooth Projection,ON,OFF,90.7,90.3823,-0.3177
+A3,w/o Both (FF & SP),OFF,OFF,90.6,89.9224,-0.6776
