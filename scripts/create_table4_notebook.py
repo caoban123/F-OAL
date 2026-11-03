@@ -1,0 +1,350 @@
+import json
+from pathlib import Path
+
+def create_table4_notebook():
+    cells = []
+
+    # Markdown Header
+    cells.append({
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [
+            "# F-OAL — Table 4 Controlled Architectural Ablation Study (CIFAR-100)\n",
+            "\n",
+            "- **Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024)\n",
+            "- **Author Official Repository:** [`https://github.com/liuyuchen-cz/F-OAL`](https://github.com/liuyuchen-cz/F-OAL)\n",
+            "- **Group Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)\n",
+            "- **Target Branch:** `experiment/table4-ablation`\n",
+            "- **Research Question:** Dissect the individual and joint contributions of Feature Fusion (FF) and Smooth Projection (SP) as reported in NeurIPS 2024 Table 4:\n",
+            "  - **A0 (Full F-OAL):** Feature Fusion ON, Smooth Projection ON (Paper: 91.1%, C3-D Reused: 90.40%)\n",
+            "  - **A1 (w/o Feature Fusion):** Feature Fusion OFF, Smooth Projection ON (Paper: 90.6%)\n",
+            "  - **A2 (w/o Smooth Projection):** Feature Fusion ON, Smooth Projection OFF (Paper: 90.7%)\n",
+            "  - **A3 (w/o Both):** Feature Fusion OFF, Smooth Projection OFF (Paper: 90.6%)\n",
+            "- **Strict Controls:**\n",
+            "  - Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k` (ImageNet-21K + 1K FT)\n",
+            "  - Preprocessing: Bilinear interpolation, Raw [0, 1] tensor (Official parity from C3-D)\n",
+            "  - Dataset: CIFAR-100, 10 tasks x 10 classes, seed 42\n",
+            "  - Classifier: Online Ridge RLS, batch size 10, gamma 1.0, float64\n",
+            "- **Compute Guard:** A0 is bitwise equivalent to C3-D (`A0_REUSE_APPROVED`), saving 25% GPU compute."
+        ]
+    })
+
+    # Cell 1: Environment Preflight
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 1: Environment Preflight ===\n",
+            "import os\n",
+            "import sys\n",
+            "import shutil\n",
+            "import platform\n",
+            "import subprocess\n",
+            "import torch\n",
+            "\n",
+            "print(f\"Python version   : {sys.version}\")\n",
+            "print(f\"Platform         : {platform.platform()}\")\n",
+            "print(f\"PyTorch version  : {torch.__version__}\")\n",
+            "print(f\"CUDA available   : {torch.cuda.is_available()}\")\n",
+            "\n",
+            "if not torch.cuda.is_available():\n",
+            "    raise RuntimeError(\n",
+            "        \"FATAL: CUDA GPU is not available! Please switch Colab runtime to GPU before running.\"\n",
+            "    )\n",
+            "\n",
+            "device_name = torch.cuda.get_device_name(0)\n",
+            "device_props = torch.cuda.get_device_properties(0)\n",
+            "vram_gb = device_props.total_memory / (1024 ** 3)\n",
+            "print(f\"GPU Device       : {device_name}\")\n",
+            "print(f\"CUDA version     : {torch.version.cuda}\")\n",
+            "print(f\"Total VRAM       : {vram_gb:.2f} GB\")\n",
+            "\n",
+            "free_bytes = shutil.disk_usage(\".\").free\n",
+            "print(f\"Free Disk Space  : {free_bytes / (1024**3):.2f} GB\")\n"
+        ]
+    })
+
+    # Cell 2: Clone & Checkout
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 2: Clone Group Repository & Checkout Table 4 Branch ===\n",
+            "from pathlib import Path\n",
+            "\n",
+            "REPO_DIR = Path(\"/content/F-OAL\")\n",
+            "BRANCH_NAME = \"experiment/table4-ablation\"\n",
+            "\n",
+            "if REPO_DIR.exists():\n",
+            "    print(f\"Removing existing directory {REPO_DIR} for clean clone...\")\n",
+            "    shutil.rmtree(REPO_DIR)\n",
+            "\n",
+            "subprocess.run([\n",
+            "    \"git\", \"clone\", \"-b\", BRANCH_NAME,\n",
+            "    \"https://github.com/caoban123/F-OAL.git\", str(REPO_DIR)\n",
+            "], check=True)\n",
+            "\n",
+            "commit_hash = subprocess.check_output(\n",
+            "    [\"git\", \"rev-parse\", \"HEAD\"], cwd=str(REPO_DIR), text=True\n",
+            ").strip()\n",
+            "print(f\"SUCCESS: Repository ready at commit {commit_hash} (branch: {BRANCH_NAME})\")\n",
+            "\n",
+            "os.chdir(str(REPO_DIR))\n",
+            "if str(REPO_DIR) not in sys.path:\n",
+            "    sys.path.insert(0, str(REPO_DIR))\n"
+        ]
+    })
+
+    # Cell 3: Dependencies & W&B Login
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 3: Install Dependencies & Setup W&B ===\n",
+            "!pip install -q timm pyyaml pytest\n",
+            "!pip install -q --upgrade wandb\n",
+            "\n",
+            "import wandb\n",
+            "WANDB_BASE_URL = \"https://api.forge.coreweave.com\"\n",
+            "os.environ[\"WANDB_BASE_URL\"] = WANDB_BASE_URL\n",
+            "\n",
+            "print(f\"Configured WANDB_BASE_URL: {os.environ['WANDB_BASE_URL']}\")\n",
+            "print(\"Please log in to W&B if prompted:\")\n",
+            "wandb.login(host=WANDB_BASE_URL)\n"
+        ]
+    })
+
+    # Cell 4: Download CIFAR-100 Dataset
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 4: Prepare CIFAR-100 Dataset ===\n",
+            "from torchvision.datasets import CIFAR100\n",
+            "\n",
+            "DATA_DIR = REPO_DIR / \"artifacts/data\"\n",
+            "DATA_DIR.mkdir(parents=True, exist_ok=True)\n",
+            "\n",
+            "print(\"Downloading CIFAR-100 to ensure local availability...\")\n",
+            "CIFAR100(root=str(DATA_DIR), train=True, download=True)\n",
+            "CIFAR100(root=str(DATA_DIR), train=False, download=True)\n",
+            "print(\"SUCCESS: CIFAR-100 downloaded and ready.\")\n"
+        ]
+    })
+
+    # Cell 5: Run Automated Unit Tests
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 5: Preflight Verification Suite ===\n",
+            "print(\"Running Table 4 verification suite...\")\n",
+            "!python -m pytest tests/test_table4_ablation.py -v\n",
+            "\n",
+            "print(\"Running A0 reuse verification...\")\n",
+            "!python scripts/verify_a0_reuse.py\n"
+        ]
+    })
+
+    # Cell 6: Pilot Verification (2 tasks on A1, A2, A3)
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 6: Pilot 2-Task Smoke Test ===\n",
+            "print(\"Running 2-task pilot test across A1, A2, A3 to guarantee no runtime faults...\")\n",
+            "pilot_configs = [\n",
+            "    (\"A1_no_ff\", \"configs/table4_a1_without_ff_cifar100.yaml\"),\n",
+            "    (\"A2_no_sp\", \"configs/table4_a2_without_sp_cifar100.yaml\"),\n",
+            "    (\"A3_no_both\", \"configs/table4_a3_without_both_cifar100.yaml\"),\n",
+            "]\n",
+            "for tag, cfg_path in pilot_configs:\n",
+            "    print(f\"\\n--- Running Pilot for {tag} ---\")\n",
+            "    subprocess.run([\n",
+            "        \"python\", \"scripts/train.py\",\n",
+            "        \"--config\", cfg_path,\n",
+            "        \"--max-tasks\", \"2\",\n",
+            "        \"--limit-train-per-task\", \"20\",\n",
+            "        \"--limit-test-per-task\", \"10\",\n",
+            "        \"--device\", \"cuda\",\n",
+            "        \"--experiment-type\", \"pilot\",\n",
+            "    ], check=True)\n",
+            "print(\"\\nSUCCESS: Pilot smoke tests completed successfully!\")\n"
+        ]
+    })
+
+    # Cell 7: Inject Reused A0 Metrics from C3-D
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 7: Inject Reused Condition A0 (Full F-OAL from C3-D) ===\n",
+            "import json\n",
+            "\n",
+            "A0_OUTDIR = REPO_DIR / \"results/table4_a0_full_foal\"\n",
+            "A0_OUTDIR.mkdir(parents=True, exist_ok=True)\n",
+            "\n",
+            "a0_summary = {\n",
+            "    \"condition\": \"A0\",\n",
+            "    \"name\": \"Full F-OAL (FF On, SP On)\",\n",
+            "    \"source_run_id\": \"3v53tmq5\",\n",
+            "    \"reused_from\": \"C3-D (Bilinear, Raw [0, 1])\",\n",
+            "    \"accuracy_bar\": 90.4016,\n",
+            "    \"a_10\": 85.73,\n",
+            "    \"f_10_past\": 5.16,\n",
+            "    \"f_10_code\": 4.64,\n",
+            "    \"feature_fusion\": True,\n",
+            "    \"smooth_projection\": True,\n",
+            "}\n",
+            "(A0_OUTDIR / \"summary.json\").write_text(json.dumps(a0_summary, indent=2))\n",
+            "print(\"A0 (Full F-OAL) successfully injected from C3-D checkpoint:\")\n",
+            "print(json.dumps(a0_summary, indent=2))\n"
+        ]
+    })
+
+    # Cell 8: Run Full GPU Experiment A1 (w/o Feature Fusion)
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 8: Full GPU Run A1 — w/o Feature Fusion ===\n",
+            "print(\"Starting Condition A1: Feature Fusion OFF, Smooth Projection ON (10 Tasks)...\")\n",
+            "!python scripts/train.py \\\n",
+            "    --config configs/table4_a1_without_ff_cifar100.yaml \\\n",
+            "    --feature-cache-dir /content/feature_cache \\\n",
+            "    --output-dir results/table4_a1_without_ff \\\n",
+            "    --run-name table4_a1_without_ff_seed42 \\\n",
+            "    --device cuda \\\n",
+            "    --wandb\n"
+        ]
+    })
+
+    # Cell 9: Run Full GPU Experiment A2 (w/o Smooth Projection)
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 9: Full GPU Run A2 — w/o Smooth Projection ===\n",
+            "print(\"Starting Condition A2: Feature Fusion ON, Smooth Projection OFF (10 Tasks)...\")\n",
+            "!python scripts/train.py \\\n",
+            "    --config configs/table4_a2_without_sp_cifar100.yaml \\\n",
+            "    --feature-cache-dir /content/feature_cache \\\n",
+            "    --output-dir results/table4_a2_without_sp \\\n",
+            "    --run-name table4_a2_without_sp_seed42 \\\n",
+            "    --device cuda \\\n",
+            "    --wandb\n"
+        ]
+    })
+
+    # Cell 10: Run Full GPU Experiment A3 (w/o Both)
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 10: Full GPU Run A3 — w/o Both (FF Off, SP Off) ===\n",
+            "print(\"Starting Condition A3: Feature Fusion OFF, Smooth Projection OFF (10 Tasks)...\")\n",
+            "!python scripts/train.py \\\n",
+            "    --config configs/table4_a3_without_both_cifar100.yaml \\\n",
+            "    --feature-cache-dir /content/feature_cache \\\n",
+            "    --output-dir results/table4_a3_without_both \\\n",
+            "    --run-name table4_a3_without_both_seed42 \\\n",
+            "    --device cuda \\\n",
+            "    --wandb\n"
+        ]
+    })
+
+    # Cell 11: Collect and Print Table 4 Comparative Results
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 11: Collate Table 4 Ablation Results ===\n",
+            "import json\n",
+            "from pathlib import Path\n",
+            "\n",
+            "results = {}\n",
+            "conditions = [\n",
+            "    (\"A0 (Full F-OAL)\", \"results/table4_a0_full_foal/summary.json\", 91.1),\n",
+            "    (\"A1 (w/o FF)\", \"results/table4_a1_without_ff/summary.json\", 90.6),\n",
+            "    (\"A2 (w/o SP)\", \"results/table4_a2_without_sp/summary.json\", 90.7),\n",
+            "    (\"A3 (w/o Both)\", \"results/table4_a3_without_both/summary.json\", 90.6),\n",
+            "]\n",
+            "\n",
+            "print(f\"{'Condition':<20} | {'FF':<5} | {'SP':<5} | {'Paper A_bar':<12} | {'Our A_bar':<12} | {'Delta':<8} | {'A_10':<8} | {'F_10':<8}\")\n",
+            "print(\"-\" * 90)\n",
+            "\n",
+            "for cond_name, pth, paper_val in conditions:\n",
+            "    p = Path(pth)\n",
+            "    if p.exists():\n",
+            "        data = json.loads(p.read_text())\n",
+            "        a_bar = data.get(\"accuracy_bar\", float(\"nan\"))\n",
+            "        a_10 = data.get(\"a_10\", float(\"nan\"))\n",
+            "        f_10 = data.get(\"f_10_past\", data.get(\"f_10\", float(\"nan\")))\n",
+            "        ff = \"ON\" if \"w/o FF\" not in cond_name and \"Both\" not in cond_name else \"OFF\"\n",
+            "        sp = \"ON\" if \"w/o SP\" not in cond_name and \"Both\" not in cond_name else \"OFF\"\n",
+            "        delta = a_bar - paper_val\n",
+            "        print(f\"{cond_name:<20} | {ff:<5} | {sp:<5} | {paper_val:6.2f}%     | {a_bar:6.2f}%     | {delta:+6.2f}pp | {a_10:6.2f}%  | {f_10:6.2f}%\")\n",
+            "    else:\n",
+            "        print(f\"{cond_name:<20} | [NOT FOUND: {pth}]\")\n"
+        ]
+    })
+
+    # Cell 12: Package and Archive Results
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
+            "# === CELL 12: Package & Export Results Archive ===\n",
+            "archive_name = \"foal_table4_ablation_results.zip\"\n",
+            "!zip -r {archive_name} results/table4_* -x \"*.pt\" \"*.pth\"\n",
+            "print(f\"Archive created: {archive_name}\")\n",
+            "try:\n",
+            "    from google.colab import files\n",
+            "    files.download(archive_name)\n",
+            "    print(\"Triggered automatic browser download.\")\n",
+            "except ImportError:\n",
+            "    print(\"Running outside Google Colab; archive saved locally.\")\n"
+        ]
+    })
+
+    nb = {
+        "cells": cells,
+        "metadata": {
+            "accelerator": "GPU",
+            "colab": {"provenance": []},
+            "language_info": {"name": "python", "version": "3.10"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 0,
+    }
+
+    nb_path = Path("notebooks/foal_table4_ablation_controlled.ipynb")
+    nb_path.write_text(json.dumps(nb, indent=2), encoding="utf-8")
+    print(f"Successfully generated {nb_path} with {len(cells)} cells.")
+
+if __name__ == "__main__":
+    create_table4_notebook()
