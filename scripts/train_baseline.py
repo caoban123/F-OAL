@@ -133,7 +133,7 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
 
     backbone_name = cfg.get("backbone", "vit_base_patch16_224.augreg2_in21k_ft_in1k")
     feature_fusion = bool(cfg.get("feature_fusion", True))
-    encoder = FrozenViT(backbone_name=backbone_name, feature_fusion=feature_fusion, device=device_str)
+    encoder = FrozenViT(name=backbone_name, pretrained=True, feature_fusion=feature_fusion).to(device_str)
     feat_dim = encoder.feature_dim
     print(f"[{agent_type.upper()}] FrozenViT initialized: {backbone_name}, feature_fusion={feature_fusion}, dim={feat_dim}")
 
@@ -230,6 +230,10 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
 
     # Compute continual learning metrics
     summary = summary_from_task_matrix(task_matrix)
+    summary['a_avg_pct'] = float(summary['average_incremental_accuracy'] * 100)
+    summary['a_last_pct'] = float(summary['last_accuracy'] * 100)
+    summary['f_past_pct'] = float(summary['forgetting_past_tasks'] * 100)
+    summary['f_code_pct'] = float(summary['forgetting_official_code'] * 100)
     formatted = format_summary_percentages(summary)
 
     print("\n" + "=" * 60)
