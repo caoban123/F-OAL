@@ -628,7 +628,18 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 
 ### 11.2. Phân tích Khoa học & Kiểm toán Pháp y Cốt lõi
 1. **F-OAL giải quyết triệt để bài toán Exemplar-Free:** Không lưu bất kỳ mẫu cũ nào ($M=0$), F-OAL vẫn đạt $\bar{A} = 90.40\%$ và độ quên $F_{\text{past}} = 5.16\%$ (tiệm cận sát các mốc của bài báo: $91.1\%$, $86.5\%$, và $5.5\%$).
-2. **Nguyên nhân LwF suy giảm trong stream Online 1-Pass:** Trong thiết lập online class-incremental stream (1 pass, batch size 10), hàm mất mát Cross-Entropy không ràng buộc liên tục áp đặt gradient âm lên toàn bộ các logit của các lớp cũ, trong khi hàm mất mát chưng cất (distillation loss) chỉ chuẩn hóa trên các lớp cũ nên có tính chất bất biến tịnh tiến (shift-invariant). Điều này dẫn tới hiện tượng thiên lệch tác vụ gần đây (task-recency bias) khốc liệt, đẩy độ chính xác trên các Task 1–8 về $0.00\%$ ở Task 10.
-3. **ER duy trì độ chính xác nhưng đòi hỏi bộ đệm lớn:** ER giữ được $70\text{--}83\%$ độ chính xác trên các task cũ nhờ bộ đệm 5.000 mẫu, đạt $\bar{A} = 86.67\%$, nhưng độ quên vẫn ở mức $16.74\%$ và tiêu tốn tài nguyên bộ nhớ đáng kể.
-4. **Hiệu chỉnh Báo cáo Thời gian (Runtime Parity):** Tuyên bố gia tốc "11.7 lần" trước đây được rút lại do thiếu tính tương đương phần cứng và phạm vi đo (F-OAL chạy trên NVIDIA A100 với tổng thời gian 229.11s bao gồm 175.28s trích xuất đặc trưng; trong khi LwF và ER chạy trên Tesla T4).
-5. **Trạng thái Quản trị Pha CIFAR-100:** Phê duyệt trạng thái `CIFAR100_PENDING_BASELINE_VALIDATION`. Nhóm tiếp tục chuẩn bị giao thức và adapter cho DTD và FGVC-Aircraft mà không thực hiện thêm lượt chạy GPU lặp lại trên CIFAR-100.
+2. **Khảo sát Nguồn gốc Độ lệch Baseline LwF (Protocol Parity Audit):**
+   - Đã clone và kiểm toán đối sánh chi tiết mã nguồn tác giả tại `ref/official_foal/` (commit SHA `73e4ac1b4c965030973a2b77f05c57c2f44f49f5`).
+   - Kết quả chỉ ra rằng độ lệch của baseline LwF (đo được 29.63% so với bài báo 69.3%) xuất phát từ các khác biệt giao thức then chốt trong mã tác giả:
+     - **Trọng số mất mát động (Dynamic Loss Weighting):** Mã tác giả (`agents/lwf.py:55`) dùng công thức $\mathcal{L} = \frac{1}{t+1} \mathcal{L}_{\text{new}} + \left(1 - \frac{1}{t+1}\right) \mathcal{L}_{\text{old}}$. Đến Task 10, tín hiệu học lớp mới bị giảm xuống còn 0.10, trong khi chưng cất lớp cũ tăng lên 0.90, khống chế hiện tượng recency bias. Ngược lại, baseline chuyển đổi trước đó sử dụng trọng số tĩnh 1.0 / 1.0.
+     - **Phạm vi Logit Chưng cất (KD Scoping):** Mã tác giả khởi tạo sẵn đầu ra 100 lớp (`nn.Linear(768, 100)`) và tính toán chưng cất trên toàn bộ 100 lớp, ngăn chặn việc logit lớp mới tăng đột biến không kiểm soát.
+     - **Tối ưu hóa (Optimizer):** Tác giả sử dụng `SGD(lr=0.001, momentum=0.0, weight_decay=0.0)` thay vì AdamW.
+   - Nhóm đã hoàn thành việc triển khai `OfficialLwFAgent` (`src/foal/baselines/official_lwf.py`) và cấu hình `configs/headline/lwf_cifar100_official_protocol.yaml` với độ tương thích 100% mã nguồn tác giả.
+3. **ER duy trì độ chính xác nhưng đòi hỏi bộ đệm lớn:** ER giữ được $70\text{--}83\%$ độ chính xác trên các task cũ nhờ bộ đệm 5.000 mẫu, đạt $\bar{A} = 86.67\%$, tiệm cận kết quả bài báo ($90.1\%$, sai lệch $-3.43\text{ pp}$), nhưng độ quên vẫn ở mức $16.74\%$ và tiêu tốn tài nguyên bộ nhớ đáng kể.
+4. **Giải trình Toàn diện Thời gian Chạy & Rút lại Tuyên bố Gia tốc Phần cứng chéo:**
+   - Thời gian vòng lặp huấn luyện F-OAL (tổng cộng 229.11s trên NVIDIA A100) được hạch toán minh bạch:
+     - Trích xuất đặc trưng ViT: **175.28s** (76.5%).
+     - Cập nhật giải tích RLS & đánh giá kiểm thử: **8.50s** (3.7%).
+     - Chi phí I/O tuần tự hóa đĩa đặc trưng (`torch.save` 20 tệp `.pt`), DataLoader collation overhead, kiểm tra tính toàn vẹn SHA256 ma trận chiếu và ghi nhật ký: **45.33s** (19.8%).
+   - Tuyên bố gia tốc "11.7 lần" trước đây được chính thức rút lại do thiếu tính tương đương phần cứng (NVIDIA A100 vs Tesla T4) và phạm vi đo lường.
+5. **Trạng thái Quản trị Pha CIFAR-100:** Thiết lập trạng thái **`CIFAR100_NEEDS_OFFICIAL_LWF_RUN`**. Sau một lượt chạy ngắn ~10 phút trên Colab GPU với cấu hình `configs/headline/lwf_cifar100_official_protocol.yaml`, toàn bộ mốc CIFAR-100 sẽ được nghiệm thu hoàn tất và đóng lại. Song song đó, công tác chuẩn bị adapter cho DTD và FGVC-Aircraft vẫn tiến hành theo kế hoạch.

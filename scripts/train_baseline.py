@@ -161,8 +161,22 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
             seed=seed,
             device=device_str,
         )
+    elif agent_type in ["official_lwf", "official-lwf"]:
+        from src.foal.baselines.official_lwf import OfficialLwFAgent
+        temperature = float(cfg.get("temperature", 2.0))
+        momentum = float(cfg.get("momentum", 0.0))
+        weight_decay = float(cfg.get("weight_decay", 0.0))
+        agent = OfficialLwFAgent(
+            feature_dim=feat_dim,
+            total_classes=int(cfg.get("num_classes", 100)),
+            learning_rate=lr,
+            temperature=temperature,
+            momentum=momentum,
+            weight_decay=weight_decay,
+            device=device_str,
+        )
     else:
-        raise ValueError(f"Unknown agent type '{agent_type}'. Supported: 'lwf', 'er'.")
+        raise ValueError(f"Unknown agent type '{agent_type}'. Supported: 'lwf', 'er', 'official_lwf'.")
 
     # Evaluation matrix R[i, j]: performance on task j after training on task i
     task_matrix: list[list[float]] = []
@@ -211,6 +225,9 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
             b_feat = train_feats[b_start:b_start + batch_size]
             b_lbl = train_lbls[b_start:b_start + batch_size]
             agent.train_batch(b_feat, b_lbl)
+
+        if hasattr(agent, "after_task"):
+            agent.after_task()
 
         task_elapsed = time.monotonic() - t_start
         total_training_seconds += task_elapsed

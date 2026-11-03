@@ -424,3 +424,59 @@ def test_scientific_signoff_protocol_and_metrics_consistency():
     fake_avg = 0.50  # Blatantly inconsistent average
     diff = abs(sum(fake_stage_accs) / len(fake_stage_accs) - fake_avg)
     assert diff > 0.1, "Sanity check: inconsistency must be detectable"
+
+
+# ==============================================================================
+# Official-Protocol Baseline Parity Tests
+# ==============================================================================
+
+def test_official_lwf_agent_step_and_dynamic_loss_weighting():
+    """Verify OfficialLwFAgent dynamic loss weighting (1/(t+1) * L_new + (1 - 1/(t+1)) * L_old) and SGD."""
+    from src.foal.baselines.official_lwf import OfficialLwFAgent
+    import torch.optim as optim
+
+    agent = OfficialLwFAgent(feature_dim=16, total_classes=20, learning_rate=0.01, device="cpu")
+    assert isinstance(agent.optimizer, optim.SGD)
+    assert agent.model.fc.weight.shape == (20, 16)
+
+    # Task 0
+    x0 = torch.randn(8, 16)
+    y0 = torch.randint(0, 10, (8,))
+    metrics0 = agent.train_batch(x0, y0)
+    assert metrics0["weight_new"] == 1.0
+    assert metrics0["weight_old"] == 0.0
+    assert metrics0["loss_old"] == 0.0
+    agent.after_task()
+    assert agent.task_seen == 1
+
+    # Transition to Task 1
+    agent.before_task(task_id=1, total_seen_classes=20)
+    assert agent.teacher_model is not None
+    x1 = torch.randn(8, 16)
+    y1 = torch.randint(10, 20, (8,))
+    metrics1 = agent.train_batch(x1, y1)
+    assert abs(metrics1["weight_new"] - 0.5) < 1e-6
+    assert abs(metrics1["weight_old"] - 0.5) < 1e-6
+    assert metrics1["loss_old"] >= 0.0
+    agent.after_task()
+    assert agent.task_seen == 2
+
+    # Transition to Task 2 (3 tasks total, t=2)
+    agent.before_task(task_id=2, total_seen_classes=20)
+    x2 = torch.randn(8, 16)
+    y2 = torch.randint(10, 20, (8,))
+    metrics2 = agent.train_batch(x2, y2)
+    assert abs(metrics2["weight_new"] - 1.0 / 3.0) < 1e-6
+    assert abs(metrics2["weight_old"] - 2.0 / 3.0) < 1e-6
+
+
+def test_official_lwf_config_validity():
+    """Verify that configs/headline/lwf_cifar100_official_protocol.yaml exists and is valid."""
+    import yaml
+    cfg_path = Path(__file__).resolve().parent.parent / "configs" / "headline" / "lwf_cifar100_official_protocol.yaml"
+    assert cfg_path.exists(), "Official protocol LwF YAML config not found"
+    data = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+    assert data["agent"] == "official_lwf"
+    assert data["optimizer"] == "sgd"
+    assert data["learning_rate"] == 0.001
+    assert data["dynamic_loss_weighting"] is True

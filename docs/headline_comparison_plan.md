@@ -57,18 +57,30 @@ Following the objective CIFAR-100 completion checklist (`docs/cifar100_completio
 
 ---
 
+### 3.2 Official Protocol Source Diff Findings (Nov 3, 2026)
+Detailed source code comparison against official author implementation (`ref/official_foal/` pinned at `73e4ac1b4c965030973a2b77f05c57c2f44f49f5`) revealed key protocol parameters in the author's LwF baseline:
+- **Dynamic Loss Weighting**: $\mathcal{L} = \frac{1}{t+1} \mathcal{L}_{\text{new}} + \left(1 - \frac{1}{t+1}\right) \mathcal{L}_{\text{old}}$. At Task 10, new task cross-entropy is scaled down to 0.10 while distillation loss is scaled up to 0.90, heavily suppressing recency bias.
+- **Logit Scope for Distillation**: Author uses a static 100-class head (`nn.Linear(768, 100)`) and computes KD loss across all 100 classes (with softmax distillation), which prevents unconstrained growth of new class logits.
+- **Optimizer Dynamics**: Author uses standard `SGD(lr=0.001, momentum=0.0, weight_decay=0.0)` instead of `AdamW`.
+- **Dedicated Implementation**: Implemented `OfficialLwFAgent` in `src/foal/baselines/official_lwf.py` and configuration `configs/headline/lwf_cifar100_official_protocol.yaml` to ensure 100% fidelity.
+
+---
+
 ## 4. Empirical Implementation & Verification Deliverables
 
 1. **Baseline Agents**:
-   - `src/foal/baselines/lwf.py`: Full LwF implementation with incremental classifier expansion and distillation.
+   - `src/foal/baselines/lwf.py`: Adapted LwF baseline (dynamic head expansion, AdamW, static weighting).
+   - `src/foal/baselines/official_lwf.py`: Paper-faithful baseline matching official author code (static 100-class head, dynamic loss weighting $\frac{1}{t+1}$, SGD lr=0.001, full 100-class KD).
    - `src/foal/baselines/er.py`: Full ER implementation with reservoir memory buffer (capacity 5000) and uniform sampling.
 2. **Unified Runner**:
-   - `scripts/train_baseline.py`: Standalone CLI runner with full parity to `scripts/train.py`, evaluating cumulative task accuracy matrix $R_{i,j}$ and computing $A_{avg}$, $A_{last}$, $F_{past}$.
+   - `scripts/train_baseline.py`: Standalone CLI runner with full parity to `scripts/train.py`, evaluating cumulative task accuracy matrix $R_{i,j}$ and computing $A_{avg}$, $A_{last}$, $F_{past}$. Supports `lwf`, `official_lwf`, and `er`.
 3. **Configurations**:
    - `configs/headline/foal_cifar100_reference.yaml`: Anchored to verified C3-D / A0 run (`3v53tmq5`, $\bar{A}=90.4016\%$, $A_{10}=85.7300\%$, $F_{code}=4.6400\%$).
-   - `configs/headline/lwf_cifar100.yaml`: Configured with author-specified parameters.
-   - `configs/headline/er_cifar100.yaml`: Configured with author-specified parameters.
+   - `configs/headline/lwf_cifar100.yaml`: Adapted baseline config.
+   - `configs/headline/lwf_cifar100_official_protocol.yaml`: Official protocol baseline config.
+   - `configs/headline/er_cifar100.yaml`: Experience Replay config.
 4. **Push-Button Colab Workflow**:
-   - `notebooks/foal_cifar100_headline_final.ipynb`: End-to-end executable notebook with environment checks, pilot validation, full GPU runs, comparative synthesis table, and results ZIP export.
+   - `notebooks/foal_cifar100_headline_final.ipynb`: End-to-end executable notebook with environment checks, pilot validation, full GPU runs (including official protocol cell 6b), comparative synthesis table, and results ZIP export.
 5. **Acceptance Gate**:
-   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_PENDING_BASELINE_VALIDATION`.
+   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_NEEDS_OFFICIAL_LWF_RUN`.
+   - `docs/headline_official_source_diff.md`: Comprehensive 12-dimension protocol diff auditing official author code line-by-line.

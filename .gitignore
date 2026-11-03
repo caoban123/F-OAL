@@ -25,3 +25,5 @@ data/
 *.ckpt
 *.pth
 .DS_Store
+ref/
+

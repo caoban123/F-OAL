@@ -1,22 +1,30 @@
 # CIFAR-100 Scientific Reproduction Completion Checklist
 
-**Document Status:** `CIFAR100_PENDING_BASELINE_VALIDATION`  
+**Document Status:** `CIFAR100_NEEDS_OFFICIAL_LWF_RUN`  
 **Latest Verified Commit on Main:** `747b828`  
 **Development Branch:** `experiment/headline-comparison`  
 **Lead Auditor:** Senior ML Research Engineer & Scientific Reproducibility Auditor  
-**Audit Completion Date:** November 3, 2026 (Forensic Reconciliation Updated)  
+**Audit Completion Date:** November 3, 2026 (Protocol Parity & Forensic Audit Completed)  
 **Archive Provenance:** `foal_cifar100_headline_results.zip` (SHA256: `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`)  
 
 ---
 
 ## 1. Executive Status & Forensic Audit Findings
 
-Following the forensic audit of the **Headline Comparison** benchmarks (**LwF** distillation and **ER** buffer=5000 replay):
+Following the forensic audit and official source comparison (`ref/official_foal/` pinned at commit `73e4ac1b4c965030973a2b77f05c57c2f44f49f5`) of the **Headline Comparison** benchmarks (**LwF** distillation and **ER** buffer=5000 replay):
 
 1. **Mathematical Reconciliation Confirmed:** All raw task matrices (`task_matrix.csv`), stage accuracy progressions, and final metrics match to $< 10^{-12}$ precision across F-OAL, ER, and LwF.
-2. **Scientific Status Classification:** Transitioned to **`CIFAR100_PENDING_BASELINE_VALIDATION`**. While F-OAL Full reproduction on CIFAR-100 is solid ($\bar{A} = 90.40\%$ vs paper $91.1\%$), the LwF baseline displays a severe discrepancy (measured $29.63\%$ vs paper reported $69.3\%$, gap $-39.67\text{ pp}$). This is diagnosed as task-recency bias in unconstrained joint cross-entropy in single-pass online CIL. Further validation is required before unconditional sign-off.
-3. **Runtime Benchmark Parity Retraction:** The previous claim of an "11.7x speedup" is formally **retracted**. F-OAL's timing (total 229.11s) was measured on an NVIDIA A100 GPU (175.28s feature extraction + 8.50s RLS & eval), whereas LwF (629.52s) and ER (626.85s) were measured end-to-end on a Tesla T4 GPU. Cross-hardware comparisons without identical scope are scientifically invalid.
+2. **Scientific Status Classification:** Transitioned to **`CIFAR100_NEEDS_OFFICIAL_LWF_RUN`**.
+   - F-OAL Full reproduction on CIFAR-100 is solid ($\bar{A} = 90.40\%$ vs paper $91.1\%$, gap $-0.70\text{ pp}$).
+   - Adapted ER baseline reproduction is solid ($\bar{A} = 86.67\%$ vs paper $90.1\%$, gap $-3.43\text{ pp}$), confirming that replay anchors representations.
+   - For LwF, the source diff revealed crucial protocol divergences in the official implementation:
+     - **Dynamic Loss Weighting:** Official code (`agents/lwf.py:55`) applies $\frac{1}{t+1} \mathcal{L}_{\text{new}} + \left(1 - \frac{1}{t+1}\right) \mathcal{L}_{\text{old}}$, progressively dampening the new task learning signal down to $0.10$ by Task 10. Our adapted baseline used static $1.0 / 1.0$ weighting.
+     - **Full Logit KD Scope:** Official code computes distillation over the entire static 100-class head, preventing unconstrained logit explosion, whereas adapted baseline sliced to $[:C_{\text{old}}]$.
+     - **Optimizer & Momentum:** Official code uses standard SGD ($\text{lr}=10^{-3}$, zero momentum, zero weight decay), whereas adapted baseline used AdamW.
+   - An exact official-faithful baseline `OfficialLwFAgent` and configuration `configs/headline/lwf_cifar100_official_protocol.yaml` have been implemented. A single targeted ~10-minute Colab GPU run will close CIFAR-100 unconditionally.
+3. **Runtime Benchmark Parity Retraction:** The previous claim of an "11.7x speedup" is formally **retracted**. F-OAL's timing (total 229.11s) was measured on an NVIDIA A100 GPU (175.28s feature extraction + 8.50s RLS & eval + 45.33s feature cache I/O, collation, and validation overhead), whereas LwF (629.52s) and ER (626.85s) were measured end-to-end on a Tesla T4 GPU. Cross-hardware comparisons without identical scope are scientifically invalid.
 4. **W&B Provenance:** Headline runs were recorded locally in Colab and preserved in the verified archive (`OFFLINE_LOCAL_ARTIFACT`), without online streaming to CoreWeave Forge.
+
 
 ---
 
@@ -35,10 +43,10 @@ Following the forensic audit of the **Headline Comparison** benchmarks (**LwF** 
 | **G09** | Metrics | Rigorous Metric Implementation: Absolute adherence to Eq. 6 ($A_{avg}$), Eq. 7 ($A_{last}$), Eq. 8 ($F_{past}$), and Eq. 9 ($F_{code}$). | **PASS** | `src/foal/metrics.py`, C0 metric alignment sign-off. |
 | **G10** | Factorial | Table 4 Ablation Factorial Suite: All four conditions (Full, w/o FF, w/o SP, w/o Both) empirically verified on CIFAR-100. | **PASS** | Merged into `main` at `747b828`. Verified $\bar{A} = 90.40\%$, $90.38\%$, $90.38\%$, $89.92\%$. |
 | **G11** | Forensic | Hardware Provenance Reconciliation: Clear differentiation between local RTX A5000 runs and Colab T4 runs. | **PASS** | Forensic audit commit `be20c15` / `747b828`. |
-| **G12** | Baseline | LwF Baseline Implementation: Distillation agent evaluated under single-pass online CIL ($T=2.0$, AdamW). | **CONDITIONAL** | Verified GPU run ($\bar{A}=29.63\%$, $A_{10}=11.21\%$, $F_{past}=94.99\%$). Severe recency collapse noted vs paper $69.3\%$. |
+| **G12** | Baseline | LwF Baseline Implementation: Distillation agent evaluated under single-pass online CIL ($T=2.0$, AdamW vs SGD dynamic weighting). | **READY_FOR_RUN** | Source diff completed (`docs/headline_official_source_diff.md`). Adapted run ($\bar{A}=29.63\%$) preserved; official protocol baseline implemented (`configs/headline/lwf_cifar100_official_protocol.yaml`). |
 | **G13** | Baseline | ER Baseline Implementation: Replay buffer ($M=5000$) with uniform reservoir update and random retrieval. | **PASS** | Verified GPU run ($\bar{A}=86.67\%$, $A_{10}=79.79\%$, $F_{past}=16.74\%$). Reconciled within $-3.43\text{ pp}$ of paper $90.1\%$. |
-| **G14** | Baseline | Full GPU Colab Workflow: Executable Colab notebook with verified results archive extraction and manifest generation. | **PASS** | `notebooks/foal_cifar100_headline_final.ipynb`, verified archive SHA256 `6ec6a4a4cadecb4e...`. |
-| **G15** | Governance | Scientific Sign-off & Artifact Verification: Full run manifests, regression tests (96/96 passing), and verified offline artifacts. | **PENDING** | Offline artifact provenance verified; pending full baseline reconciliation and team cross-dataset launch. |
+| **G14** | Baseline | Full GPU Colab Workflow: Executable Colab notebook with verified results archive extraction and manifest generation. | **PASS** | `notebooks/foal_cifar100_headline_final.ipynb`, verified archive SHA256 `6ec6a4a4cadecb4e...`. Official LwF run cell integrated. |
+| **G15** | Governance | Scientific Sign-off & Artifact Verification: Full run manifests, regression tests (98/98 passing), and verified offline artifacts. | **PENDING_RUN** | Status set to `CIFAR100_NEEDS_OFFICIAL_LWF_RUN`. Ready for final 10-minute Colab execution to achieve full closeout. |
 
 ---
 

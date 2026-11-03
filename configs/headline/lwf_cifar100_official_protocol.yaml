@@ -1,0 +1,46 @@
+# Headline Benchmark Comparison: Official-Protocol LwF Baseline (CIFAR-100)
+# Reference: Li & Hoiem (TPAMI 2018), NeurIPS 2024 Table 2
+# Official author command: python general_main.py --data cifar100 --cl_type nc --agent LWF --learning_rate 0.001
+# Status: OFFICIAL_PROTOCOL_BASELINE_PENDING
+
+dataset: cifar100
+data_dir: ./data
+num_classes: 100
+classes_per_task: 10
+seed: 42
+class_order_seed: 42
+
+agent: official_lwf
+optimizer: sgd
+learning_rate: 0.001
+momentum: 0.0
+weight_decay: 0.0
+temperature: 2.0
+batch_size: 10
+dynamic_loss_weighting: true
+full_output_head: 100
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+device: auto
+output_dir: runs/headline/official_lwf
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 (Page 7)"
+    method: "LwF (TPAMI 2018)"
+    buffer_size: 0
+    a_avg_pct: 69.3
+    a_last_pct: 64.8
+    forgetting_pct: 1.3
+  adapted_baseline_existing_result:
+    venue: "Adapted Baseline on Frozen Features with AdamW"
+    a_avg_pct: 29.6295
+    a_last_pct: 11.2100
+    forgetting_past_pct: 94.9889
