@@ -1,0 +1,5 @@
+condition,name,interpolation,normalization,avg_incremental_acc_pct,last_acc_pct,forgetting_past_pct,forgetting_code_pct,feat_sec,rls_sec,total_sec,wandb_run_id
+C3-A,c3_a_bicubic_normalized,bicubic,"normalized [-1, 1]",91.7742,87.43,5.0222,4.52,248.3,8.49,301.32,ne1p16b5
+C3-B,c3_b_bilinear_normalized,bilinear,"normalized [-1, 1]",91.3918,86.95,4.8889,4.4,176.08,8.56,230.16,ts2wh4e3
+C3-C,c3_c_bicubic_raw,bicubic,"raw [0, 1]",90.8762,86.35,5.2333,4.71,175.58,8.49,230.17,4m4uir7h
+C3-D,c3_d_bilinear_raw,bilinear,"raw [0, 1]",90.4016,85.73,5.1556,4.64,175.28,8.5,229.11,3v53tmq5

@@ -1,0 +1,281 @@
+{
+  "archive_path": "D:\\Nh\u1eadp m\u00f4n ML\\Paper\\foal_c3_preprocessing_results.zip",
+  "archive_size_bytes": 148700,
+  "archive_sha256": "a44b00ca2f12fcc895dedbefe6712087f7d1b17ebf977002e35b13b023361fa6",
+  "entries_count": 54,
+  "total_uncompressed_bytes": 418131,
+  "crc_valid": true,
+  "suspicious_paths": 0,
+  "extracted_files": [
+    {
+      "name": "results/c3_full_gpu/c3_d_bilinear_raw/metrics.json",
+      "size": 2316,
+      "sha256": "55a22febcf0cf18732fe87bf49b83b2fb3e4fce947833adea238501247557f52"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_d_bilinear_raw/metadata.json",
+      "size": 10058,
+      "sha256": "0a7f098570893fc8f2954b4f3e5630d4e57bb55a39f9c5ac55dbafee51673282"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv",
+      "size": 628,
+      "sha256": "68684dfb3d348c5838815a63fa45dd874bd84b3a427cd29d06f4c320fa5de1d7"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_c_bicubic_raw/metrics.json",
+      "size": 2308,
+      "sha256": "7f562c92f2501d6748212ef3610f3e0edac5bb581620e15d323d5f4ac09ec838"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_c_bicubic_raw/metadata.json",
+      "size": 10056,
+      "sha256": "0527b2f03f5021aafcca3f0f15e193abfdf20ed790fdd34365f2b0e68a63d1ee"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_c_bicubic_raw/task_accuracy.csv",
+      "size": 631,
+      "sha256": "1a5ad00bb807e338ec4dcbe5315685074b1e4d4be15e7be70c48e7b4b10e3260"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_b_bilinear_normalized/metrics.json",
+      "size": 2342,
+      "sha256": "f538657c63e45e20fc65a7ae815059d8188995e4d10f72ae2049593af4a493ec"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_b_bilinear_normalized/metadata.json",
+      "size": 10150,
+      "sha256": "17e5dad9c27fe0e71ded310d173d0b720f390f4ae331c5189e1a158c8b5d0517"
+    },
+    {
+      "name": "results/c3_full_gpu/c3_b_bilinear_normalized/task_accuracy.csv",
+      "size": 626,
+      "sha256": "dd230c2594eaa036708ffdba3bc75a2cb8d8fb9a1b460fdcad70e5c229355f0e"
+    },
+    {
+      "name": "results/c3_analysis/c3_matched_diagnostics.json",
+      "size": 8791,
+      "sha256": "bc5079e09b8a1e2f12abd9fe3eab03a72f36b0ebd50889aec7d0651fe11fbeb6"
+    },
+    {
+      "name": "results/c3_analysis/c3_factorial_comparison.csv",
+      "size": 453,
+      "sha256": "306eada065cb5a8dc7dd817712c8e6cab60c1764898e8e0ab77fbabb688197af"
+    },
+    {
+      "name": "results/c3_analysis/c3_factorial_summary.json",
+      "size": 9253,
+      "sha256": "10b3f4dc040dee71ebfed0ffe070b7d8f855a62a0add7731af43cb6a9e5d69b5"
+    },
+    {
+      "name": "configs/c3_d_bilinear_raw.yaml",
+      "size": 1549,
+      "sha256": "8fd465782930add0a46fcbfeb8f614ef09b5b8d5611a44a56c9bcd3213e73c31"
+    },
+    {
+      "name": "configs/c3_a_bicubic_normalized.yaml",
+      "size": 1551,
+      "sha256": "2434b459ed43a684459189ac61f1d72653e1415981c8c20108d3acfb296a2742"
+    },
+    {
+      "name": "configs/c1_p0_gaussian_std1.yaml",
+      "size": 1407,
+      "sha256": "34fded651b9d6285ff6819501b1564162fb48376ce0b348080b3d4d8b4f4daf0"
+    },
+    {
+      "name": "configs/c1_p2_gaussian_matched_variance.yaml",
+      "size": 1510,
+      "sha256": "f6df0142e1e9e8e1477f37e3691769233c583908a6da3cdc9262a19a4906abad"
+    },
+    {
+      "name": "configs/c3_b_bilinear_normalized.yaml",
+      "size": 1561,
+      "sha256": "a037a5cd679192d336afcf7b85b08a437b1cef92674757f37615fc5a20de6069"
+    },
+    {
+      "name": "configs/c3_c_bicubic_raw.yaml",
+      "size": 1553,
+      "sha256": "d0b5a4c932b5cd08140a6918aebe12fce8810acd940dc5fd6d56001ea80e7d88"
+    },
+    {
+      "name": "configs/c2_b1_augreg2_in21k_ft_in1k.yaml",
+      "size": 1856,
+      "sha256": "82b9c1cdfa5d30692005c95f034391a964ac3d8977a3b8a673c53d27bc11ee48"
+    },
+    {
+      "name": "configs/c2_b0_augreg_in1k.yaml",
+      "size": 1724,
+      "sha256": "71d076a43a582c487e4db62bd3b02051652853bffe5da4822a604e7f48851dc7"
+    },
+    {
+      "name": "configs/cifar100.yaml",
+      "size": 2195,
+      "sha256": "f25a6ac036b726bd69f268cebe98482b1ca1ef15b1b58f9feeda44e20aa24daf"
+    },
+    {
+      "name": "configs/c1_p1_official_uniform.yaml",
+      "size": 1642,
+      "sha256": "2c3c6ae34db5a6ecf24ee806339360c863f67b99935e31c65d34d20f7bad1d78"
+    },
+    {
+      "name": "wandb/debug-internal.log",
+      "size": 1377,
+      "sha256": "2005dd9696471689a11a6678f97fbc0c3cb5ece3bad549c9f779deb1775fe32e"
+    },
+    {
+      "name": "wandb/debug.log",
+      "size": 9634,
+      "sha256": "6aa67bdc0e19260401ce1294d2b5ed17ef7be59a0dc41f962e50a3519083cbdb"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024634-jyrugwmn/run-jyrugwmn.wandb",
+      "size": 10694,
+      "sha256": "778ceefd5e202b4396d14af1925144d5cde358ba63111c51ed11e84fbf6b550a"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024648-2zowypyu/run-2zowypyu.wandb",
+      "size": 10604,
+      "sha256": "e5180efd50714c8e04fda39b88bb0152b2c7a4ecd4c2b5bea02ee8c5b33b249d"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024723-ts2wh4e3/run-ts2wh4e3.wandb",
+      "size": 47744,
+      "sha256": "8da43caec9ad0523cd5ec5da3f097ed7ba161d0ff8a780c6aa1a1a714c83a60e"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025546-3v53tmq5/run-3v53tmq5.wandb",
+      "size": 47965,
+      "sha256": "3d29fed24ddd2bc7a9919a0b89154ebb6f25f789f022bdd7c7c45c117e018ed3"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024618-a8a3c5oq/run-a8a3c5oq.wandb",
+      "size": 10665,
+      "sha256": "e1e5c8759e4239364c4ad783d68c19ac8d5239462bd78e7b61a37ae6514735b8"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025134-4m4uir7h/run-4m4uir7h.wandb",
+      "size": 47522,
+      "sha256": "fe6cdb5abc804bcb4c4c41e2fa1459e5c2c479e92361ea4465aa447866dca1f5"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025134-4m4uir7h/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025134-4m4uir7h/logs/debug-core.log",
+      "size": 2280,
+      "sha256": "92fa8d1388d863f17a865277c97ab4b0f4a150516b570ab4ec9312068d2de466"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025134-4m4uir7h/logs/debug-internal.log",
+      "size": 1381,
+      "sha256": "b387f1c9b05d0cb930b09dcd5106a52843dcc693ea3454b64297057f8d8f9f7a"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025134-4m4uir7h/logs/debug.log",
+      "size": 9632,
+      "sha256": "3ca1042479d3fd89b6a239041cf609075c2c63570aa582dfe884146dcdab86bc"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024618-a8a3c5oq/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024618-a8a3c5oq/logs/debug-core.log",
+      "size": 2413,
+      "sha256": "b7e2779900e6e91d3e181657073f57bb1cdf283a2e68002fbe28cd4603063dba"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024618-a8a3c5oq/logs/debug-internal.log",
+      "size": 1379,
+      "sha256": "2d78665d0568a6281d3ab05c875aa1043af4936c34152e6bb4b49c9ec48f1320"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024618-a8a3c5oq/logs/debug.log",
+      "size": 7106,
+      "sha256": "4a89826eda9464e44724dc55f911f0fa66bee0128cb85bd5022a238cccefb55f"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025546-3v53tmq5/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025546-3v53tmq5/logs/debug-core.log",
+      "size": 2413,
+      "sha256": "85fab48ad9ae1aa5d75898d05db079d294d9bc328870818ba4ed4927184c0526"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025546-3v53tmq5/logs/debug-internal.log",
+      "size": 1377,
+      "sha256": "2005dd9696471689a11a6678f97fbc0c3cb5ece3bad549c9f779deb1775fe32e"
+    },
+    {
+      "name": "wandb/offline-run-20261103_025546-3v53tmq5/logs/debug.log",
+      "size": 9634,
+      "sha256": "6aa67bdc0e19260401ce1294d2b5ed17ef7be59a0dc41f962e50a3519083cbdb"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024723-ts2wh4e3/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024723-ts2wh4e3/logs/debug-core.log",
+      "size": 2415,
+      "sha256": "36040bb988f43e091fcf7f9f824a355e614a92c0ca246a4eb6bc92cfe502efc1"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024723-ts2wh4e3/logs/debug-internal.log",
+      "size": 1379,
+      "sha256": "08e48c92c54ce359ea0a859e17832cd479fafca87816b67deffbc3910c9510ff"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024723-ts2wh4e3/logs/debug.log",
+      "size": 9662,
+      "sha256": "713956a3151b0472d74ed4ceb88c4ec96cd56706c6f2c19d4dad1890ff89988d"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024648-2zowypyu/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024648-2zowypyu/logs/debug-core.log",
+      "size": 2280,
+      "sha256": "e33cb72c6f86679f130dff4a436ec1e84798d8a264c01209c8d79b104d30c164"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024648-2zowypyu/logs/debug-internal.log",
+      "size": 1379,
+      "sha256": "6b5edc458454287393789d0e7118040c2cf4241b3c4f89fe8c4586db704eef32"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024648-2zowypyu/logs/debug.log",
+      "size": 7085,
+      "sha256": "b568c7376c3a106f4d37a191667154ae9962a6d83e8f78e4de43f6247a2fd827"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024634-jyrugwmn/files/requirements.txt",
+      "size": 14179,
+      "sha256": "20f5dfea94be3792bee6abe050186a1d9c4bf0249379e00a2a41094cfd0383bd"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024634-jyrugwmn/logs/debug-core.log",
+      "size": 2412,
+      "sha256": "1b0c635857e6efe5df6a421cf6f2233443565efd41bdfdb31b37215336f2cb1a"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024634-jyrugwmn/logs/debug-internal.log",
+      "size": 1381,
+      "sha256": "07d5c397e64cbc9aed5d5626dc1270a215792f9250ee98a06c5d739c2d346d1e"
+    },
+    {
+      "name": "wandb/offline-run-20261103_024634-jyrugwmn/logs/debug.log",
+      "size": 7084,
+      "sha256": "899aea6725fc7f4834aae35a1c0cb6d7294a5459c45e738af5407c603a9e7df6"
+    }
+  ]
+}

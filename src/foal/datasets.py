@@ -92,7 +92,8 @@ def load_cifar100(root: str = './data'):
 def cifar100_transforms(size: int = 224,
                        mean: Tuple[float, float, float] = (0.5, 0.5, 0.5),
                        std: Tuple[float, float, float] = (0.5, 0.5, 0.5),
-                       interpolation: str = 'bicubic'):
+                       interpolation: str = 'bicubic',
+                       normalize: bool = True):
     """Preprocessing transforms compatible with ViT backbone.
     
     Default normalization is (0.5, 0.5, 0.5) matching pre-trained Vision Transformers
@@ -101,12 +102,14 @@ def cifar100_transforms(size: int = 224,
     from torchvision import transforms
     from torchvision.transforms import InterpolationMode
     
-    interp_mode = InterpolationMode.BICUBIC if interpolation.lower() == 'bicubic' else InterpolationMode.BILINEAR
-    return transforms.Compose([
+    interp_mode = InterpolationMode.BICUBIC if str(interpolation).lower() == 'bicubic' else InterpolationMode.BILINEAR
+    transform_list = [
         transforms.Resize((size, size), interpolation=interp_mode),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std),
-    ])
+    ]
+    if normalize:
+        transform_list.append(transforms.Normalize(mean=mean, std=std))
+    return transforms.Compose(transform_list)
 
 
 class IndexedImageDataset:

@@ -1070,5 +1070,30 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
     - **B1 (`augreg2_in21k_ft_in1k`):** $\bar{A} = \mathbf{91.7742\%}$, $A_{10} = \mathbf{87.4300\%}$, $F_{10}^{\text{past}} = \mathbf{5.0222\%}$, $F_{10}^{\text{code}} = \mathbf{4.5200\%}$.
     - **Tác động Đơn yếu tố $\Delta(B1 - B0)$:** $\Delta \bar{A} = \mathbf{+8.4929\text{ pp}}$, $\Delta A_{10} = \mathbf{+12.5900\text{ pp}}$, $\Delta F_{10}^{\text{past}} = \mathbf{-3.9444\text{ pp}}$.
 - **Kết luận Giả thuyết H1:** **`H1_SUPPORTED_BY_C2 với Giới hạn Thống kê`**. Checkpoint ViT từ ImageNet-21K nâng $\bar{A}$ lên **$91.77\%$** dưới cấu hình kiểm nghiệm, tương đương số học với Paper ($91.10\%$) và Official Run ($90.98\%$). Mức tăng $+8.49\text{ pp}$ vượt qua khoảng cách trước đó ($7.70\text{ pp}$) trên đơn seed CIFAR-100.
-- **Trạng thái Ký duyệt C2 (Sign-off):** **`C2_SIGNED_OFF_WITH_LIMITATIONS`** (Đã xác minh đầy đủ 7 runs trực tuyến trên CoreWeave Forge; chuẩn bị PR cho người dùng xem xét, tuyệt đối không tự động merge vào `main`). Toàn bộ artifacts phân tích lưu tại `results/c2_analysis/`, 56/56 unit tests passed.
-- **Thí nghiệm C3 (Tiền xử lý ảnh):** Kế hoạch chi tiết tại [`docs/c3_preprocessing_alignment_plan.md`](c3_preprocessing_alignment_plan.md) ở trạng thái **`C3_PLANNED — NOT IMPLEMENTED — NOT EXECUTED`**.
+- **Trạng thái Ký duyệt C2 (Sign-off):** **`MERGED INTO MAIN`** (Commit `7b76fd7`). Nhánh `experiment/c2-backbone-alignment` đã vượt qua toàn bộ tiêu chuẩn nghiệm thu, 56/56 unit tests passed, 7 runs công khai trên CoreWeave Forge, merge thành công vào `main`.
+
+---
+
+## 26. Triển khai Thí nghiệm Kiểm soát C3 (Controlled Preprocessing Alignment — Factorial $2 \times 2$)
+
+- **Kế hoạch Nghiên cứu Đầy đủ:** [`docs/c3_preprocessing_alignment_plan.md`](c3_preprocessing_alignment_plan.md).
+- **Nhánh làm việc:** `experiment/c3-preprocessing-alignment` (tách từ `main` commit `7b76fd7`).
+- **Câu hỏi Nghiên cứu:** Xác định tác động của Phương pháp Nội suy (Bicubic vs Bilinear) và Chuẩn hóa Dải Pixel (Normalized $[-1, 1]$ vs Raw $[0, 1]$) trong thiết kế giai thừa $2 \times 2$.
+- **Bốn Cấu hình Giai thừa:**
+  1. **C3-A (Bicubic, Normalized):** Phê duyệt tái sử dụng kết quả C2-B1 (`C3_A_REUSE_APPROVED`, $\bar{A}=91.7742\%$, W&B run `ne1p16b5`).
+  2. **C3-B (Bilinear, Normalized):** Cô lập tác động nội suy.
+  3. **C3-C (Bicubic, Raw):** Cô lập tác động chuẩn hóa.
+  4. **C3-D (Bilinear, Raw):** Căn chỉnh hoàn toàn với mã nguồn tác giả. Sai khác điểm ảnh so với transform gốc là chính xác $0.00\text{e+}00$.
+- **Trạng thái Thực nghiệm C3:** **`C3_SIGNED_OFF_WITH_LIMITATIONS`**
+  - Đã chạy hoàn tất Full GPU trên Google Colab NVIDIA A100-SXM4-40GB; xác thực toàn vẹn gói nén `foal_c3_preprocessing_results.zip` (SHA256: `a44b00ca2f12fcc895dedbefe6712087f7d1b17ebf977002e35b13b023361fa6`).
+  - **C3-A (Bicubic, Normalized):** $\bar{A} = 91.7742\%$, $A_{10} = 87.4300\%$, $F_{10}^{\text{past}} = 5.0222\%$, $F_{10}^{\text{code}} = 4.5200\%$ ([ne1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5)).
+  - **C3-B (Bilinear, Normalized):** $\bar{A} = 91.3918\%$, $A_{10} = 86.9500\%$, $F_{10}^{\text{past}} = 4.8889\%$, $F_{10}^{\text{code}} = 4.4000\%$ ([ts2wh4e3](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3)).
+  - **C3-C (Bicubic, Raw):** $\bar{A} = 90.8762\%$, $A_{10} = 86.3500\%$, $F_{10}^{\text{past}} = 5.2333\%$, $F_{10}^{\text{code}} = 4.7100\%$ ([4m4uir7h](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h)).
+  - **C3-D (Bilinear, Raw — Official Aligned):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{10}^{\text{past}} = 5.1556\%$, $F_{10}^{\text{code}} = 4.6400\%$ ([3v53tmq5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5)).
+  - **Phân rã giai thừa $2 \times 2$:** $E_{\text{interp}} = -0.4285\text{ pp}$, $E_{\text{norm}} = -0.9441\text{ pp}$, $E_{\text{IN}} = -0.0922\text{ pp}$, $\Delta_{\text{total}} = -1.3726\text{ pp}$.
+  - Toàn bộ 7/7 unit tests trong `tests/test_c3_preprocessing.py` và 63/63 tests toàn bộ repo vượt qua 100%.
+  - Đã xây dựng 4 file cấu hình YAML hoàn chỉnh trong `configs/`.
+  - Đã tích hợp tham số `normalize` trong `src/foal/datasets.py` và bảo vệ cache trong `scripts/train.py`.
+  - Đã xây dựng script chẩn đoán `scripts/run_c3_diagnostics.py`.
+  - Đã vượt qua 6/6 unit & regression tests trong `tests/test_c3_preprocessing.py`.
+  - Đã xây dựng Google Colab notebook 14 cells hoàn chỉnh tại [`notebooks/foal_c3_preprocessing_controlled.ipynb`](../notebooks/foal_c3_preprocessing_controlled.ipynb).

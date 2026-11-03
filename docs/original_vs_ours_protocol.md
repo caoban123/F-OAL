@@ -164,3 +164,30 @@ Following the execution of the official author code (`liuyuchen-cz/F-OAL @ 73e4a
   - Phân tích chi tiết và hình vẽ: `results/c2_analysis/`.
   - W&B Online Runs trên CoreWeave Forge: [Run `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) (B0), [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) (B1).
   - Trạng thái nghiệm thu: **`C2_SIGNED_OFF_WITH_LIMITATIONS`**.
+
+---
+
+## 4. Giao thức Thí nghiệm C3 (Controlled Preprocessing Alignment)
+
+- **Nhánh:** `experiment/c3-preprocessing-alignment`
+- **Thiết kế:** Giai thừa $2 \times 2$ (Bicubic/Bilinear $\times$ Normalized/Raw)
+- **Kiểm soát cố định:**
+  - Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k`
+  - Ma trận chiếu $P$: `official_uniform`, seed 42, $D=1000$
+  - Optimizer: Woodbury RLS, $\gamma = 1.0$, batch size 10, float64
+  - Thứ tự lớp & task: CIFAR-100, seed 42
+- **Tái sử dụng tính toán:** C3-A tương đương 100% C2-B1 (`C3_A_REUSE_APPROVED`), không cần chạy lại trên GPU.
+
+### 5.4. C3 — Căn chỉnh Quy trình Tiền xử lý Hình ảnh ($2 \times 2$ Factorial Design) & Nghiệm thu Thực nghiệm
+- **Thiết kế kiểm soát giai thừa $2 \times 2$:**
+  - Factor A: Nội suy Bicubic vs Bilinear
+  - Factor B: Chuẩn hóa $[-1.0, 1.0]$ vs Raw $[0.0, 1.0]$
+  - Cố định 100%: Backbone `vit_base_patch16_224.augreg2_in21k_ft_in1k`, ma trận chiếu $P$ `official_uniform` seed 42 ($D=1000$, mã SHA256: `6d3048f4a0fca387...`), batch size 10, gamma 1.0, float64 RLS, thứ tự lớp seed 42.
+- **Kết quả Full GPU trên NVIDIA A100-SXM4-40GB:**
+  - **C3-A (Bicubic, Normalized):** $\bar{A} = 91.7742\%$, $A_{10} = 87.4300\%$, $F_{10}^{\text{past}} = 5.0222\%$, $F_{10}^{\text{code}} = 4.5200\%$ ([Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5)).
+  - **C3-B (Bilinear, Normalized):** $\bar{A} = 91.3918\%$, $A_{10} = 86.9500\%$, $F_{10}^{\text{past}} = 4.8889\%$, $F_{10}^{\text{code}} = 4.4000\%$ ([Run `ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3)).
+  - **C3-C (Bicubic, Raw):** $\bar{A} = 90.8762\%$, $A_{10} = 86.3500\%$, $F_{10}^{\text{past}} = 5.2333\%$, $F_{10}^{\text{code}} = 4.7100\%$ ([Run `4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h)).
+  - **C3-D (Bilinear, Raw — Official Aligned):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{10}^{\text{past}} = 5.1556\%$, $F_{10}^{\text{code}} = 4.6400\%$ ([Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5)).
+- **Phân rã giai thừa:** $E_{\text{interp}} = -0.4285\text{ pp}$, $E_{\text{norm}} = -0.9441\text{ pp}$, $E_{\text{IN}} = -0.0922\text{ pp}$, $\Delta_{\text{total}} = -1.3726\text{ pp}$.
+- **Hội tụ thực nghiệm:** $A_{10}$ của C3-D ($85.73\%$) khớp cực sát Official Run ($85.84\%$, lệch $-0.11\text{ pp}$); $F_{10}^{\text{past}}$ đạt $5.16\%$ vs $5.17\%$ (lệch $-0.01\text{ pp}$); $F_{10}^{\text{code}}$ đạt $4.64\%$ vs $4.69\%$ (lệch $-0.05\text{ pp}$).
+- **Trạng thái nghiệm thu:** **`C3_SIGNED_OFF_WITH_LIMITATIONS`**.

@@ -461,3 +461,45 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 6. **Kiểm chứng Tái hiện Hoàn hảo của C2-B0 so với C1-P1:**
    - C2-B0 trên Colab A100 đạt $\bar{A} = 83.2814\%$, {10} = 74.8400\%$, khớp chính xác 100% đến từng số thập phân với C1-P1.
    - Ma trận chiếu $ được kiểm chứng đồng nhất tuyệt đối qua mã băm SHA256 (6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b), bảo đảm tính công bằng đơn yếu tố tuyệt đối (Single-Factor Control Fairness).
+
+---
+
+## 8. Thực nghiệm C3 — Kiểm soát Quy trình Tiền xử lý Hình ảnh (Controlled Preprocessing Alignment — Factorial $2 \times 2$)
+
+- **Trạng thái:** `C3_SIGNED_OFF_WITH_LIMITATIONS` (Full GPU hoàn tất trên NVIDIA A100, đồng bộ 10 runs W&B trên CoreWeave Forge)
+- **Nhánh thực nghiệm:** `experiment/c3-preprocessing-alignment`
+- **Gói nén lưu trữ:** `foal_c3_preprocessing_results.zip` (SHA256: `a44b00ca2f12fcc895dedbefe6712087f7d1b17ebf977002e35b13b023361fa6`)
+- **Tài liệu phân tích:** [`results/c3_analysis/`](../results/c3_analysis/) (Bao gồm 6 hình vẽ chất lượng xuất bản, manifest và các bảng tổng hợp CSV)
+
+### 8.1. Bảng Kết quả Thực nghiệm Giai thừa $2 \times 2$ (A100 GPU, CIFAR-100, Seed 42)
+
+| Điều kiện | Nội suy | Chuẩn hóa | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{10}^{\text{past}}$ (%) | $F_{10}^{\text{code}}$ (%) | T_Feat (s) | T_RLS (s) | W&B Run ID | Ghi chú |
+|:---|:---:|:---:|---:|---:|---:|---:|---:|---:|:---:|:---|
+| **C3-A** | Bicubic | Normalize | **91.7742%** | **87.4300%** | **5.0222%** | **4.5200%** | 248.30 | 8.49 | [`ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | Reused C2-B1 |
+| **C3-B** | Bilinear | Normalize | **91.3918%** | **86.9500%** | **4.8889%** | **4.4000%** | 176.08 | 8.56 | [`ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3) | Factor A |
+| **C3-C** | Bicubic | Raw | **90.8762%** | **86.3500%** | **5.2333%** | **4.7100%** | 175.58 | 8.49 | [`4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h) | Factor B |
+| **C3-D** | Bilinear | Raw | **90.4016%** | **85.7300%** | **5.1556%** | **4.6400%** | 175.28 | 8.50 | [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Official Pipeline |
+
+### 8.2. Phân rã Tác động Giai thừa & Kết luận Khoa học
+1. **Tác động chính của Phép Nội suy ($E_{\text{interp}}$):** $-0.4285\text{ pp}$ (Bilinear làm giảm nhẹ độ chính xác so với Bicubic).
+2. **Tác động chính của Chuẩn hóa dải pixel ($E_{\text{norm}}$):** $-0.9441\text{ pp}$ (Không chuẩn hóa dải pixel làm giảm đáng kể độ chính xác).
+3. **Hiệu ứng tương tác ($E_{\text{IN}}$):** $-0.0922\text{ pp}$ (Hai yếu tố tác động độc lập tuyến tính, tính chất cộng gộp xấp xỉ).
+4. **Tổng độ dịch chuyển tiền xử lý ($\Delta_{\text{total}}$):** $-1.3726\text{ pp}$ (từ $91.7742\%$ xuống $90.4016\%$).
+5. **Hội tụ với Tác giả:** Khi tiền xử lý được chuẩn hóa hoàn toàn về phía tác giả (C3-D), Last Accuracy $A_{10} = 85.73\%$ khớp gần như chính xác tuyệt đối với tác giả ($85.84\%$, độ lệch chỉ $-0.11\text{ pp}$), tỷ lệ quên $F_{10}^{\text{code}} = 4.64\%$ so với $4.69\%$ (lệch $-0.05\text{ pp}$).
+- **Nhánh thực nghiệm:** `experiment/c3-preprocessing-alignment`
+- **Colab Notebook:** [`notebooks/foal_c3_preprocessing_controlled.ipynb`](file:///d:/Nhập%20môn%20ML/Paper/notebooks/foal_c3_preprocessing_controlled.ipynb)
+- **Thiết kế Nghiên cứu:** Mô hình Giai thừa $2 \times 2$ (Factorial Design)
+  - Factor A (Nội suy không gian): Bicubic vs Bilinear
+  - Factor B (Chuẩn hóa dải pixel): Normalized $[-1.0, 1.0]$ (`mean=0.5, std=0.5`) vs Raw $[0.0, 1.0]$ (`ToTensor()` only)
+- **Bảng 4 Cấu hình Giai thừa:**
+  1. **C3-A (Bicubic, Normalized):** Baseline đối chứng (`configs/c3_a_bicubic_normalized.yaml`). Phê duyệt tái sử dụng kết quả C2-B1 (`C3_A_REUSE_APPROVED`, $\bar{A}=91.7742\%$, $A_{10}=87.4300\%$, W&B run `ne1p16b5`).
+  2. **C3-B (Bilinear, Normalized):** Cô lập tác động nội suy (`configs/c3_b_bilinear_normalized.yaml`).
+  3. **C3-C (Bicubic, Raw):** Cô lập tác động chuẩn hóa (`configs/c3_c_bicubic_raw.yaml`).
+  4. **C3-D (Bilinear, Raw):** Căn chỉnh hoàn toàn với mã nguồn tác giả (`configs/c3_d_bilinear_raw.yaml`). Xác minh chẩn đoán: sai khác điểm ảnh tối đa so với transform gốc là chính xác $0.00\text{e+}00$.
+- **Kiểm soát Cố định 100%:**
+  - Backbone: `vit_base_patch16_224.augreg2_in21k_ft_in1k`
+  - Ma trận chiếu $P$: `official_uniform`, seed 42, $D=1000$
+  - Optimizer: Online Ridge RLS, $\gamma = 1.0$, `float64`, batch size 10, seed 42
+  - W&B group: `c3_preprocessing_alignment`
+- **An toàn Cache Đặc trưng:** Tách biệt đường dẫn và định danh file cache theo `interp_tag` và `norm_tag`, từ chối nghiêm ngặt các cache sai lệch cấu hình.
+- **Kiểm thử Hồi quy:** `tests/test_c3_preprocessing.py` (6/6 tests passing 100%).

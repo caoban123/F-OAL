@@ -1,0 +1,8 @@
+condition,backbone,interpolation,normalization,seed,avg_incremental_acc_pct,last_acc_pct,forgetting_past_pct,forgetting_code_pct,wandb_run_id
+NeurIPS 2024 Paper,vit_base_patch16_224.augreg2_in21k_ft_in1k (implied),bilinear (official repo),"raw [0, 1] (official repo)",average over seeds,91.1,,,,N/A
+Official Author Run (seed 0),vit_base_patch16_224.augreg2_in21k_ft_in1k,bilinear,"raw [0, 1]",0,90.9828,85.84,5.1667,4.69,3eca8232
+C3-D (Full Official Alignment),vit_base_patch16_224.augreg2_in21k_ft_in1k,bilinear,"raw [0, 1]",42,90.4016,85.73,5.1556,4.64,3v53tmq5
+"C3-C (Bicubic, Raw)",vit_base_patch16_224.augreg2_in21k_ft_in1k,bicubic,"raw [0, 1]",42,90.8762,86.35,5.2333,4.71,4m4uir7h
+"C3-B (Bilinear, Normalized)",vit_base_patch16_224.augreg2_in21k_ft_in1k,bilinear,"normalized [-1, 1]",42,91.3918,86.95,4.8889,4.4,ts2wh4e3
+"C3-A / C2-B1 (Bicubic, Normalized)",vit_base_patch16_224.augreg2_in21k_ft_in1k,bicubic,"normalized [-1, 1]",42,91.7742,87.43,5.0222,4.52,ne1p16b5
+C2-B0 (augreg_in1k Control),vit_base_patch16_224.augreg_in1k,bicubic,"normalized [-1, 1]",42,83.2814,74.84,8.9667,8.07,3oiftwg6

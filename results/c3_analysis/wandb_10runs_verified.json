@@ -1,0 +1,223 @@
+{
+  "2cdeiptv": {
+    "description": "Historical Ours (seed 42)",
+    "id": "2cdeiptv",
+    "name": "foal_full_cifar100_seed42",
+    "state": "finished",
+    "group": "foal_reproduction",
+    "tags": [
+      "foal",
+      "reproduction",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv",
+    "created_at": "2026-11-02T01:13:15Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "3eca8232": {
+    "description": "Official Author (seed 0)",
+    "id": "3eca8232",
+    "name": "official_foal_cifar100_seed0",
+    "state": "finished",
+    "group": null,
+    "tags": [],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232",
+    "created_at": "2026-11-02T01:46:14Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": 0.9098279365079364,
+      "last_accuracy": 0.8583999999999999,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": 0.051666666666666666
+    }
+  },
+  "qw78us1k": {
+    "description": "C1 P0 Gaussian std=1 (seed 42)",
+    "id": "qw78us1k",
+    "name": "c1_cifar100_gaussian_std1_seed42",
+    "state": "finished",
+    "group": "c1_projection_initialization",
+    "tags": [
+      "controlled-c1",
+      "foal",
+      "proj_gaussian_std1",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k",
+    "created_at": "2026-11-02T13:42:33Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "6whrot4z": {
+    "description": "C1 P1 Official Uniform (seed 42)",
+    "id": "6whrot4z",
+    "name": "c1_cifar100_official_uniform_seed42",
+    "state": "finished",
+    "group": "c1_projection_initialization",
+    "tags": [
+      "controlled-c1",
+      "foal",
+      "proj_official_uniform",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z",
+    "created_at": "2026-11-02T13:42:33Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "hsgsvb6p": {
+    "description": "C1 P2 Matched Gaussian (seed 42)",
+    "id": "hsgsvb6p",
+    "name": "c1_cifar100_gaussian_matched_variance_seed42",
+    "state": "finished",
+    "group": "c1_projection_initialization",
+    "tags": [
+      "controlled-c1",
+      "foal",
+      "proj_gaussian_matched_variance",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p",
+    "created_at": "2026-11-02T13:42:33Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "3oiftwg6": {
+    "description": "C2 B0 augreg_in1k (seed 42)",
+    "id": "3oiftwg6",
+    "name": "c2_cifar100_b0_augreg_in1k_seed42",
+    "state": "finished",
+    "group": "c2_backbone_alignment",
+    "tags": [
+      "foal",
+      "proj_official_uniform",
+      "reproduction",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6",
+    "created_at": "2026-11-02T17:48:08Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "ne1p16b5": {
+    "description": "C2 B1 augreg2_in21k_ft_in1k (seed 42)",
+    "id": "ne1p16b5",
+    "name": "c2_cifar100_b1_augreg2_in21k_ft_in1k_seed42",
+    "state": "finished",
+    "group": "c2_backbone_alignment",
+    "tags": [
+      "foal",
+      "proj_official_uniform",
+      "reproduction",
+      "seed_42"
+    ],
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5",
+    "created_at": "2026-11-02T17:48:18Z",
+    "config": {
+      "seed": null,
+      "backbone": null,
+      "projection_init": null,
+      "gamma": null,
+      "rls_dtype": null
+    },
+    "summary": {
+      "average_incremental_accuracy": null,
+      "last_accuracy": null,
+      "forgetting_past_tasks": null,
+      "forgetting_official_code": null,
+      "forgetting": null
+    }
+  },
+  "ts2wh4e3": {
+    "id": "ts2wh4e3",
+    "name": "c3_b_bilinear_normalized",
+    "group": "c3_preprocessing_alignment",
+    "state": "finished",
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3",
+    "experiment": "C3-B Factor A: Bilinear, Normalize [-1, 1]"
+  },
+  "4m4uir7h": {
+    "id": "4m4uir7h",
+    "name": "c3_c_bicubic_raw",
+    "group": "c3_preprocessing_alignment",
+    "state": "finished",
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h",
+    "experiment": "C3-C Factor B: Bicubic, Raw [0, 1]"
+  },
+  "3v53tmq5": {
+    "id": "3v53tmq5",
+    "name": "c3_d_bilinear_raw",
+    "group": "c3_preprocessing_alignment",
+    "state": "finished",
+    "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5",
+    "experiment": "C3-D Full Alignment: Bilinear, Raw [0, 1]"
+  }
+}
