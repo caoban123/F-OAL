@@ -1,0 +1,53 @@
+{
+  "project": "F-OAL Headline Comparison Final Audit",
+  "dataset": "CIFAR-100 (10 tasks x 10 classes)",
+  "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+  "preprocessing": "Bilinear interpolation, unnormalized [0, 1]",
+  "runs": [
+    {
+      "method": "F-OAL (Full)",
+      "source_run_id": "3v53tmq5",
+      "source_experiment": "C3-D Bilinear",
+      "raw_file": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv",
+      "sha256": "68684dfb3d348c5838815a63fa45dd874bd84b3a427cd29d06f4c320fa5de1d7",
+      "metrics": {
+        "a_avg": 90.40163492063492,
+        "a_last": 85.73,
+        "f_past": 5.155555555555556
+      }
+    },
+    {
+      "method": "ER (Adapted)",
+      "source_run": "runs/headline/er",
+      "raw_file": "results/headline_full_gpu_verified/runs/headline/er/task_matrix.csv",
+      "sha256": "319b9394d26020422e48611314317dc4a7b4be54b43a3ac09fb70446235f9900",
+      "metrics": {
+        "a_avg": 86.67026984126984,
+        "a_last": 79.78999999999999,
+        "f_past": 16.744444444444444
+      }
+    },
+    {
+      "method": "LwF (Official Protocol)",
+      "source_run": "runs/headline/lwf_official_cifar100",
+      "raw_file": "results/headline_official_lwf_verified/runs/headline/lwf_official_cifar100/task_matrix.csv",
+      "sha256": "1e5c7ca267a78f86cff486957f775184551553d8cda96efdf9db9ff43f4f0998",
+      "metrics": {
+        "a_avg": 46.29349206349206,
+        "a_last": 23.34,
+        "f_past": 0.41111111111111115
+      }
+    },
+    {
+      "method": "LwF (Adapted)",
+      "source_run": "runs/headline/lwf",
+      "raw_file": "results/headline_full_gpu_verified/runs/headline/lwf/task_matrix.csv",
+      "sha256": "5a10c765158df0bb2c7953091ef6855019cc8c707782e63b672776c77dc42f6d",
+      "metrics": {
+        "a_avg": 29.629496031746033,
+        "a_last": 11.21,
+        "f_past": 94.98888888888888
+      }
+    }
+  ]
+}

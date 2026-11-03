@@ -1161,3 +1161,22 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   - Toàn bộ 18/18 tests kiểm định pháp y trong `tests/test_headline_comparison.py` và 96/96 tests toàn bộ kho lưu trữ vượt qua 100%.
   - Phê duyệt chính thức trạng thái: **`CIFAR100_PENDING_BASELINE_VALIDATION`**.
   - **Kế hoạch tiếp theo:** Chuẩn bị bộ chuyển đổi dữ liệu (adapters) và giao thức cho Track DTD và FGVC-Aircraft mà không chạy lại GPU lặp trên CIFAR-100.
+
+---
+
+## 30. Kiểm toán Nghiệm thu GPU Official Protocol LwF & Đóng Pha CIFAR-100 (`CIFAR100_COMPLETED_WITH_LIMITATIONS`)
+
+- **Archive GPU Thực tế:** `foal_cifar100_official_lwf_results.zip` (184,113 bytes, SHA256 `2f5e67ea86b22d36e8223d8a68494dc0de0f285e015b97b9fcc29df9ccd8f0ce`).
+- **Phục hồi & Xác thực Môi trường Thực thi:**
+  - Phần cứng: Google Colab Tesla T4 GPU (14.56 GB VRAM), CUDA 13.0, PyTorch 2.11.0+cu130, Python 3.13.16.
+  - Git Commit SHA ghi nhận trong metadata: `c3dd3f23fbf2d8d94d481ec75daceb860190118e`.
+  - Thời gian huấn luyện (10 tasks): 646.35s trên Tesla T4 GPU.
+- **Kết quả Tái hiện Thực nghiệm:**
+  - $\bar{A} = 46.2935\%$, $A_{10} = 23.3400\%$, $F_{\text{past}} = 0.4111\%$, $F_{\text{code}} = 0.3700\%$.
+  - Mức cải thiện so với bản Adapted LwF: $+16.66\text{ pp}$ độ chính xác trung bình, $+12.13\text{ pp}$ Last Accuracy, và tỷ lệ quên giảm từ $94.99\%$ xuống $0.41\%$.
+  - Khớp với chỉ số độ quên của bài báo gốc ($F = 1.3\%$).
+- **Hiện vật Kiểm toán:** Xuất bản trọn bộ tại `results/headline_analysis/` gồm 6 đồ thị khoa học mới (`fig1_headline_final_...` đến `fig6_headline_final_...`), 6 tệp dữ liệu CSV/JSON (`headline_final_...`), và báo cáo toàn diện [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](CIFAR100_FINAL_REPRODUCTION_REPORT.md).
+- **Quyết định Quản trị & Đóng Pha:**
+  - 31/31 unit tests vượt qua 100%.
+  - Trạng thái chính thức: **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
+  - Toàn bộ thực nghiệm trên CIFAR-100 chính thức khép lại. Nhóm chuyển giao 100% tài nguyên sang DTD và FGVC-Aircraft.

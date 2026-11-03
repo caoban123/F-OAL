@@ -1,0 +1,8 @@
+Dimension,Paper_LwF,Adapted_LwF,Official_LwF,Paper_FOAL,Ours_FOAL
+Paradigm,Exemplar-Free Distillation,Exemplar-Free Distillation,Exemplar-Free Distillation,Analytic Forward-Only,Analytic Forward-Only
+Backbone,ViT-B/16 (AugReg 21k->1k),ViT-B/16 (AugReg 21k->1k),ViT-B/16 (AugReg 21k->1k),ViT-B/16 (AugReg 21k->1k),ViT-B/16 (AugReg 21k->1k)
+Output Head,100-class static,Dynamic expansion (10->100),100-class static,100-class analytic,100-class analytic
+Loss Weighting,1/(t+1) new + (1-1/(t+1)) old,1.0 new + 1.0 old (Fixed),1/(t+1) new + (1-1/(t+1)) old,None (Analytic Ridge),None (Analytic Ridge)
+Optimizer,SGD (lr=0.001),AdamW (lr=0.001),SGD (lr=0.001),RLS (gamma=0.1),RLS (gamma=0.1)
+Replay Buffer,0,0,0,0,0
+Class Order,MT19937 seed=42 (starts with 83),PCG64 seed=42 (starts with 59),PCG64 seed=42 (starts with 59),MT19937 seed=42 / seed=0,PCG64 seed=42 (consistent)

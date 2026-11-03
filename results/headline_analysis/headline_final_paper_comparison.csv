@@ -1,0 +1,5 @@
+Method,Buffer,Paper_A_avg,Ours_A_avg,Delta_A_avg,Paper_A_last,Ours_A_last,Delta_A_last,Paper_F,Ours_F_past,Delta_F_past,Scientific_Status
+F-OAL (Full),0,91.1,90.4,-0.7,86.5,85.73,-0.77,5.5,5.16,-0.34,REPRODUCED (Delta < 1.0 pp across all metrics)
+"ER (Adapted, Replay)",5000,90.1,86.67,-3.43,84.6,79.79,-4.81,20.7,16.74,-3.96,CONSISTENT_TREND (Preserves ranking F-OAL > ER)
+LwF (Official Protocol),0,69.3,46.29,-23.01,64.8,23.34,-41.46,1.3,0.41,-0.89,FORGETTING_FAITHFUL (F=0.41% vs 1.3%; A_avg=46.29% reflects stability rigidity)
+"LwF (Adapted, AdamW)",0,69.3,29.63,-39.67,64.8,11.21,-53.59,1.3,94.99,93.69,HISTORICAL_DEFICIT (Suffered recency collapse; superseded by Official Protocol)

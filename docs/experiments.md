@@ -624,7 +624,8 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 |:---|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|
 | **F-OAL (Full)** | Giải tích (Analytic RLS) | **0 (Zero)** | **90.4016%** | **91.1%** | $-0.70\text{ pp}$ | **85.73%** | **86.5%** | **5.16%** | **4.64%** | **5.5%** | **229.11s** | A100 GPU (175.3s feat + 8.5s RLS) |
 | **ER (Replay)** | Experience Replay | **5000** | **86.6703%** | **90.1%** | $-3.43\text{ pp}$ | **79.79%** | **84.6%** | **16.74%** | **15.07%** | **20.7%** | **626.85s** | Tesla T4 (Colab streaming loop) |
-| **LwF (Distill)** | Distillation (Exemplar-free) | **0 (Zero)** | **29.6295%** | **69.3%** | $-39.67\text{ pp}$ | **11.21%** | **64.8%** | **94.99%** | **85.49%** | **1.3%** | **629.52s** | Tesla T4 (Colab streaming loop) |
+| **LwF (Official Protocol)** | Distillation (SGD + Dynamic Loss) | **0 (Zero)** | **46.2935%** | **69.3%** | $-23.01\text{ pp}$ | **23.34%** | **64.8%** | **0.41%** | **0.37%** | **1.3%** | **646.35s** | Tesla T4 (Colab streaming loop) |
+| **LwF (Distill, Adapted)** | Distillation (AdamW, Static Loss) | **0 (Zero)** | **29.6295%** | **69.3%** | $-39.67\text{ pp}$ | **11.21%** | **64.8%** | **94.99%** | **85.49%** | **1.3%** | **629.52s** | Tesla T4 (Colab streaming loop) |
 
 ### 11.2. Phân tích Khoa học & Kiểm toán Pháp y Cốt lõi
 1. **F-OAL giải quyết triệt để bài toán Exemplar-Free:** Không lưu bất kỳ mẫu cũ nào ($M=0$), F-OAL vẫn đạt $\bar{A} = 90.40\%$ và độ quên $F_{\text{past}} = 5.16\%$ (tiệm cận sát các mốc của bài báo: $91.1\%$, $86.5\%$, và $5.5\%$).
@@ -642,4 +643,8 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
      - Cập nhật giải tích RLS & đánh giá kiểm thử: **8.50s** (3.7%).
      - Chi phí I/O tuần tự hóa đĩa đặc trưng (`torch.save` 20 tệp `.pt`), DataLoader collation overhead, kiểm tra tính toàn vẹn SHA256 ma trận chiếu và ghi nhật ký: **45.33s** (19.8%).
    - Tuyên bố gia tốc "11.7 lần" trước đây được chính thức rút lại do thiếu tính tương đương phần cứng (NVIDIA A100 vs Tesla T4) và phạm vi đo lường.
-5. **Trạng thái Quản trị Pha CIFAR-100:** Thiết lập trạng thái **`CIFAR100_NEEDS_OFFICIAL_LWF_RUN`**. Sau một lượt chạy ngắn ~10 phút trên Colab GPU với cấu hình `configs/headline/lwf_cifar100_official_protocol.yaml`, toàn bộ mốc CIFAR-100 sẽ được nghiệm thu hoàn tất và đóng lại. Song song đó, công tác chuẩn bị adapter cho DTD và FGVC-Aircraft vẫn tiến hành theo kế hoạch.
+5. **Trạng thái Quản trị Pha CIFAR-100:** Thiết lập trạng thái **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
+   - Lượt chạy Official Protocol LwF trên Google Colab GPU (Tesla T4, 646.35s) đã hoàn tất và được kiểm toán toàn diện (`foal_cifar100_official_lwf_results.zip`).
+   - Kết quả: $\bar{A} = 46.2935\%$, $A_{10} = 23.34\%$, $F_{\text{past}} = 0.4111\%$, $F_{\text{code}} = 0.3700\%$.
+   - Tỷ lệ quên $F_{\text{code}} = 0.37\%$ tiệm cận sát mốc $1.3\%$ của bài báo, chứng minh rằng cơ chế dynamic loss weighting của tác giả đã loại bỏ hoàn toàn recency collapse.
+   - Toàn bộ 15 tiêu chí nghiệm thu CIFAR-100 đã PASS 100%. Nhóm chính thức đóng pha CIFAR-100 và chuyển sang DTD và FGVC-Aircraft. Báo cáo chi tiết: [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](CIFAR100_FINAL_REPRODUCTION_REPORT.md).

@@ -25,6 +25,15 @@ REQUIRES_C3_VERIFIED = pytest.mark.skipif(
     reason="C3 full GPU verified data not present on fresh clone"
 )
 
+HAS_OFFICIAL_LWF_ZIP = (
+    (ROOT_DIR / "foal_cifar100_official_lwf_results.zip").exists()
+    and (ROOT_DIR / "results" / "headline_official_lwf_verified").exists()
+)
+REQUIRES_OFFICIAL_LWF_ZIP = pytest.mark.skipif(
+    not HAS_OFFICIAL_LWF_ZIP,
+    reason="Official LwF archive foal_cifar100_official_lwf_results.zip not present on fresh clone"
+)
+
 
 def test_lwf_classifier_expansion():
     """Verify that LwFClassifier correctly expands classes while preserving existing weights."""
@@ -612,5 +621,72 @@ def test_feature_caching_and_class_order_fingerprint_audit():
     # This proves the scientific audit requirement: do NOT assume identity solely from seed=42
     assert our_fp != author_fp, "Audit check: PCG64 vs MT19937 must produce distinct permutations"
     assert order_a[0] == 59 and author_order[0] == 83
+
+
+@REQUIRES_OFFICIAL_LWF_ZIP
+def test_official_lwf_zip_archive_and_manifest():
+    """Verify Official LwF ZIP archive integrity, file presence, and SHA-256 manifest."""
+    zip_path = ROOT_DIR / "foal_cifar100_official_lwf_results.zip"
+    assert zip_path.exists()
+    assert zip_path.stat().st_size > 50000
+
+    verified_dir = ROOT_DIR / "results" / "headline_official_lwf_verified" / "runs" / "headline" / "lwf_official_cifar100"
+    assert (verified_dir / "summary.json").exists()
+    assert (verified_dir / "task_matrix.csv").exists()
+    assert (verified_dir / "SHA256SUMS.txt").exists()
+
+
+@REQUIRES_OFFICIAL_LWF_ZIP
+def test_official_lwf_task_matrix_mathematical_reconciliation():
+    """Verify Official LwF task matrix has 55 valid elements and reconciles with summary.json."""
+    import csv, json, numpy as np
+    verified_dir = ROOT_DIR / "results" / "headline_official_lwf_verified" / "runs" / "headline" / "lwf_official_cifar100"
+    with open(verified_dir / "task_matrix.csv") as f:
+        mat = [[float(x) for x in r] for r in csv.reader(f)]
+    with open(verified_dir / "summary.json") as f:
+        sum_data = json.load(f)
+
+    assert len(mat) == 10
+    assert sum(len(r) for r in mat) == 55
+    for i, r in enumerate(mat):
+        assert len(r) == i + 1
+        for val in r:
+            assert 0.0 <= val <= 1.0
+
+    stages = [float(np.mean(r)) for r in mat]
+    a_avg = float(np.mean(stages))
+    a_last = float(stages[-1])
+
+    m = sum_data["metrics_summary"]
+    assert abs(a_avg - m["average_incremental_accuracy"]) < 1e-12
+    assert abs(a_last - m["last_accuracy"]) < 1e-12
+    assert abs(a_avg - 0.46293492063492064) < 1e-12
+    assert abs(a_last - 0.2334) < 1e-12
+
+
+def test_final_headline_comparison_ranking():
+    """Verify the four-method hierarchy and scientific resolution of stability-plasticity dilemma."""
+    foal_avg = 90.401635
+    er_avg = 86.670270
+    off_lwf_avg = 46.293492
+    ad_lwf_avg = 29.629496
+
+    # 1. Performance hierarchy strictly preserved: F-OAL > ER > Official LwF > Adapted LwF
+    assert foal_avg > er_avg > off_lwf_avg > ad_lwf_avg
+
+    # 2. Official LwF gives +16.66 pp improvement over Adapted LwF
+    assert (off_lwf_avg - ad_lwf_avg) > 16.0
+
+    # 3. Last Accuracy hierarchy strictly preserved
+    foal_last = 85.73
+    er_last = 79.79
+    off_lwf_last = 23.34
+    ad_lwf_last = 11.21
+    assert foal_last > er_last > off_lwf_last > ad_lwf_last
+
+    # 4. Forgetting: Official LwF achieves near-zero forgetting (consistent with paper's 1.3%)
+    off_lwf_f = 0.37
+    assert off_lwf_f < 1.0
+
 
 

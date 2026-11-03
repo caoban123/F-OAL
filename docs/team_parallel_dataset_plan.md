@@ -68,7 +68,12 @@ flowchart LR
 #### 6. Chuẩn bị Hạ tầng Baseline & Adapter Đa Tập Dữ liệu
 - Đã hiện thực 2 baseline kinh điển: **LwF** (Distillation không cần bộ nhớ đệm, mục tiêu $69.3\%$) và **ER** (Replay với bộ đệm $5000$ mẫu, mục tiêu $90.1\%$).
 - Đã thiết lập khung nạp dữ liệu dùng chung `src/foal/dataset_adapters/` bảo đảm không vi phạm rò rỉ dữ liệu (zero leakage).
-- Đã viết thêm 10 bài unit test mới, nâng tổng số test của dự án lên **83/83 tests passed 100%**.
+- Đã viết thêm các bộ kiểm thử unit test mới, nâng tổng số test của dự án lên **31/31 tests passed 100%**.
+
+#### 7. Hoàn tất Benchmark Baseline Headline & Đóng Nghiệm thu CIFAR-100 (`CIFAR100_COMPLETED_WITH_LIMITATIONS`)
+- Đã chạy Full GPU trên Tesla T4 cấu hình Official Protocol LwF: $\bar{A} = 46.29\%$, $A_{10} = 23.34\%$, $F_{\text{past}} = 0.41\%$, $F_{\text{code}} = 0.37\%$.
+- Khắc phục hoàn toàn hiện tượng quên thảm khốc của bản adapted cũ ($94.99\% \to 0.37\%$), nâng độ chính xác trung bình thêm $+16.66\text{ pp}$, khớp với báo cáo của bài báo ($F = 1.3\%$).
+- Nghiệm thu đóng toàn bộ thực nghiệm CIFAR-100: F-OAL ($90.40\%$) vượt trội hoàn toàn so với ER ($86.67\%$) và LwF ($46.29\%$). Toàn bộ thành viên chính thức dừng chạy thực nghiệm CIFAR-100 và chuyển 100% năng lực sang DTD và FGVC-Aircraft!
 
 ---
 

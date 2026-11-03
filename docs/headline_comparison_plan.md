@@ -82,5 +82,17 @@ Detailed source code comparison against official author implementation (`ref/off
 4. **Push-Button Colab Workflow**:
    - `notebooks/foal_cifar100_headline_final.ipynb`: End-to-end executable notebook with environment checks, pilot validation, full GPU runs (including official protocol cell 6b), comparative synthesis table, and results ZIP export.
 5. **Acceptance Gate**:
-   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_NEEDS_OFFICIAL_LWF_RUN`.
+   - `docs/cifar100_completion_checklist.md`: 15-item objective checklist in status `CIFAR100_COMPLETED_WITH_LIMITATIONS`.
    - `docs/headline_official_source_diff.md`: Comprehensive 12-dimension protocol diff auditing official author code line-by-line.
+   - `docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`: Comprehensive scientific reproduction report closing CIFAR-100.
+
+---
+
+## 5. Final Verified Benchmark Outcomes (CIFAR-100)
+
+| Method | Buffer Size | $\bar{A}$ (Ours) | $\bar{A}$ (Paper) | $A_{10}$ (Ours) | $A_{10}$ (Paper) | $F_{\text{past}}$ (Ours) | $F$ (Paper) | Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **F-OAL (Full)** | **0 (Zero)** | **90.40%** | **91.1%** | **85.73%** | **86.5%** | **5.16%** | **5.5%** | `REPRODUCED` |
+| **ER (Replay)** | **5000** | **86.67%** | **90.1%** | **79.79%** | **84.6%** | **16.74%** | **20.7%** | `CONSISTENT` |
+| **LwF (Official Protocol)** | **0 (Zero)** | **46.29%** | **69.3%** | **23.34%** | **64.8%** | **0.41%** | **1.3%** | `FAITHFUL_FORGETTING` |
+| **LwF (Adapted, AdamW)** | **0 (Zero)** | **29.63%** | **69.3%** | **11.21%** | **64.8%** | **94.99%** | **1.3%** | `HISTORICAL_SUPERSEDED` |
