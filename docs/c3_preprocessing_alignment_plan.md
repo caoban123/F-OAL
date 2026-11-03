@@ -215,7 +215,7 @@ Trước khi chạy toàn bộ 10 tasks, trích xuất đặc trưng từ 200 �
    $$\Delta_{\text{total}} = D - A = 90.4016\% - 91.7742\% = \mathbf{-1.3726\text{ pp}}$$
    - **Kiểm chứng đồng nhất thức toán học:** $E_{\text{interp}} + E_{\text{norm}} = -0.4285 + (-0.9441) = -1.3726\text{ pp} \equiv \Delta_{\text{total}}$ (sai số $< 10^{-12}$).
    - **Tỷ trọng đóng góp:** Chuẩn hóa dải pixel đóng góp **$68.78\%$** tổng mức sụt giảm; phương pháp nội suy đóng góp **$31.22\%$**.
-   - **Tính chất tương tác:** Giá trị tương tác rất nhỏ ($-0.0922\text{ pp}$), cho thấy hai nhân tố hoạt động gần như độc lập tuyến tính (additive), trong đó chuẩn hóa pixel $[-1, 1]$ là yếu tố mang lại lợi thế biểu diễn lớn hơn.
+   - **Tính chất tương tác:** Giá trị tương tác đo được trên đơn seed 42 là rất nhỏ ($-0.0922\text{ pp}$), phản ánh tính chất gần như cộng gộp (near-additive) về mặt số học trên lượt chạy đơn seed (n = 1); quan sát này không cấu thành chứng minh thống kê chính thức (formal statistical proof) về tính độc lập tuyệt đối giữa hai nhân tố.
 
 ### 10.4. Đối chiếu Đối chứng với Tác giả (Official Run) và Bài báo (NeurIPS Paper)
 
@@ -231,7 +231,7 @@ Trước khi chạy toàn bộ 10 tasks, trích xuất đặc trưng từ 200 �
 > 1. Khi căn chỉnh tiền xử lý về đúng pipeline của tác giả (Bilinear, Raw $[0, 1]$), độ chính xác cuối cùng $A_{10}$ của nhóm ($85.73\%$) **hội tụ gần như hoàn hảo** với bản chạy của tác giả ($85.84\%$, độ lệch chỉ vỏn vẹn $-0.11\text{ pp}$).
 > 2. Tỷ lệ quên $F_{10}^{\text{past}}$ đạt $5.16\%$ so với $5.17\%$ của tác giả (chênh lệch $-0.01\text{ pp}$), và $F_{10}^{\text{code}}$ đạt $4.64\%$ so với $4.69\%$ (chênh lệch $-0.05\text{ pp}$).
 > 3. Sự khác biệt nhỏ còn lại trên $\bar{A}$ ($90.40\%$ vs $90.98\%$, chênh lệch $-0.58\text{ pp}$) xuất phát từ hoán vị thứ tự các lớp và độ khó của các task đầu giữa Seed 42 và Seed 0.
-> 4. Bí ẩn về việc C2-B1 vượt tác giả $+0.79\text{ pp}$ đã được giải mã trọn vẹn: đó là do C2-B1 vô tình hưởng lợi từ tiền xử lý chuẩn ImageNet (Bicubic + chuẩn hóa $[-1, 1]$), giúp dải động và tần số không gian của ảnh đưa vào ViT phong phú hơn.
+> 4. Hiện tượng C2-B1 cao hơn tác giả $+0.79\text{ pp}$ có sự đóng góp lớn từ tiền xử lý chuẩn ImageNet (Bicubic + chuẩn hóa $[-1, 1]$), giúp dải động và tần số không gian đưa vào ViT phong phú hơn. Chẩn đoán biểu diễn trên N=200 mẫu (tỷ số phân tách lớp 1.1207 vs 1.1042) là bằng chứng tương quan thực nghiệm hỗ trợ giả thuyết này, song không xem là chứng minh nhân quả tuyệt đối.
 
 ### 10.5. Kết luận Nghiệm thu Khoa học (Sign-off Status)
 - **Quyết định Nghiệm thu:** **`C3_SIGNED_OFF_WITH_LIMITATIONS`**
