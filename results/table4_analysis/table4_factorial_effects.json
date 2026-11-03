@@ -1,0 +1,26 @@
+{
+  "metric": "Average Incremental Accuracy (A_bar, percentage points)",
+  "A0_Full": 90.40163492063492,
+  "A1_noFF": 90.10036904761908,
+  "A2_noSP": 90.38234126984128,
+  "A3_noBoth": 89.92235317460316,
+  "simple_effects": {
+    "E_FF_given_SP_ON": 0.3012658730158364,
+    "E_FF_given_SP_OFF": 0.459988095238117,
+    "E_SP_given_FF_ON": 0.019293650793642314,
+    "E_SP_given_FF_OFF": 0.17801587301592292
+  },
+  "main_effects": {
+    "E_FF_main": 0.3806269841269767,
+    "E_SP_main": 0.09865476190478262
+  },
+  "interaction": {
+    "interaction_contrast": -0.1587222222222806,
+    "regression_coefficient_beta": -0.03968055555557015
+  },
+  "joint_benefit": {
+    "delta_full_vs_none": 0.4792817460317593,
+    "sum_of_main_effects": 0.4792817460317593,
+    "additivity_gap": 0.0
+  }
+}

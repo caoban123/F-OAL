@@ -38,7 +38,7 @@
 | **A08** | Dependency Pinning & Environment Logging | P1 | **`VERIFIED`** | **`IMPLEMENTED` & `UNIT TESTED`**: Đã khóa phiên bản trong `requirements-lock.txt`, tự động ghi nhận OS, Python, PyTorch, CUDA, GPU, Git commit trong `src/foal/environment.py` và `metadata.json`. |
 | **A09** | Automated Unit & Mathematical Equivalence Tests | P1 | **`VERIFIED`** | **`UNIT TESTED`**: **34/34 unit tests PASS** (`python -m pytest -q`), bao gồm cả kiểm thử xử lý `null` seed trong `resolve_seed()` và kiểm thử `summarize_runs.py` (`tests/test_summarize_runs.py`). |
 | **A10** | Full CIFAR-100 Single-Seed GPU Reproduction | P1 | **`VERIFIED` (1-Seed Execution)** / **`PARTIAL` (Accuracy Gap)** | **`EXECUTED` & `VERIFIED` (Colab T4, Seed 42)**: Đã chạy hoàn tất 10 tasks $\times$ 10 classes trên Google Colab GPU Tesla T4 (`1735.3s`, commit `aad7500`), đạt $\bar{A}=79.33\%$, $A_{10}=70.92\%$, $F_{10}=9.21\%$. Đã giải nén và xác minh trực tiếp gói `foal_cifar100_single_seed42_results.zip` ($109.8\text{ MB}$) chứa đầy đủ `metrics.json`, `metadata.json`, `task_accuracy.csv`, 10 checkpoints `task_01.pt`..`task_10.pt` ($\|R - R^\top\|_{\max} = 0.0$, `all_finite=True`) và W&B offline run `run-2cdeiptv.wandb`. Còn khoảng cách $-11.77\text{ pp}$ so với paper cần điều tra qua **A19** & **A20**. |
-| **A11** | Ablation Study (Feature Fusion $\times$ Smooth Projection) | P1 | **`IMPLEMENTED`** / **`UNIT TESTED`** | Đã hoàn thiện `scripts/ablation.py` và kiểm thử pilot trên CPU. **Chưa thực thi (`PENDING`)** lượt chạy 10-task đầy đủ trên GPU cho 4 cấu hình Ablation. |
+| **A11** | Ablation Study (Feature Fusion $\times$ Smooth Projection) | P1 | **`VERIFIED`** (`TABLE4_SIGNED_OFF_WITH_LIMITATIONS`) | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`, `VERIFIED`**: Đã hoàn tất thực nghiệm Full GPU 10 tasks trên NVIDIA RTX A5000 cho đủ 4 cấu hình Table 4 (A0-A3). A0 tái sử dụng từ C3-D (`3v53tmq5`, $\bar{A}=90.40\%$), A1 w/o FF (`shl4p10l`, $\bar{A}=90.10\%$), A2 w/o SP (`rkedlkkk`, $\bar{A}=90.38\%$), A3 w/o Both (`k01pp8st`, $\bar{A}=89.92\%$). Phân rã giai thừa $2 \times 2$: $E_{\text{FF}} = +0.3806\text{ pp}$, $E_{\text{SP}} = +0.0987\text{ pp}$, $I = -0.1587\text{ pp}$, xác nhận hoàn toàn xu hướng bài báo gốc. Đã đồng bộ 4 runs lên CoreWeave Forge W&B. (Xem Mục 27). |
 | **A12** | Multi-Seed Orchestration ($Mean \pm Std$) | P1 | **`IMPLEMENTED`** / **`UNIT TESTED`** | Đã hoàn thiện `scripts/run_seeds.py` với kiểm tra tương thích giao thức (`--skip-completed`) và unit tests (`tests/test_multi_seed_infrastructure.py`). **Chưa thực thi (`PENDING`)** đủ 3 seeds (`42, 123, 2026`) full 10-task trên GPU. |
 | **A13** | Experiment Tracking (Weights & Biases) | P1 | **`PARTIAL`** | Đã tích hợp `src/foal/wandb_utils.py` và kiểm thử qua unit tests, nhưng **chưa xác minh upload online** và **chưa có public W&B project link** (xem bảng chi tiết W&B tại Mục 3 bên dưới). |
 | **A14** | Automated Results Aggregation (`summarize_runs.py`) | P1 | **`VERIFIED`** | **`IMPLEMENTED`, `UNIT TESTED`, `EXECUTED`**: Tự động lọc các run theo `protocol_signature` 13 thành phần, tách biệt pilot/full/ablation và xuất CSV chuẩn (`tests/test_summarize_runs.py`). |
@@ -858,7 +858,7 @@ Mục này rà soát toàn diện dự án dựa trên quy định chính thức
 #### A. Kiểm kê Toàn bộ Thực nghiệm trong Paper gốc (Full Scope Inventory)
 Bài báo F-OAL (NeurIPS 2024) thực hiện khối lượng thực nghiệm rất lớn gồm:
 1. **6 Bộ dữ liệu (Datasets):** CIFAR-100 ($10 \text{ tasks} \times 10 \text{ classes}$), CORe50, FGVCAircraft, DTD, Tiny-ImageNet, Country211.
-2. **Hơn 14 Phương pháp Đối sánh (Baselines trong Table 2):** ER, iCaRL, GDumb, DER++, Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL và F-OAL, chạy lặp lại **3 lần (3 random runs)** cho mỗi phương pháp trên mỗi bộ dữ liệu.
+2. **Hơn 14 Phương pháp Đối sánh (Baselines trong Table 2):** ER, iCaRL, GDumb, DER++ (Literature Extension / Not in Table 2), Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL và F-OAL, chạy lặp lại **3 lần (3 random runs)** cho mỗi phương pháp trên mỗi bộ dữ liệu.
 3. **Đánh giá Hiệu năng Tính toán (Table 3 & Figure 2):** Đo tổng thời gian huấn luyện (Training Time, tính bằng giây) và mức tiêu thụ bộ nhớ GPU đỉnh (Peak GPU Memory, tính bằng GB) trên CIFAR-100, FGVCAircraft, DTD, Tiny-ImageNet.
 4. **Nghiên cứu Cắt bỏ Thành phần (Ablation Study — Table 4 & Section 5.3):**
    * Đánh giá 4 tổ hợp bật/tắt **Feature Fusion (FF)** và **Smooth Projection (SP)**.
@@ -1097,3 +1097,22 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   - Đã xây dựng script chẩn đoán `scripts/run_c3_diagnostics.py`.
   - Đã vượt qua 6/6 unit & regression tests trong `tests/test_c3_preprocessing.py`.
   - Đã xây dựng Google Colab notebook 14 cells hoàn chỉnh tại [`notebooks/foal_c3_preprocessing_controlled.ipynb`](../notebooks/foal_c3_preprocessing_controlled.ipynb).
+
+---
+
+## 27. Triển khai Thí nghiệm Table 4 (Ablation Study: Feature Fusion $\times$ Smooth Projection)
+
+- **Kế hoạch Nghiên cứu Đầy đủ:** [`docs/table4_ablation_plan.md`](table4_ablation_plan.md).
+- **Nhánh làm việc:** `experiment/table4-ablation` (tách từ `main` commit `e1fe4f3`).
+- **Câu hỏi Nghiên cứu:** Xác định đóng góp thực nghiệm độc lập và tương tác của Feature Fusion (FF, trung bình CLS 12 layer) và Smooth Projection (SP, $D=1000$, $\sigma(\cdot)$ phi tuyến) trên CIFAR-100 trong cấu hình căn chỉnh tác giả (Bilinear, Raw $[0, 1]$).
+- **Thiết kế Nghiên cứu:** Mô hình Giai thừa $2 \times 2$ (A0: Full, A1: w/o FF, A2: w/o SP, A3: w/o Both).
+- **Trạng thái Thực nghiệm Table 4:** **`TABLE4_SIGNED_OFF_WITH_LIMITATIONS`**
+  - Đã chạy hoàn tất Full GPU trên Google Colab / Cloud GPU NVIDIA RTX A5000 (24,564 MiB); xác thực toàn vẹn gói nén `foal_table4_ablation_results.zip` (SHA256: `90f191d12b06fbd804779fcb038a12574c9b7cdc2f32369a6975dd6309e09e7a`).
+  - **A0 (Full F-OAL):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{past}} = 5.1556\%$, $F_{\text{code}} = 4.6400\%$ (Tái sử dụng C3-D `3v53tmq5`).
+  - **A1 (w/o FF):** $\bar{A} = 90.1004\%$, $A_{10} = 85.4800\%$, $F_{\text{past}} = 5.4444\%$, $F_{\text{code}} = 4.9000\%$ ([shl4p10l](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l)).
+  - **A2 (w/o SP):** $\bar{A} = 90.3823\%$, $A_{10} = 85.7200\%$, $F_{\text{past}} = 5.2444\%$, $F_{\text{code}} = 4.7200\%$ ([rkedlkkk](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk)).
+  - **A3 (w/o Both):** $\bar{A} = 89.9224\%$, $A_{10} = 85.4800\%$, $F_{\text{past}} = 5.3222\%$, $F_{\text{code}} = 4.7900\%$ ([k01pp8st](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st)).
+  - **Phân rã giai thừa $2 \times 2$:** $E_{\text{FF}} = +0.3806\text{ pp}$, $E_{\text{SP}} = +0.0987\text{ pp}$, $I_{\text{FF} \times \text{SP}} = -0.1587\text{ pp}$, $\Delta_{\text{Full - Both}} = +0.4793\text{ pp}$.
+  - Toàn bộ 6/6 tests trong `tests/test_table4_ablation.py` và 69/69 regression tests trong toàn bộ repository vượt qua 100%.
+  - Đã xuất bản 7 đồ thị phân tích và các bảng manifest đối chiếu tại [`results/table4_analysis/`](../results/table4_analysis/).
+  - Xác nhận tái hiện thành công xu hướng khoa học của Table 4 bài báo gốc: $A0 > A2 > A1 > A3$.

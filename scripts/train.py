@@ -7,6 +7,12 @@ Usage:
     python -m scripts.train --config configs/cifar100.yaml --wandb --wandb-offline
 """
 from __future__ import annotations
+import sys
+from pathlib import Path
+
+repo_root = Path(__file__).resolve().parent.parent
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
 import argparse
 import csv
 import hashlib
@@ -450,8 +456,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
                 interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
                 norm_tag = "norm" if normalize_bool else "raw"
+                ff_tag = "ff" if use_fusion else "noff"
                 cache_prefix = (
-                    f"{bb_slug}_{interp_tag}_{norm_tag}_c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
+                    f"{bb_slug}_{interp_tag}_{norm_tag}_{ff_tag}_c{class_order_seed}_s{stream_seed}_t{spec.task_id + 1:02d}"
                     f"_tr{args.limit_train_per_task or 'full'}"
                 )
                 train_feats, train_labels, ext_sec, _ = extract_or_load_task_features(
@@ -501,8 +508,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
                         interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
                         norm_tag = "norm" if normalize_bool else "raw"
+                        ff_tag = "ff" if use_fusion else "noff"
                         cache_prefix = (
-                            f"{bb_slug}_{interp_tag}_{norm_tag}_c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
+                            f"{bb_slug}_{interp_tag}_{norm_tag}_{ff_tag}_c{class_order_seed}_s{stream_seed}_t{previous_spec.task_id + 1:02d}"
                             f"_te{args.limit_test_per_task or 'full'}"
                         )
                         t_feats, t_labels, ext_sec, _ = extract_or_load_task_features(

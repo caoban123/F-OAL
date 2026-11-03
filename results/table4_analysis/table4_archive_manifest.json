@@ -1,0 +1,109 @@
+{
+  "archive_path": "D:\\Nh\u1eadp m\u00f4n ML\\Paper\\foal_table4_ablation_results.zip",
+  "size_bytes": 14370,
+  "sha256": "90f191d12b06fbd804779fcb038a12574c9b7cdc2f32369a6975dd6309e09e7a",
+  "entries": [
+    {
+      "filename": "results/table4_a0_full_foal/",
+      "file_size": 0,
+      "compress_size": 0,
+      "crc32": "0x0",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a0_full_foal/summary.json",
+      "file_size": 365,
+      "compress_size": 257,
+      "crc32": "0x713cfa0f",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a1_without_ff/",
+      "file_size": 0,
+      "compress_size": 0,
+      "crc32": "0x0",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a1_without_ff/metrics.json",
+      "file_size": 2268,
+      "compress_size": 500,
+      "crc32": "0xe7f79489",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a1_without_ff/metadata.json",
+      "file_size": 10041,
+      "compress_size": 3140,
+      "crc32": "0x9eca9be9",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a1_without_ff/task_accuracy.csv",
+      "file_size": 630,
+      "compress_size": 234,
+      "crc32": "0x151ec772",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a2_without_sp/",
+      "file_size": 0,
+      "compress_size": 0,
+      "crc32": "0x0",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a2_without_sp/metrics.json",
+      "file_size": 2345,
+      "compress_size": 507,
+      "crc32": "0xa9362b3e",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a2_without_sp/metadata.json",
+      "file_size": 9432,
+      "compress_size": 2920,
+      "crc32": "0x9894ed4f",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a2_without_sp/task_accuracy.csv",
+      "file_size": 628,
+      "compress_size": 235,
+      "crc32": "0x29cc03f5",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a3_without_both/",
+      "file_size": 0,
+      "compress_size": 0,
+      "crc32": "0x0",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a3_without_both/metrics.json",
+      "file_size": 2314,
+      "compress_size": 504,
+      "crc32": "0xe46a7b7b",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a3_without_both/metadata.json",
+      "file_size": 9430,
+      "compress_size": 2922,
+      "crc32": "0x549468ed",
+      "is_unsafe": false
+    },
+    {
+      "filename": "results/table4_a3_without_both/task_accuracy.csv",
+      "file_size": 627,
+      "compress_size": 237,
+      "crc32": "0x4f23501c",
+      "is_unsafe": false
+    }
+  ],
+  "crc32_status": "ALL_OK",
+  "total_entries": 14,
+  "compressed_bytes": 11456,
+  "uncompressed_bytes": 38080
+}
