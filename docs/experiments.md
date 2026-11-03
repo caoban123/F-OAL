@@ -15,7 +15,7 @@ Tài liệu này quy định giao thức thực nghiệm, phạm vi tái hiện 
 ### 1.1. Phạm vi Đầy đủ của Bài báo (Full Paper Scope)
 Trong bài báo gốc, tác giả thực hiện:
 * **6 bộ dữ liệu:** CIFAR-100, CORe50, FGVCAircraft, DTD, Tiny-ImageNet, Country211.
-* **Hơn 14 phương pháp so sánh (Table 2):** ER, iCaRL, GDumb, DER++, Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL, F-OAL (chạy 3 lần cho mỗi phương pháp).
+* **Hơn 14 phương pháp so sánh (Table 2):** iCaRL, ER, ASER, SCR, DVC, PCR, LwF, EWC, EASE, LAE, SLCA, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL, F-OAL (chạy 3 lần cho mỗi phương pháp).
 * **Đánh giá tài nguyên (Table 3 & Figure 2):** Thời gian huấn luyện (giây) và mức tiêu thụ VRAM đỉnh (GB).
 * **Ablation Study (Table 4 & Section 5.3):** 4 cấu hình kết hợp Feature Fusion (FF) & Smooth Projection (SP); đối chiếu Analytic Classifier (RLS) với Fully Connected Classifier huấn luyện bằng Backpropagation.
 * **Additional Analysis:** Khảo sát ảnh hưởng của kích thước mini-batch ($B$), số chiều chiếu ($D$) và hệ số chính quy hóa ($\gamma$).

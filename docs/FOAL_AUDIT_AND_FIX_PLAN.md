@@ -858,7 +858,7 @@ Mục này rà soát toàn diện dự án dựa trên quy định chính thức
 #### A. Kiểm kê Toàn bộ Thực nghiệm trong Paper gốc (Full Scope Inventory)
 Bài báo F-OAL (NeurIPS 2024) thực hiện khối lượng thực nghiệm rất lớn gồm:
 1. **6 Bộ dữ liệu (Datasets):** CIFAR-100 ($10 \text{ tasks} \times 10 \text{ classes}$), CORe50, FGVCAircraft, DTD, Tiny-ImageNet, Country211.
-2. **Hơn 14 Phương pháp Đối sánh (Baselines trong Table 2):** ER, iCaRL, GDumb, DER++, Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL và F-OAL, chạy lặp lại **3 lần (3 random runs)** cho mỗi phương pháp trên mỗi bộ dữ liệu.
+2. **Hơn 14 Phương pháp Đối sánh (Baselines trong Table 2):** ER, iCaRL, GDumb, DER++ (Literature Extension / Not in Table 2), Co2L, DVC, OCM, OnPro, SCR, MEMO, EASE, SLCA, ACIL, DS-AL và F-OAL, chạy lặp lại **3 lần (3 random runs)** cho mỗi phương pháp trên mỗi bộ dữ liệu.
 3. **Đánh giá Hiệu năng Tính toán (Table 3 & Figure 2):** Đo tổng thời gian huấn luyện (Training Time, tính bằng giây) và mức tiêu thụ bộ nhớ GPU đỉnh (Peak GPU Memory, tính bằng GB) trên CIFAR-100, FGVCAircraft, DTD, Tiny-ImageNet.
 4. **Nghiên cứu Cắt bỏ Thành phần (Ablation Study — Table 4 & Section 5.3):**
    * Đánh giá 4 tổ hợp bật/tắt **Feature Fusion (FF)** và **Smooth Projection (SP)**.

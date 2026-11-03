@@ -1,0 +1,81 @@
+{
+  "provenance": {
+    "paper_title": "F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning",
+    "venue": "NeurIPS 2024",
+    "pdf_url": "https://proceedings.neurips.cc/paper_files/paper/2024/file/48ffa38c13078d6ce26b328e7f373243-Paper-Conference.pdf",
+    "verified_from_pdf": true,
+    "table_locations": {
+      "table_2": "Page 7",
+      "table_4": "Page 10"
+    }
+  },
+  "table_4_ablation": {
+    "metric": "Average Incremental Accuracy (A_avg, %)",
+    "page": 10,
+    "table_title": "Table 4: Average accuracy comparison with Feature Fusion (FF) and Smooth Projection (SP) modules across various datasets.",
+    "entries": [
+      {
+        "condition": "Full F-OAL",
+        "feature_fusion": true,
+        "smooth_projection": true,
+        "cifar100": 91.1,
+        "core50": 96.3,
+        "fgvc_aircraft": 62.2,
+        "dtd": 82.8,
+        "tiny_imagenet": 91.2,
+        "country211": 24.4
+      },
+      {
+        "condition": "w/o Feature Fusion",
+        "feature_fusion": false,
+        "smooth_projection": true,
+        "cifar100": 90.6,
+        "core50": 95.3,
+        "fgvc_aircraft": 60.9,
+        "dtd": 80.5,
+        "tiny_imagenet": 91.4,
+        "country211": 21.3
+      },
+      {
+        "condition": "w/o Smooth Projection",
+        "feature_fusion": true,
+        "smooth_projection": false,
+        "cifar100": 90.7,
+        "core50": 95.4,
+        "fgvc_aircraft": 58.7,
+        "dtd": 79.3,
+        "tiny_imagenet": 91.2,
+        "country211": 22.8
+      },
+      {
+        "condition": "w/o Both",
+        "feature_fusion": false,
+        "smooth_projection": false,
+        "cifar100": 90.6,
+        "core50": 95.4,
+        "fgvc_aircraft": 56.0,
+        "dtd": 71.2,
+        "tiny_imagenet": 91.4,
+        "country211": 21.1
+      }
+    ]
+  },
+  "table_2_benchmark": {
+    "page": 7,
+    "table_title": "Table 2: This table shows the comparison results of our method with other baselines on six datasets.",
+    "cifar100_results": [
+      {"method": "iCaRL (CVPR 2017)", "replay": true, "a_avg": 91.6, "a_last": 87.5, "forgetting": 3.2},
+      {"method": "ER (ICRA 2019)", "replay": true, "a_avg": 90.1, "a_last": 84.6, "forgetting": 20.7},
+      {"method": "ASER (AAAI 2021)", "replay": true, "a_avg": 87.2, "a_last": 82.0, "forgetting": 16.5},
+      {"method": "SCR (CVPR 2021)", "replay": true, "a_avg": 91.9, "a_last": 87.7, "forgetting": 6.2},
+      {"method": "DVC (CVPR 2022)", "replay": true, "a_avg": 92.4, "a_last": 87.8, "forgetting": 8.2},
+      {"method": "PCR (CVPR 2023)", "replay": true, "a_avg": 89.1, "a_last": 81.4, "forgetting": 9.2},
+      {"method": "LwF (TPAMI 2018)", "replay": false, "a_avg": 69.3, "a_last": 64.8, "forgetting": 1.3},
+      {"method": "EWC (PNAS 2017)", "replay": false, "a_avg": 49.9, "a_last": 25.2, "forgetting": 67.4},
+      {"method": "EASE (CVPR 2024)", "replay": false, "a_avg": 91.1, "a_last": 85.4, "forgetting": 6.1},
+      {"method": "LAE (ICCV 2023)", "replay": false, "a_avg": 79.1, "a_last": 75.6, "forgetting": 11.8},
+      {"method": "SLCA (ICCV 2023)", "replay": false, "a_avg": 90.4, "a_last": 85.6, "forgetting": 7.1},
+      {"method": "F-OAL (Ours)", "replay": false, "a_avg": 91.1, "a_last": 86.5, "forgetting": 5.5}
+    ]
+  }
+}

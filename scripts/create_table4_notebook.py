@@ -11,10 +11,11 @@ def create_table4_notebook():
         "source": [
             "# F-OAL — Table 4 Controlled Architectural Ablation Study (CIFAR-100)\n",
             "\n",
-            "- **Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024)\n",
+            "- **Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024, Page 10, Table 4)\n",
             "- **Author Official Repository:** [`https://github.com/liuyuchen-cz/F-OAL`](https://github.com/liuyuchen-cz/F-OAL)\n",
             "- **Group Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)\n",
             "- **Target Branch:** `experiment/table4-ablation`\n",
+            "- **Provenance:** Reconstructed from Paper Methodology (`RECONSTRUCTED_FROM_PAPER`).\n",
             "- **Research Question:** Dissect the individual and joint contributions of Feature Fusion (FF) and Smooth Projection (SP) as reported in NeurIPS 2024 Table 4:\n",
             "  - **A0 (Full F-OAL):** Feature Fusion ON, Smooth Projection ON (Paper: 91.1%, C3-D Reused: 90.40%)\n",
             "  - **A1 (w/o Feature Fusion):** Feature Fusion OFF, Smooth Projection ON (Paper: 90.6%)\n",
@@ -25,7 +26,7 @@ def create_table4_notebook():
             "  - Preprocessing: Bilinear interpolation, Raw [0, 1] tensor (Official parity from C3-D)\n",
             "  - Dataset: CIFAR-100, 10 tasks x 10 classes, seed 42\n",
             "  - Classifier: Online Ridge RLS, batch size 10, gamma 1.0, float64\n",
-            "- **Compute Guard:** A0 is bitwise equivalent to C3-D (`A0_REUSE_APPROVED`), saving 25% GPU compute."
+            "- **Compute Guard:** A0 is bitwise equivalent to C3-D (`A0_REUSE_APPROVED`), saving 25% GPU compute without redundant runs."
         ]
     })
 
@@ -78,6 +79,7 @@ def create_table4_notebook():
             "\n",
             "REPO_DIR = Path(\"/content/F-OAL\")\n",
             "BRANCH_NAME = \"experiment/table4-ablation\"\n",
+            "PINNED_COMMIT = None  # Set to commit SHA if pinning\n",
             "\n",
             "if REPO_DIR.exists():\n",
             "    print(f\"Removing existing directory {REPO_DIR} for clean clone...\")\n",
@@ -87,6 +89,10 @@ def create_table4_notebook():
             "    \"git\", \"clone\", \"-b\", BRANCH_NAME,\n",
             "    \"https://github.com/caoban123/F-OAL.git\", str(REPO_DIR)\n",
             "], check=True)\n",
+            "\n",
+            "if PINNED_COMMIT:\n",
+            "    print(f\"Checking out pinned commit {PINNED_COMMIT}...\")\n",
+            "    subprocess.run([\"git\", \"checkout\", PINNED_COMMIT], cwd=str(REPO_DIR), check=True)\n",
             "\n",
             "commit_hash = subprocess.check_output(\n",
             "    [\"git\", \"rev-parse\", \"HEAD\"], cwd=str(REPO_DIR), text=True\n",
@@ -116,7 +122,11 @@ def create_table4_notebook():
             "\n",
             "print(f\"Configured WANDB_BASE_URL: {os.environ['WANDB_BASE_URL']}\")\n",
             "print(\"Please log in to W&B if prompted:\")\n",
-            "wandb.login(host=WANDB_BASE_URL)\n"
+            "try:\n",
+            "    wandb.login(host=WANDB_BASE_URL)\n",
+            "except Exception as e:\n",
+            "    print(f\"W&B login error: {e}. Switching to offline mode.\")\n",
+            "    os.environ[\"WANDB_MODE\"] = \"offline\"\n"
         ]
     })
 
@@ -140,7 +150,7 @@ def create_table4_notebook():
         ]
     })
 
-    # Cell 5: Run Automated Unit Tests
+    # Cell 5: Run Automated Unit Tests & A0 Verification
     cells.append({
         "cell_type": "code",
         "execution_count": None,
@@ -209,6 +219,7 @@ def create_table4_notebook():
             "    \"f_10_code\": 4.64,\n",
             "    \"feature_fusion\": True,\n",
             "    \"smooth_projection\": True,\n",
+            "    \"note\": \"Bitwise and architectural equivalent to C3-D. No new W&B run created.\"\n",
             "}\n",
             "(A0_OUTDIR / \"summary.json\").write_text(json.dumps(a0_summary, indent=2))\n",
             "print(\"A0 (Full F-OAL) successfully injected from C3-D checkpoint:\")\n",
@@ -273,41 +284,52 @@ def create_table4_notebook():
         ]
     })
 
-    # Cell 11: Collect and Print Table 4 Comparative Results
+    # Cell 11: Collect, Compute Metrics & Compare Against Table 4 Ground Truth
     cells.append({
         "cell_type": "code",
         "execution_count": None,
         "metadata": {},
         "outputs": [],
         "source": [
-            "# === CELL 11: Collate Table 4 Ablation Results ===\n",
+            "# === CELL 11: Collate Table 4 Ablation Results & Compute Exact Metrics ===\n",
             "import json\n",
             "from pathlib import Path\n",
             "\n",
-            "results = {}\n",
             "conditions = [\n",
-            "    (\"A0 (Full F-OAL)\", \"results/table4_a0_full_foal/summary.json\", 91.1),\n",
-            "    (\"A1 (w/o FF)\", \"results/table4_a1_without_ff/summary.json\", 90.6),\n",
-            "    (\"A2 (w/o SP)\", \"results/table4_a2_without_sp/summary.json\", 90.7),\n",
-            "    (\"A3 (w/o Both)\", \"results/table4_a3_without_both/summary.json\", 90.6),\n",
+            "    (\"A0 (Full F-OAL)\", \"results/table4_a0_full_foal\", 91.1),\n",
+            "    (\"A1 (w/o FF)\", \"results/table4_a1_without_ff\", 90.6),\n",
+            "    (\"A2 (w/o SP)\", \"results/table4_a2_without_sp\", 90.7),\n",
+            "    (\"A3 (w/o Both)\", \"results/table4_a3_without_both\", 90.6),\n",
             "]\n",
             "\n",
-            "print(f\"{'Condition':<20} | {'FF':<5} | {'SP':<5} | {'Paper A_bar':<12} | {'Our A_bar':<12} | {'Delta':<8} | {'A_10':<8} | {'F_10':<8}\")\n",
-            "print(\"-\" * 90)\n",
+            "print(f\"{'Condition':<18} | {'FF':<4} | {'SP':<4} | {'Paper A_bar':<11} | {'Our A_bar':<10} | {'Delta':<7} | {'A_10':<7} | {'F_past':<7} | {'F_code':<7} | {'Matrix Entries':<14}\")\n",
+            "print(\"-\" * 105)\n",
             "\n",
-            "for cond_name, pth, paper_val in conditions:\n",
-            "    p = Path(pth)\n",
-            "    if p.exists():\n",
-            "        data = json.loads(p.read_text())\n",
+            "for cond_name, pth_str, paper_val in conditions:\n",
+            "    p = Path(pth_str)\n",
+            "    summary_p = p / \"summary.json\"\n",
+            "    matrix_p = p / \"matrix.json\"\n",
+            "    if summary_p.exists():\n",
+            "        data = json.loads(summary_p.read_text(encoding='utf-8'))\n",
             "        a_bar = data.get(\"accuracy_bar\", float(\"nan\"))\n",
             "        a_10 = data.get(\"a_10\", float(\"nan\"))\n",
-            "        f_10 = data.get(\"f_10_past\", data.get(\"f_10\", float(\"nan\")))\n",
+            "        f_past = data.get(\"f_10_past\", float(\"nan\"))\n",
+            "        f_code = data.get(\"f_10_code\", float(\"nan\"))\n",
             "        ff = \"ON\" if \"w/o FF\" not in cond_name and \"Both\" not in cond_name else \"OFF\"\n",
             "        sp = \"ON\" if \"w/o SP\" not in cond_name and \"Both\" not in cond_name else \"OFF\"\n",
             "        delta = a_bar - paper_val\n",
-            "        print(f\"{cond_name:<20} | {ff:<5} | {sp:<5} | {paper_val:6.2f}%     | {a_bar:6.2f}%     | {delta:+6.2f}pp | {a_10:6.2f}%  | {f_10:6.2f}%\")\n",
+            "        \n",
+            "        num_entries = \"Reused (55)\"\n",
+            "        if matrix_p.exists():\n",
+            "            mat = json.loads(matrix_p.read_text(encoding='utf-8'))\n",
+            "            entries_count = sum(len(row) for row in mat)\n",
+            "            num_entries = f\"{entries_count} entries\"\n",
+            "            \n",
+            "        print(f\"{cond_name:<18} | {ff:<4} | {sp:<4} | {paper_val:5.1f}%      | {a_bar:6.2f}%    | {delta:+6.2f}p | {a_10:5.2f}%  | {f_past:5.2f}%  | {f_code:5.2f}%  | {num_entries:<14}\")\n",
             "    else:\n",
-            "        print(f\"{cond_name:<20} | [NOT FOUND: {pth}]\")\n"
+            "        print(f\"{cond_name:<18} | [NOT FOUND: {summary_p}]\")\n",
+            "\n",
+            "print(\"\\n* Note: Paper Table 4 reports 3-seed mean; Our A_bar reports Seed 42 single-pass run.\")\n"
         ]
     })
 

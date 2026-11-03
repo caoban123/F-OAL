@@ -1,4 +1,5 @@
 """Unit tests for Table 4 Ablation Study components and configurations."""
+import json
 import pytest
 import torch
 import yaml
@@ -136,3 +137,41 @@ def test_cache_key_isolation_ff_vs_noff():
     assert ff_tag_true == "ff"
     assert ff_tag_false == "noff"
     assert ff_tag_true != ff_tag_false
+
+
+def test_reference_ground_truth_provenance():
+    """Verify paper reference numbers match NeurIPS 2024 Page 10 Table 4 and Page 7 Table 2."""
+    ref_path = Path("docs/paper_reference_ground_truth.json")
+    assert ref_path.exists(), "Missing paper_reference_ground_truth.json"
+    with open(ref_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Table 4 verification
+    t4 = data["table_4_ablation"]["entries"]
+    assert len(t4) == 4
+    # CIFAR-100
+    assert t4[0]["cifar100"] == 91.1
+    assert t4[1]["cifar100"] == 90.6
+    assert t4[2]["cifar100"] == 90.7
+    assert t4[3]["cifar100"] == 90.6
+    # Tiny-ImageNet
+    assert t4[0]["tiny_imagenet"] == 91.2
+    assert t4[1]["tiny_imagenet"] == 91.4
+    assert t4[2]["tiny_imagenet"] == 91.2
+    assert t4[3]["tiny_imagenet"] == 91.4
+    # DTD
+    assert t4[0]["dtd"] == 82.8
+    assert t4[1]["dtd"] == 80.5
+    assert t4[2]["dtd"] == 79.3
+    assert t4[3]["dtd"] == 71.2
+
+    # Table 2 verification (CIFAR-100)
+    t2 = {m["method"]: m for m in data["table_2_benchmark"]["cifar100_results"]}
+    assert t2["F-OAL (Ours)"]["a_avg"] == 91.1
+    assert t2["LwF (TPAMI 2018)"]["a_avg"] == 69.3
+    assert t2["EWC (PNAS 2017)"]["a_avg"] == 49.9
+    assert t2["ER (ICRA 2019)"]["a_avg"] == 90.1
+    assert t2["PCR (CVPR 2023)"]["a_avg"] == 89.1
+    assert t2["iCaRL (CVPR 2017)"]["a_avg"] == 91.6
+    assert t2["SCR (CVPR 2021)"]["a_avg"] == 91.9
+    assert t2["DVC (CVPR 2022)"]["a_avg"] == 92.4

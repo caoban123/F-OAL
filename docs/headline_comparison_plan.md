@@ -2,66 +2,56 @@
 
 ## 1. Executive Summary & Objective
 
-The primary objective of Experiment 1 (mandated under `REQUIRED_BY_HCMUS`) is to reproduce the **Headline Benchmark Comparison** reported in Table 2 and Table 3 of the F-OAL paper (NeurIPS 2024).
+The primary objective of Experiment 1 (mandated under `REQUIRED_BY_HCMUS`) is to reproduce the **Headline Benchmark Comparison** reported in **Table 2 (Page 7)** and Table 3 of the F-OAL paper (NeurIPS 2024).
 
-The paper evaluates Continual Learning methods across three key dimensions:
-1. **Average Accuracy ($\bar{A}$)**: Mean accuracy over all tasks after learning each task incrementally.
-2. **Final Task Accuracy ($A_T$) & Forgetting ($F_T$)**: Retention of historical classes.
-3. **Training Time & Memory Footprint**: Computational efficiency in single-pass online streams.
-
-This document defines the baseline selection, mathematical formulations, fairness boundaries, and execution roadmap.
+The paper evaluates Continual Learning methods across three key metrics:
+1. **Average Accuracy ($A_{avg}$)**: Mean incremental accuracy across all task stages.
+2. **Last Task Accuracy ($A_{last}$)**: Final overall accuracy on all classes after completing the final task stage.
+3. **Forgetting Rate ($F$)**: Metric quantifying accuracy degradation on earlier learned tasks.
 
 ---
 
-## 2. Baseline Method Taxonomy & Selection
+## 2. Official Table 2 Baseline Ground Truth on CIFAR-100 (NeurIPS 2024, Page 7)
 
-To provide a rigorous, balanced comparison within Colab GPU constraints (single NVIDIA T4/A100), we categorize baselines into four representative families:
+Table 2 in the paper evaluates twelve methods under the 10-task class-incremental CIFAR-100 benchmark. All methods employ a pre-trained Vision Transformer (`ViT-B/16`) backbone:
 
-| Family | Representative Baseline | Description | Replay Buffer | Training Mechanism | Compute Cost |
-| :--- | :--- | :--- | :---: | :--- | :---: |
-| **Analytic / Forward-Only** | **F-OAL (Ours / Paper)** | ViT feature extraction + Smooth Projection + Online RLS | 0 (Zero) | Closed-form recursive Woodbury updates | Minimal (~1 min) |
-| **Linear Analytic** | **Linear Ridge (A3)** | ViT feature extraction (no projection) + Online RLS | 0 (Zero) | Closed-form recursive Woodbury updates | Minimal (~1 min) |
-| **First-Order / Backpropagation** | **1-Pass SGD / AdamW** | Frozen ViT + Trainable Linear Classification Head | 0 (Zero) | Gradient descent, 1 epoch per task, batch size 10 | Low (~2 min) |
-| **Exemplar Replay (Literature)** | **ER / DER++** | Buffer replay methods reported in NeurIPS 2024 Table 2 | 200–500 exemplars | Multi-task gradient replay | Literature Benchmark |
+| Method | Venue & Ref | Replay Buffer? | $A_{avg}$ (%) $\uparrow$ | $A_{last}$ (%) $\uparrow$ | $F$ (%) $\downarrow$ | Category |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **iCaRL** | CVPR 2017 [31] | $\checkmark$ | 91.6 | 87.5 | 3.2 | Replay-based |
+| **ER** | ICRA 2019 [12] | $\checkmark$ | 90.1 | 84.6 | 20.7 | Replay-based |
+| **ASER** | AAAI 2021 [33] | $\checkmark$ | 87.2 | 82.0 | 16.5 | Replay-based |
+| **SCR** | CVPR 2021 [25] | $\checkmark$ | 91.9 | 87.7 | 6.2 | Replay-based |
+| **DVC** | CVPR 2022 [9] | $\checkmark$ | **92.4** | **87.8** | 8.2 | Replay-based (Best) |
+| **PCR** | CVPR 2023 [21] | $\checkmark$ | 89.1 | 81.4 | 9.2 | Replay-based |
+| **LwF** | TPAMI 2018 [20] | $\times$ | 69.3 | 64.8 | 1.3 | Exemplar-free |
+| **EWC** | PNAS 2017 [17] | $\times$ | 49.9 | 25.2 | 67.4 | Exemplar-free |
+| **EASE** | CVPR 2024 [42] | $\times$ | **91.1** | 85.4 | 6.1 | Exemplar-free |
+| **LAE** | ICCV 2023 [8] | $\times$ | 79.1 | 75.6 | 11.8 | Exemplar-free |
+| **SLCA** | ICCV 2023 [40] | $\times$ | 90.4 | 85.6 | 7.1 | Exemplar-free |
+| **F-OAL (Paper)** | NeurIPS 2024 | $\times$ | **91.1** | **86.5** | **5.5** | Exemplar-free (Best Balance) |
 
-### 2.1 Baseline Specifications
-
-1. **F-OAL (Full Method)**:
-   - Evaluated under our verified pipeline (C3-D / A0).
-   - Reported: $\bar{A} = 91.1\%$, Replicated: $\bar{A} = 90.40\%$.
-
-2. **Linear Ridge Regression (F-OAL w/o Non-Linearity)**:
-   - Direct online ridge regression on fused ViT features ($d=768$).
-   - Serves as the strictly linear analytic lower bound.
-
-3. **1-Pass Backpropagation (SGD / AdamW on Linear Head)**:
-   - Frozen ViT backbone with a standard linear layer trained using Cross-Entropy loss via single-pass gradient descent.
-   - Evaluates whether analytic closed-form learning outperforms gradient descent in the strict online single-pass setting (where SGD suffers from severe underfitting and catastrophic forgetting).
-
-4. **Experience Replay & Advanced CL Baselines (Reference Parity)**:
-   - Taken directly from published results in Table 2 of NeurIPS 2024:
-     - Finetune: $\bar{A} = 48.7\%$ (severe forgetting)
-     - EWC: $\bar{A} = 50.1\%$
-     - LwF: $\bar{A} = 65.4\%$
-     - ER ($M=500$): $\bar{A} = 78.2\%$
-     - DER++ ($M=500$): $\bar{A} = 81.4\%$
+> [!IMPORTANT]
+> **Audit Corrections on Headline Baseline Figures:**
+> - In preliminary notes, LwF was erroneously transcribed as 65.4% (actual: **69.3%**).
+> - ER was erroneously transcribed as 78.2% (actual: **90.1%**).
+> - EWC was listed as 50.1% (actual: **49.9%**).
+> - **DER++ is NOT in Table 2.** The exemplar-based baselines evaluated in Table 2 are specifically iCaRL, ER, ASER, SCR, DVC, and PCR. DER++ may be referenced in broader CL literature or explored as an optional extension, but it is not an official Table 2 baseline.
 
 ---
 
-## 3. Fairness Boundaries & Standardization
+## 3. Method Selection for Reproduction & Fairness Boundaries
 
-To ensure fair scientific comparison, all implemented methods must strictly adhere to the following protocol:
-- **Identical Feature Extractor**: Frozen `vit_base_patch16_224.augreg2_in21k_ft_in1k`.
-- **Identical Input Stream**: CIFAR-100, 10 tasks $\times$ 10 classes, identical class ordering (seed 42), identical sample presentation sequence.
-- **Identical Preprocessing**: Bilinear resizing, Raw $[0, 1]$ tensor normalization.
-- **Zero Exemplar Replay**: No raw images stored in memory across task boundaries (for online forward-only methods).
-- **Single Pass Protocol**: Each sample is seen exactly once during stream execution.
+Within the computational boundaries of Google Colab (single GPU, 1-pass online stream), our empirical Headline Comparison will implement and benchmark the following four representative paradigms:
 
----
+| Paradigm | Selected Method | Buffer | Mechanism | Computational Cost |
+| :--- | :--- | :---: | :--- | :---: |
+| **Analytic Forward-Only (Proposed)** | **F-OAL (Full)** | 0 (Zero) | ViT + Feature Fusion + Smooth Projection + Online RLS | ~1 min |
+| **Linear Analytic (Ablation A3)** | **Linear Ridge** | 0 (Zero) | ViT + Online Ridge RLS (no projection, no non-linearity) | ~1 min |
+| **First-Order / Backprop** | **1-Pass SGD / AdamW** | 0 (Zero) | Frozen ViT + Fully Connected Head (Cross-Entropy, 1-pass) | ~2 min |
+| **Literature Replay Benchmark** | **ER / iCaRL / DVC** | Exemplars | Literature figures from NeurIPS 2024 Table 2 | Reference Parity |
 
-## 4. Compute Budget & Implementation Milestones
-
-- **Implementation Location**: `scripts/baselines/` and `src/foal/baselines/`.
-- **Verification**: Unit tests in `tests/test_headline_baselines.py`.
-- **Execution**: Colab notebook `notebooks/foal_headline_comparison.ipynb`.
-- **Runtime Budget**: Under 15 minutes total on single GPU using cached ViT features.
+### 3.1 Strict Standardization Protocol
+- **Frozen Backbone**: `vit_base_patch16_224.augreg2_in21k_ft_in1k`.
+- **Input Stream**: CIFAR-100, 10 tasks $\times$ 10 classes, identical seed (42), identical class order.
+- **Preprocessing**: Bilinear resizing, Raw $[0, 1]$ tensor normalization.
+- **Single Pass Protocol**: Each training instance is seen exactly once during stream execution.
