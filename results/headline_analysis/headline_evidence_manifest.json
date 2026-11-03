@@ -1,0 +1,291 @@
+{
+  "archive_audit": {
+    "archive_name": "foal_cifar100_headline_results.zip",
+    "archive_path": "D:\\Nh\u1eadp m\u00f4n ML\\Paper\\foal_cifar100_headline_results.zip",
+    "file_size_bytes": 191587,
+    "sha256": "6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551",
+    "classification": "VALID_HEADLINE_ARCHIVE",
+    "verified_contents": [
+      "runs/headline/lwf/summary.json",
+      "runs/headline/lwf/task_matrix.csv",
+      "runs/headline/er/summary.json",
+      "runs/headline/er/task_matrix.csv",
+      "runs/headline/cifar100_headline_progression.png",
+      "configs/headline/lwf_cifar100.yaml",
+      "configs/headline/er_cifar100.yaml",
+      "configs/headline/foal_cifar100_reference.yaml"
+    ]
+  },
+  "methods": {
+    "foal_full": {
+      "method": "F-OAL (Full)",
+      "agent": "foal",
+      "buffer_size": 0,
+      "is_replay": false,
+      "a_avg_pct": 90.401635,
+      "a_last_pct": 85.73,
+      "f_past_pct": 5.155556,
+      "f_code_pct": 4.64,
+      "stage_accuracies_pct": [
+        96.1,
+        95.05,
+        93.27,
+        91.5,
+        90.58,
+        89.45,
+        88.63,
+        87.3,
+        86.41,
+        85.73
+      ],
+      "task_forgetting_past_pct": [
+        16.3,
+        11.9,
+        4.9,
+        4.2,
+        3.0,
+        2.8,
+        1.5,
+        1.1,
+        0.7
+      ],
+      "hardware": "NVIDIA A100-SXM4-40GB / RTX A5000",
+      "training_time_seconds": 53.47,
+      "wandb_id": "3v53tmq5",
+      "wandb_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5"
+    },
+    "lwf": {
+      "agent": "lwf",
+      "method_name": "Learning without Forgetting (TPAMI 2018)",
+      "provenance": "ADAPTED_OFFICIAL_BASELINE",
+      "buffer_size": 0,
+      "is_replay": false,
+      "recalculated_metrics": {
+        "num_tasks": 10,
+        "total_matrix_entries": 55,
+        "stage_accuracies": [
+          0.956,
+          0.5165,
+          0.324,
+          0.2525,
+          0.2218,
+          0.1625,
+          0.16228571428571428,
+          0.138375,
+          0.11688888888888889,
+          0.1121
+        ],
+        "stage_accuracies_pct": [
+          95.6,
+          51.65,
+          32.4,
+          25.25,
+          22.18,
+          16.25,
+          16.2286,
+          13.8375,
+          11.6889,
+          11.21
+        ],
+        "a_avg": 0.29629496031746033,
+        "a_avg_pct": 29.629496031746033,
+        "a_last": 0.1121,
+        "a_last_pct": 11.21,
+        "f_past": 0.9498888888888888,
+        "f_past_pct": 94.98888888888888,
+        "f_code": 0.8549,
+        "f_code_pct": 85.49,
+        "task_forgetting_past": [
+          0.956,
+          0.984,
+          0.969,
+          0.969,
+          0.964,
+          0.965,
+          0.956,
+          0.968,
+          0.818
+        ],
+        "task_forgetting_past_pct": [
+          95.6,
+          98.4,
+          96.9,
+          96.9,
+          96.4,
+          96.5,
+          95.6,
+          96.8,
+          81.8
+        ],
+        "final_task_accuracies": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.143,
+          0.978
+        ],
+        "final_task_accuracies_pct": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          14.3,
+          97.8
+        ]
+      },
+      "total_training_seconds": 629.5167602739989,
+      "hardware": {
+        "cuda_available": true,
+        "gpu": {
+          "count": 1,
+          "device_name": "Tesla T4",
+          "total_memory_gb": 14.56,
+          "cuda_version": "13.0",
+          "capability": [
+            7,
+            5
+          ]
+        },
+        "cpu_count": 2
+      },
+      "git_commit": "b0658c8837563d845253880da8efb1f0f11387fc"
+    },
+    "er": {
+      "agent": "er",
+      "method_name": "Experience Replay (ICRA 2019)",
+      "provenance": "ADAPTED_OFFICIAL_BASELINE",
+      "buffer_size": 5000,
+      "is_replay": true,
+      "recalculated_metrics": {
+        "num_tasks": 10,
+        "total_matrix_entries": 55,
+        "stage_accuracies": [
+          0.963,
+          0.9359999999999999,
+          0.9026666666666666,
+          0.875,
+          0.867,
+          0.8436666666666667,
+          0.8395714285714284,
+          0.834,
+          0.8082222222222222,
+          0.7978999999999999
+        ],
+        "stage_accuracies_pct": [
+          96.3,
+          93.6,
+          90.2667,
+          87.5,
+          86.7,
+          84.3667,
+          83.9571,
+          83.4,
+          80.8222,
+          79.79
+        ],
+        "a_avg": 0.8667026984126984,
+        "a_avg_pct": 86.67026984126984,
+        "a_last": 0.7978999999999999,
+        "a_last_pct": 79.78999999999999,
+        "f_past": 0.16744444444444442,
+        "f_past_pct": 16.744444444444444,
+        "f_code": 0.1507,
+        "f_code_pct": 15.07,
+        "task_forgetting_past": [
+          0.26,
+          0.254,
+          0.15799999999999992,
+          0.1449999999999999,
+          0.12,
+          0.126,
+          0.10099999999999998,
+          0.15600000000000003,
+          0.18700000000000006
+        ],
+        "task_forgetting_past_pct": [
+          26.0,
+          25.4,
+          15.8,
+          14.5,
+          12.0,
+          12.6,
+          10.1,
+          15.6,
+          18.7
+        ],
+        "final_task_accuracies": [
+          0.703,
+          0.727,
+          0.795,
+          0.804,
+          0.831,
+          0.816,
+          0.837,
+          0.776,
+          0.738,
+          0.952
+        ],
+        "final_task_accuracies_pct": [
+          70.3,
+          72.7,
+          79.5,
+          80.4,
+          83.1,
+          81.6,
+          83.7,
+          77.6,
+          73.8,
+          95.2
+        ]
+      },
+      "total_training_seconds": 626.8460602170003,
+      "hardware": {
+        "cuda_available": true,
+        "gpu": {
+          "count": 1,
+          "device_name": "Tesla T4",
+          "total_memory_gb": 14.56,
+          "cuda_version": "13.0",
+          "capability": [
+            7,
+            5
+          ]
+        },
+        "cpu_count": 2
+      },
+      "git_commit": "b0658c8837563d845253880da8efb1f0f11387fc"
+    }
+  },
+  "paper_table_2_reference": {
+    "foal": {
+      "a_avg": 91.1,
+      "a_last": 86.5,
+      "f": 5.5,
+      "buffer": 0,
+      "replay": false
+    },
+    "lwf": {
+      "a_avg": 69.3,
+      "a_last": 64.8,
+      "f": 1.3,
+      "buffer": 0,
+      "replay": false
+    },
+    "er": {
+      "a_avg": 90.1,
+      "a_last": 84.6,
+      "f": 20.7,
+      "buffer": 5000,
+      "replay": true
+    }
+  }
+}

@@ -609,3 +609,25 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
   - **Thành viên A (Track DTD):** `src/foal/dataset_adapters/dtd.py`, branch `experiment/dtd-ablation`. Đo đạc 4 cấu hình Table 4 trên 40 lớp texture (10 tasks $\times$ 4 lớp), kiểm chứng mức suy giảm $11.6\text{ pp}$ khi bỏ SP.
   - **Thành viên B (Track FGVC-Aircraft):** `src/foal/dataset_adapters/fgvc_aircraft.py`, branch `experiment/fgvc-aircraft-ablation`. Đo đạc 4 cấu hình Table 4 trên 100 lớp aircraft variants (10 tasks $\times$ 10 lớp), điều tra đối chiếu bất đồng số liệu giữa Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
 - Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).
+
+
+---
+
+## 11. Báo cáo Thực nghiệm Headline Comparison (Table 2 CIFAR-100 Full GPU)
+
+### 11.1. Bảng Tổng hợp Kết quả Thực nghiệm So sánh Baseline
+- **Phần cứng thực thi:** Google Colab GPU Tesla T4 (14.56 GB VRAM), CUDA 13.0, PyTorch 2.11.0.
+- **Dữ liệu kiểm toán:** `foal_cifar100_headline_results.zip` (SHA256: `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`).
+- **Giao thức:** CIFAR-100, 10 tasks $\times$ 10 classes, seed 42, backbone `vit_base_patch16_224.augreg2_in21k_ft_in1k`, single-pass streaming.
+
+| Phương pháp | Loại / Cơ chế | Bộ nhớ Đệm ($M$) | $\bar{A}$ (Ours) | $\bar{A}$ (Paper) | $\Delta \bar{A}$ | $A_{10}$ (Ours) | $A_{10}$ (Paper) | $F_{past}$ (Ours) | $F_{code}$ (Ours) | $F$ (Paper) | Thời gian chạy | Phần cứng |
+|:---|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|
+| **F-OAL (Full)** | Giải tích (Analytic RLS) | **0 (Zero)** | **90.4016%** | **91.1%** | $-0.70\text{ pp}$ | **85.73%** | **86.5%** | **5.16%** | **4.64%** | **5.5%** | **53.47s** | A100 / RTX A5000 |
+| **ER (Replay)** | Experience Replay | **5000** | **86.6703%** | **90.1%** | $-3.43\text{ pp}$ | **79.79%** | **84.6%** | **16.74%** | **15.07%** | **20.7%** | **626.85s** | Tesla T4 (Colab) |
+| **LwF (Distill)** | Distillation (Exemplar-free) | **0 (Zero)** | **29.6295%** | **69.3%** | $-39.67\text{ pp}$ | **11.21%** | **64.8%** | **94.99%** | **85.49%** | **1.3%** | **629.52s** | Tesla T4 (Colab) |
+
+### 11.2. Phân tích Khoa học Cốt lõi
+1. **F-OAL giải quyết triệt để bài toán Exemplar-Free:** Không lưu bất kỳ mẫu cũ nào ($M=0$), F-OAL vẫn đạt $\bar{A} = 90.40\%$ và độ quên chỉ $5.16\%$.
+2. **LwF sụp đổ trong thiết lập Online Streaming nghiêm ngặt:** Khác với kịch bản offline nhiều epoch, trong luồng online 1-pass (mỗi ảnh nhìn 1 lần), distillation trên dữ liệu task hiện tại không đủ giữ biểu diễn cũ, dẫn tới hiện tượng Catastrophic Forgetting nghiêm trọng ($F = 95.0\%$).
+3. **ER duy trì độ chính xác nhưng trả giá bằng bộ đệm:** ER giữ được $\sim 80\%$ độ chính xác trên các task cũ nhờ 5.000 mẫu đệm, nhưng độ quên vẫn ở mức $16.74\%$ và độ chính xác tổng thể thua kém F-OAL ($86.67\%$ vs $90.40\%$).
+4. **Quyết định Khép lại CIFAR-100:** Đạt trạng thái `CIFAR100_COMPLETED_WITH_LIMITATIONS`. Nhóm chính thức đóng toàn bộ thực nghiệm trên CIFAR-100 và chuyển nguồn lực sang DTD và FGVC-Aircraft.

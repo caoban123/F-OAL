@@ -19,6 +19,7 @@ results/foal_full_cifar100_seed42/*.pt
 !results/c2_analysis/
 !results/c3_analysis/
 !results/table4_analysis/
+!results/headline_analysis/
 *.zip
 data/
 *.ckpt

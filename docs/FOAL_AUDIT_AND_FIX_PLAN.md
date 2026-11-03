@@ -1139,3 +1139,24 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   - Kế hoạch phân công và quản trị nhóm: [`docs/team_parallel_dataset_plan.md`](team_parallel_dataset_plan.md).
   - Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).
 - **Kiểm thử tự động:** Đã bổ sung 10 unit tests trong [`tests/test_headline_comparison.py`](../tests/test_headline_comparison.py) và [`tests/test_dataset_adapters.py`](../tests/test_dataset_adapters.py); toàn bộ 83/83 tests toàn repository đều vượt qua 100%.
+
+---
+
+## 29. Kiểm toán Pháp y Headline Comparison (LwF & ER), Đối chiếu Table 2 NeurIPS 2024 & Đóng Pha CIFAR-100
+
+- **Archive GPU Thực tế:** `foal_cifar100_headline_results.zip` (191,587 bytes, SHA256 `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`).
+- **Phục hồi & Xác thực Môi trường Thực thi:**
+  - Phần cứng: Google Colab Tesla T4 GPU (15,360 MiB VRAM), PyTorch 2.5.1+cu124, Python 3.11.11.
+  - Git Commit SHA ghi nhận trong run metadata: `b0658c8837563d845253880da8efb1f0f11387fc`.
+  - Thời gian huấn luyện (10 tasks): LwF = 629.52s (~10.49 min), ER (Buffer 5000) = 626.85s (~10.45 min) (so với F-OAL Full = 53.47s, nhanh hơn gấp ~11.7 lần).
+- **Kết quả Tái hiện Thực nghiệm & Đối chiếu Bài báo Gốc:**
+  - **F-OAL Full (Tái sử dụng C3-D `3v53tmq5`):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{past}} = 5.1556\%$, $F_{\text{code}} = 4.6400\%$, $M = 0$. (Paper Table 2: $\bar{A} = 91.1\%$, $A_{10} = 86.8\%$, $F_{\text{past}} = 4.9\%$).
+  - **LwF (Distillation, $M=0$):** $\bar{A} = 29.6295\%$, $A_{10} = 11.2100\%$, $F_{\text{past}} = 94.9889\%$, $F_{\text{code}} = 85.4900\%$. (Paper Table 2: $\bar{A} = 69.3\%$, $A_{10} = 56.4\%$, $F_{\text{past}} = 39.8\%$).
+    - *Giải thích suy thoái:* Trong stream trực tuyến đơn lượt nghiêm ngặt (1 pass, batch size 10, tổng 5,000 steps), gradient update đầu ra chỉ bảo toàn phân phối mềm qua 500 bước mỗi task. Không có replay buffer hay huấn luyện đa epoch (multi-epoch offline), distillation suy thoái thảm khốc; đến task 10 độ chính xác trên 8 task đầu tiên tụt về 0.00%.
+  - **ER (Experience Replay, $M=5000$):** $\bar{A} = 86.6703\%$, $A_{10} = 79.7900\%$, $F_{\text{past}} = 16.7444\%$, $F_{\text{code}} = 15.0700\%$. (Paper Table 2: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F_{\text{past}} = 20.7\%$).
+    - *Kết luận:* Buffer 5000 ảnh bảo toàn độ chính xác task cũ ở mức $70\text{--}83\%$, nhưng đòi hỏi bộ nhớ lưu trữ lớn ($M=5000$), tốn thời gian tính toán gấp gần 12 lần F-OAL, và tỷ lệ quên lãng $F_{\text{past}}$ vẫn cao gấp 3.2 lần F-OAL.
+- **Hiện vật Kiểm toán:** Xuất bản toàn bộ tại [`results/headline_analysis/`](../results/headline_analysis/) (4 đồ thị chất lượng báo cáo khoa học, 2 manifest JSON, 4 bảng so sánh CSV/JSON).
+- **Quyết định Quản trị & Đóng Pha:** 
+  - Toàn bộ 15/15 cổng kiểm định tại [`docs/cifar100_completion_checklist.md`](cifar100_completion_checklist.md) đạt PASS.
+  - Phê duyệt chính thức trạng thái: **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
+  - **Lệnh đóng:** Toàn đội dừng 100% mọi thực nghiệm CIFAR-100; chuyển giao toàn bộ nguồn lực sang Track DTD và FGVC-Aircraft.

@@ -1,0 +1,14 @@
+Parameter,F-OAL (Full),ER (Replay),LwF (Distill),Protocol Status
+Dataset,CIFAR-100,CIFAR-100,CIFAR-100,MATCHED
+Tasks x Classes,10 tasks x 10 classes,10 tasks x 10 classes,10 tasks x 10 classes,MATCHED
+Random Seed,42,42,42,MATCHED
+Backbone Architecture,ViT-B/16,ViT-B/16,ViT-B/16,MATCHED
+Pretrained Checkpoint,augreg2_in21k_ft_in1k,augreg2_in21k_ft_in1k,augreg2_in21k_ft_in1k,MATCHED
+Image Preprocessing,"Bilinear, Raw [0, 1]","Bilinear, Raw [0, 1]","Bilinear, Raw [0, 1]",MATCHED
+Feature Fusion (FF),True (dim 1536),True (dim 768),True (dim 768),MATCHED_ENCODER
+Memory Buffer Capacity,0 (Zero Replay),5000 exemplars,0 (Zero Replay),METHOD_SPECIFIC_BY_DESIGN
+Update Paradigm,Recursive Least Squares (RLS),Reservoir Replay + AdamW,Old Logit Distillation + AdamW,METHOD_SPECIFIC_BY_DESIGN
+Learning Rate,N/A (Analytic closed-form),0.001,0.001,METHOD_SPECIFIC_BY_DESIGN
+Streaming Exposures,1 pass (single pass),1 pass (single pass),1 pass (single pass),MATCHED
+Evaluation Scope,Cumulative seen classes,Cumulative seen classes,Cumulative seen classes,MATCHED
+Hardware Execution,NVIDIA A100 / RTX A5000,Tesla T4 (Colab),Tesla T4 (Colab),HARDWARE_CAVEAT_FLAGGED

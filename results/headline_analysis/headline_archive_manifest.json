@@ -1,0 +1,17 @@
+{
+  "archive_name": "foal_cifar100_headline_results.zip",
+  "archive_path": "D:\\Nh\u1eadp m\u00f4n ML\\Paper\\foal_cifar100_headline_results.zip",
+  "file_size_bytes": 191587,
+  "sha256": "6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551",
+  "classification": "VALID_HEADLINE_ARCHIVE",
+  "verified_contents": [
+    "runs/headline/lwf/summary.json",
+    "runs/headline/lwf/task_matrix.csv",
+    "runs/headline/er/summary.json",
+    "runs/headline/er/task_matrix.csv",
+    "runs/headline/cifar100_headline_progression.png",
+    "configs/headline/lwf_cifar100.yaml",
+    "configs/headline/er_cifar100.yaml",
+    "configs/headline/foal_cifar100_reference.yaml"
+  ]
+}

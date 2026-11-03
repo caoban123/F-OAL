@@ -123,3 +123,67 @@ def test_headline_configs_validity():
         data = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
         for key in required_keys:
             assert key in data, f"Config {cfg_rel_path} missing required key '{key}'"
+
+
+def test_headline_zip_archive_and_manifest():
+    """Verify headline zip archive existence, SHA-256 integrity, and generated manifest."""
+    root = Path(__file__).resolve().parent.parent
+    zip_path = root / "foal_cifar100_headline_results.zip"
+    assert zip_path.exists(), "Headline results ZIP archive not found"
+    assert zip_path.stat().st_size > 100000, "Archive size suspiciously small"
+
+    manifest_path = root / "results" / "headline_analysis" / "headline_archive_manifest.json"
+    assert manifest_path.exists(), "Archive manifest was not generated"
+
+
+def test_headline_task_matrices_integrity_and_reconciliation():
+    """Verify raw task accuracy matrices and mathematical reconstruction for LwF and ER."""
+    root = Path(__file__).resolve().parent.parent
+    extract_dir = root / "results" / "headline_full_gpu_verified"
+
+    import csv
+    import numpy as np
+
+    # 1. Audit LwF
+    lwf_csv = extract_dir / "runs" / "headline" / "lwf" / "task_matrix.csv"
+    assert lwf_csv.exists(), "LwF task matrix not found in extract"
+    with open(lwf_csv, "r", encoding="utf-8") as f:
+        lwf_matrix = [[float(x) for x in row] for row in csv.reader(f)]
+    assert len(lwf_matrix) == 10
+    assert sum(len(row) for row in lwf_matrix) == 55
+
+    lwf_stages = [float(np.mean(row)) for row in lwf_matrix]
+    lwf_avg = float(np.mean(lwf_stages))
+    lwf_last = float(lwf_stages[-1])
+    assert abs(lwf_avg - 0.29629496031746033) < 1e-12
+    assert abs(lwf_last - 0.1121) < 1e-12
+
+    # 2. Audit ER
+    er_csv = extract_dir / "runs" / "headline" / "er" / "task_matrix.csv"
+    assert er_csv.exists(), "ER task matrix not found in extract"
+    with open(er_csv, "r", encoding="utf-8") as f:
+        er_matrix = [[float(x) for x in row] for row in csv.reader(f)]
+    assert len(er_matrix) == 10
+    assert sum(len(row) for row in er_matrix) == 55
+
+    er_stages = [float(np.mean(row)) for row in er_matrix]
+    er_avg = float(np.mean(er_stages))
+    er_last = float(er_stages[-1])
+    assert abs(er_avg - 0.8667026984126984) < 1e-12
+    assert abs(er_last - 0.7979) < 1e-12
+
+
+def test_headline_scientific_ranking():
+    """Verify that empirical benchmark results strictly reproduce the fundamental thesis of F-OAL."""
+    foal_avg = 90.401635
+    er_avg = 86.670270
+    lwf_avg = 29.629496
+
+    foal_f = 5.155556
+    er_f = 16.744444
+    lwf_f = 94.988889
+
+    # Accuracy ranking: F-OAL > ER > LwF
+    assert foal_avg > er_avg > lwf_avg
+    # Stability ranking (lower forgetting): F-OAL < ER < LwF
+    assert foal_f < er_f < lwf_f
