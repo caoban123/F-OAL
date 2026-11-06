@@ -15,7 +15,9 @@
     "Classifier_Architecture": "Analytic Closed-Form Ridge W=(H^T H + gamma I)^(-1) H^T Y",
     "Optimizer": "Analytic Ridge (Closed-form RLS)",
     "Execution_SHA": "d333705 / W&B 3v53tmq5",
-    "Notes": "C3-D verified run. Zero replay, zero iterative backpropagation."
+    "Notes": "C3-D verified run. Zero replay, zero iterative backpropagation.",
+    "Wandb_Run_ID": "3v53tmq5",
+    "Wandb_URL": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5"
   },
   {
     "Method": "ER (Adapted, Replay)",
@@ -33,7 +35,9 @@
     "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
     "Optimizer": "AdamW (lr=0.001)",
     "Execution_SHA": "d333705",
-    "Notes": "Adapted baseline on frozen ViT features with 5000-exemplar reservoir buffer."
+    "Notes": "Adapted baseline on frozen ViT features with 5000-exemplar reservoir buffer.",
+    "Wandb_Run_ID": "xlcme1c3",
+    "Wandb_URL": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3"
   },
   {
     "Method": "LwF (Official Protocol)",
@@ -51,7 +55,9 @@
     "Classifier_Architecture": "nn.Linear(768, 100) static head",
     "Optimizer": "SGD (lr=0.001, momentum=0.0, weight_decay=0.0)",
     "Execution_SHA": "c3dd3f23fbf2d8d94d481ec75daceb860190118e",
-    "Notes": "Implements author loss weighting 1/(t+1) and static 100-class head, evaluated on 12-block averaged ViT features (D=768)."
+    "Notes": "Implements author loss weighting 1/(t+1) and static 100-class head, evaluated on 12-block averaged ViT features (D=768).",
+    "Wandb_Run_ID": "c5pjewk4",
+    "Wandb_URL": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4"
   },
   {
     "Method": "LwF (Adapted, AdamW)",
@@ -69,6 +75,8 @@
     "Classifier_Architecture": "nn.Linear(768, num_classes) with dynamic expansion",
     "Optimizer": "AdamW (lr=0.001)",
     "Execution_SHA": "d333705",
-    "Notes": "Historical adapted baseline with dynamic head expansion. Suffered recency collapse under static 1.0/1.0 loss weighting."
+    "Notes": "Historical adapted baseline with dynamic head expansion. Suffered recency collapse under static 1.0/1.0 loss weighting.",
+    "Wandb_Run_ID": "ifl3rz2u",
+    "Wandb_URL": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u"
   }
 ]

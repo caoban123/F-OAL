@@ -885,6 +885,9 @@ $$\text{Source Code (Git SHA)} \longrightarrow \text{Config YAML} \longrightarro
 - **Table 4 A2 (w/o SP):** `rkedlkkk`
 - **Table 4 A3 (w/o Cả Hai):** `k01pp8st`
 - **Mã Nguồn Tác Giả (Seed 0):** `3eca8232`
+- **Headline ER (Replay Buffer $M=5000$):** `xlcme1c3` ([W&B Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3))
+- **Headline Official LwF (SGD + Dynamic Loss):** `c5pjewk4` ([W&B Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4))
+- **Headline Adapted LwF (AdamW + Static Loss):** `ifl3rz2u` ([W&B Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u))
 
 ---
 
@@ -989,9 +992,9 @@ Với việc pha nghiên cứu CIFAR-100 đã chính thức khép lại trọn v
 | **A1** | Table 4 Ablation | w/o FF (Chỉ Layer 12, SP Bật) | 42 | A100 | $853.26$ | $90.10\%$ | $85.48\%$ | $5.44\%$ | `results/table4_full_gpu/a1` | `shl4p10l` |
 | **A2** | Table 4 Ablation | w/o SP (FF Bật, SP Tắt) | 42 | A100 | $870.73$ | $90.38\%$ | $85.72\%$ | $5.24\%$ | `results/table4_full_gpu/a2` | `rkedlkkk` |
 | **A3** | Table 4 Ablation | w/o Cả Hai (Layer 12, SP Tắt) | 42 | A100 | $66.77$ | $89.92\%$ | $85.48\%$ | $5.32\%$ | `results/table4_full_gpu/a3` | `k01pp8st` |
-| **HL-ER** | Baseline Replay | ER (Reservoir Buffer $M=5000$) | 42 | Tesla T4 | $626.85$ | $86.67\%$ | $79.79\%$ | $16.74\%$ | `runs/headline/er` | — |
-| **HL-LwF1** | Baseline Distill | Adapted LwF (AdamW, Static) | 42 | Tesla T4 | $629.52$ | $29.63\%$ | $11.21\%$ | $94.99\%$ | `runs/headline/lwf` | — |
-| **HL-LwF2** | Baseline Distill | Official LwF (SGD, Dynamic) | 42 | Tesla T4 | $646.35$ | $46.29\%$ | $23.34\%$ | $0.41\%$ | `runs/headline/lwf_official` | — |
+| **HL-ER** | Baseline Replay | ER (Reservoir Buffer $M=5000$) | 42 | Tesla T4 | $626.85$ | $86.67\%$ | $79.79\%$ | $16.74\%$ | `runs/headline/er` | `xlcme1c3` |
+| **HL-LwF1** | Baseline Distill | Adapted LwF (AdamW, Static) | 42 | Tesla T4 | $629.52$ | $29.63\%$ | $11.21\%$ | $94.99\%$ | `runs/headline/lwf` | `ifl3rz2u` |
+| **HL-LwF2** | Baseline Distill | Official LwF (SGD, Dynamic) | 42 | Tesla T4 | $646.35$ | $46.29\%$ | $23.34\%$ | $0.41\%$ | `runs/headline/lwf_official` | `c5pjewk4` |
 | **Official** | Tác Giả F-OAL | Code gốc `liuyuchen-cz/F-OAL` | 0 | Colab | — | $90.98\%$ | $85.84\%$ | $5.17\%$ | `artifacts/official_cifar100` | `3eca8232` |
 
 ---
