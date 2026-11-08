@@ -1,0 +1,459 @@
+{
+  "paper": "F-OAL NeurIPS 2024",
+  "method": "foal",
+  "experiment_type": "reproduction",
+  "run_name": "aircraft_a0_full_seed2026",
+  "git_commit": "e91749276713723ceb5a742d43abb4fca5f7b69c",
+  "seeds": {
+    "base": 2026,
+    "dataset": 2026,
+    "class_order": 2026,
+    "projection": 2026,
+    "stream": 2026
+  },
+  "model_config": {
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "pretrained": true,
+    "pretrained_cfg": {
+      "hf_hub_id": "timm/vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "tag": "augreg2_in21k_ft_in1k",
+      "architecture": "vit_base_patch16_224",
+      "url": "",
+      "input_size": [
+        3,
+        224,
+        224
+      ],
+      "interpolation": "bicubic",
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "num_classes": 1000
+    },
+    "feature_fusion": true,
+    "smooth_projection": true,
+    "projection_dim": 1000,
+    "projection_init": "official_uniform",
+    "gaussian_std": 1.0,
+    "gamma": 1.0,
+    "rls_dtype": "float64"
+  },
+  "projection_metadata": {
+    "initialization": "official_uniform",
+    "input_dim": 768,
+    "output_dim": 1000,
+    "seed": 2026,
+    "theoretical_mean": 0.0,
+    "theoretical_std": 0.020833333333333332,
+    "theoretical_variance": 0.00043402777777777775,
+    "uniform_bound": 0.036084391824351615,
+    "measured_mean": 4.1235576645703986e-05,
+    "measured_std": 0.0208318792283535,
+    "measured_variance": 0.00043396721594035625,
+    "measured_min": -0.036084163933992386,
+    "measured_max": 0.036084335297346115,
+    "matrix_sha256": "e3685d41f6a4d249cff75d6298f54e590556d07f27bc530b4322e7bfab600b57"
+  },
+  "training_protocol": {
+    "dataset": "fgvc_aircraft",
+    "num_classes": 100,
+    "classes_per_task": 10,
+    "max_tasks": 10,
+    "limit_train_per_task": null,
+    "limit_test_per_task": null,
+    "batch_size": 10,
+    "device": "cuda",
+    "one_pass": true,
+    "feature_cache_enabled": true
+  },
+  "task_split_fingerprint": {
+    "sha256": "3b2358e867fad6f39bebf0e9e320dfd9e3672e53e0ccbd246609f3a70149e1d6",
+    "class_order_sha256": "4c5557d6f167c0187e19c93734342512869f6d48a3ea7f3b53740712786b84d1",
+    "num_tasks": 10,
+    "tasks": [
+      {
+        "task_id": 0,
+        "new_original_labels": [
+          16,
+          17,
+          97,
+          10,
+          91,
+          31,
+          12,
+          64,
+          84,
+          55
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 331,
+        "train_indices_sha256": "55005a86a45aeaab8d82f74744b57b1fd20dad372687d7073a7a0b215e6088ea",
+        "test_indices_sha256": "dbc30baa8d7fd7c981bc4500f5247161ace0f12364d6f729ac6c0fb2c2499ced"
+      },
+      {
+        "task_id": 1,
+        "new_original_labels": [
+          46,
+          76,
+          75,
+          19,
+          88,
+          44,
+          25,
+          51,
+          70,
+          35
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 332,
+        "train_indices_sha256": "c113057a048f06613f04ba2eb5f6f2bcb86fbd267fe772f04b66a16113bf645b",
+        "test_indices_sha256": "68430a096e6c928c813bc8fb3d2b6990caca2b480e25df718d0c02727aa66cfd"
+      },
+      {
+        "task_id": 2,
+        "new_original_labels": [
+          73,
+          47,
+          48,
+          29,
+          74,
+          85,
+          14,
+          15,
+          2,
+          3
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 335,
+        "train_indices_sha256": "4cb16791fcf94b5b9cc095d252871b2f548e8910c3c8aaf7693503d9c847049a",
+        "test_indices_sha256": "7767aaa0787b19fd78ee771e0c6dbc060b563e341f46301e65e6d4e97205045e"
+      },
+      {
+        "task_id": 3,
+        "new_original_labels": [
+          33,
+          72,
+          9,
+          22,
+          57,
+          8,
+          60,
+          52,
+          18,
+          69
+        ],
+        "num_train_samples": 337,
+        "num_test_samples": 331,
+        "train_indices_sha256": "6d2ee41c73e88465084709e7b1d7ae207cda2c65c4cb725addb5f88bedda05c8",
+        "test_indices_sha256": "018d723618b6c1deda10b90532da3d9dfb33519de1470c8abfa1c6d7542af9b5"
+      },
+      {
+        "task_id": 4,
+        "new_original_labels": [
+          5,
+          39,
+          32,
+          43,
+          58,
+          38,
+          30,
+          37,
+          82,
+          67
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 333,
+        "train_indices_sha256": "4ed4077f43c20aa0377c09cfea6e17097bea09fee6f180a5a6c73271f2f6afd4",
+        "test_indices_sha256": "9958380c1b870c4dd4477ffa07bcf22bf8da57b7bfc705f2d81773e635ddb03c"
+      },
+      {
+        "task_id": 5,
+        "new_original_labels": [
+          7,
+          68,
+          80,
+          77,
+          28,
+          89,
+          6,
+          62,
+          41,
+          81
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 336,
+        "train_indices_sha256": "7139b19603ef7f42f7bcbcb2d18c3875b9cb2bf813d2e85e0f8d3ed888b2dfc2",
+        "test_indices_sha256": "b84687501326b9b12aed956d9050c4f79865c21a62ae8b4d7470f1249429ee2a"
+      },
+      {
+        "task_id": 6,
+        "new_original_labels": [
+          87,
+          61,
+          83,
+          45,
+          59,
+          1,
+          94,
+          11,
+          98,
+          96
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 334,
+        "train_indices_sha256": "12aa3e4c708647292c86b6211505b8390d1fefc8bbeff5da8612b88574e71e08",
+        "test_indices_sha256": "faa01f1e5875f7584e3e56df60b8be7b4f0f93cf4152df3f5e47a626be47f667"
+      },
+      {
+        "task_id": 7,
+        "new_original_labels": [
+          56,
+          65,
+          21,
+          90,
+          99,
+          86,
+          54,
+          27,
+          66,
+          20
+        ],
+        "num_train_samples": 336,
+        "num_test_samples": 334,
+        "train_indices_sha256": "f7f60b18fe4fcf8fa95a3ee48e05fb8d0fb4af3e9074aaaab0584a69801f01e7",
+        "test_indices_sha256": "6a1bc6425737950f72cba7c41642a18ef7c2b02c1062fa8c0f5377ce461b0a44"
+      },
+      {
+        "task_id": 8,
+        "new_original_labels": [
+          36,
+          53,
+          0,
+          24,
+          50,
+          49,
+          13,
+          34,
+          79,
+          78
+        ],
+        "num_train_samples": 334,
+        "num_test_samples": 332,
+        "train_indices_sha256": "5f7daeecce79e88a00afa5b15b70848ba25cdc99b5b813ea21c3d0f8b207877e",
+        "test_indices_sha256": "0990156d8dc40762dd6e053fc2b272952af902217a4226349c9a186cad94d540"
+      },
+      {
+        "task_id": 9,
+        "new_original_labels": [
+          23,
+          93,
+          92,
+          40,
+          71,
+          26,
+          95,
+          63,
+          4,
+          42
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 335,
+        "train_indices_sha256": "f78e8f0b09f8bc7c684f34fe1c0c1dc8e43bb34cad3cfd0a99bbdff50afdc7a3",
+        "test_indices_sha256": "cc5fee620ad98cfaa1cb0b29592136cdf92ad4b0f5864992a2194e3846d2ccb1"
+      }
+    ]
+  },
+  "class_order": [
+    16,
+    17,
+    97,
+    10,
+    91,
+    31,
+    12,
+    64,
+    84,
+    55,
+    46,
+    76,
+    75,
+    19,
+    88,
+    44,
+    25,
+    51,
+    70,
+    35,
+    73,
+    47,
+    48,
+    29,
+    74,
+    85,
+    14,
+    15,
+    2,
+    3,
+    33,
+    72,
+    9,
+    22,
+    57,
+    8,
+    60,
+    52,
+    18,
+    69,
+    5,
+    39,
+    32,
+    43,
+    58,
+    38,
+    30,
+    37,
+    82,
+    67,
+    7,
+    68,
+    80,
+    77,
+    28,
+    89,
+    6,
+    62,
+    41,
+    81,
+    87,
+    61,
+    83,
+    45,
+    59,
+    1,
+    94,
+    11,
+    98,
+    96,
+    56,
+    65,
+    21,
+    90,
+    99,
+    86,
+    54,
+    27,
+    66,
+    20,
+    36,
+    53,
+    0,
+    24,
+    50,
+    49,
+    13,
+    34,
+    79,
+    78,
+    23,
+    93,
+    92,
+    40,
+    71,
+    26,
+    95,
+    63,
+    4,
+    42
+  ],
+  "environment": {
+    "os": {
+      "system": "Linux",
+      "release": "6.18.55+",
+      "version": "#1 SMP Thu Oct 22 16:37:21 UTC 2026",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+      "implementation": "CPython"
+    },
+    "libraries": {
+      "torch": "2.7.1+cu126",
+      "torchvision": "0.22.1+cu126",
+      "timm": "1.0.30",
+      "datasets": "4.8.5",
+      "wandb": "0.28.1"
+    },
+    "hardware": {
+      "cuda_available": true,
+      "gpu": {
+        "count": 2,
+        "device_name": "Tesla T4",
+        "total_memory_gb": 14.56,
+        "cuda_version": "12.6",
+        "capability": [
+          7,
+          5
+        ]
+      },
+      "cpu_count": 4
+    },
+    "git": {
+      "commit": "e91749276713723ceb5a742d43abb4fca5f7b69c",
+      "branch": "HEAD",
+      "dirty": true
+    }
+  },
+  "config": {
+    "class_order_seed": 42,
+    "dataset": {
+      "class_order": null,
+      "classes_per_task": 10,
+      "image_size": 224,
+      "interpolation": "lanczos",
+      "mean": null,
+      "name": "fgvc_aircraft",
+      "normalize": false,
+      "num_classes": 100,
+      "std": null
+    },
+    "logging": {
+      "base_url": "https://api.forge.coreweave.com",
+      "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+      "group": "aircraft_table4_ablation",
+      "project": "hcmus-foal-reproduction",
+      "results_dir": "results",
+      "use_wandb": true
+    },
+    "model": {
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "feature_fusion": true,
+      "gamma": 1.0,
+      "pretrained": true,
+      "projection_dim": 1000,
+      "projection_init": "official_uniform",
+      "rls_dtype": "float64",
+      "smooth_projection": true
+    },
+    "projection": {
+      "dimension": 1000,
+      "initialization": "official_uniform",
+      "seed": 42
+    },
+    "projection_seed": 42,
+    "seed": 42,
+    "stream_seed": 42,
+    "training": {
+      "batch_size": 10,
+      "device": "auto",
+      "num_workers": 2
+    }
+  }
+}
