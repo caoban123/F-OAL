@@ -102,7 +102,8 @@ def cifar100_transforms(size: int = 224,
     from torchvision import transforms
     from torchvision.transforms import InterpolationMode
     
-    interp_mode = InterpolationMode.BICUBIC if str(interpolation).lower() == 'bicubic' else InterpolationMode.BILINEAR
+    interp_modes = {'bicubic': InterpolationMode.BICUBIC, 'lanczos': InterpolationMode.LANCZOS}
+    interp_mode = interp_modes.get(str(interpolation).lower(), InterpolationMode.BILINEAR)
     transform_list = [
         transforms.Resize((size, size), interpolation=interp_mode),
         transforms.ToTensor(),

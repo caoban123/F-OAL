@@ -22,27 +22,34 @@ from src.foal.dataset_adapters.base import BaseDatasetAdapter
 from src.foal.dataset_adapters.dtd import MockImageSource
 
 
-class TorchvisionAircraftWrapper:
-    """Wraps torchvision.datasets.FGVCAircraft to provide {'img': PIL, 'fine_label': int}."""
-    def __init__(self, tv_dataset, selected_classes_map: dict[int, int]):
-        self.dataset = tv_dataset
-        self.selected_classes_map = selected_classes_map
-        self.valid_indices = []
-        self.fine_label = []
-        for i in range(len(tv_dataset)):
-            raw_label = int(tv_dataset._labels[i]) if hasattr(tv_dataset, "_labels") else int(tv_dataset[i][1])
-            if raw_label in selected_classes_map:
-                mapped_label = selected_classes_map[raw_label]
-                self.valid_indices.append(i)
-                self.fine_label.append(mapped_label)
+HF_TRAIN_REPO = "Multimodal-Fatima/FGVC_Aircraft_train"
+HF_TEST_REPO = "Multimodal-Fatima/FGVC_Aircraft_test"
+EXPECTED_TRAIN, EXPECTED_TEST, EXPECTED_CLASSES = 3334, 3333, 100
 
-    def __len__(self) -> int:
-        return len(self.valid_indices)
 
-    def __getitem__(self, idx: int) -> dict[str, Any]:
-        real_idx = self.valid_indices[idx]
-        img, _ = self.dataset[real_idx]
-        return {"img": img, "fine_label": self.fine_label[idx]}
+def load_fgvc_aircraft() -> Tuple[Any, Any]:
+    """Load the official FGVC-Aircraft `train` and `test` splits from Hugging Face.
+
+    The paper reports about 33 train and 33 test images per class, which is the
+    `train` split (3,334 images), not `trainval` (6,667 images).
+
+    Returns:
+        (train, test) datasets exposing the columns `img` and `fine_label`.
+
+    Raises:
+        ValueError: if the downloaded data does not match the expected sizes.
+    """
+    from datasets import load_dataset
+
+    sources = []
+    for repo, split, expected in ((HF_TRAIN_REPO, "train", EXPECTED_TRAIN), (HF_TEST_REPO, "test", EXPECTED_TEST)):
+        data = load_dataset(repo, split=split).select_columns(["image", "label"])
+        data = data.rename_columns({"image": "img", "label": "fine_label"})
+        n_classes = len(set(data["fine_label"]))
+        if len(data) != expected or n_classes != EXPECTED_CLASSES:
+            raise ValueError(f"{repo}: got {len(data)} images and {n_classes} classes")
+        sources.append(data)
+    return sources[0], sources[1]
 
 
 class FGVCAircraftAdapter(BaseDatasetAdapter):
@@ -82,19 +89,9 @@ class FGVCAircraftAdapter(BaseDatasetAdapter):
         if self.use_mock:
             return self._create_mock_dataset()
 
-        try:
-            from torchvision.datasets import FGVCAircraft
-            # 'trainval' is standard training set in FGVCAircraft CL benchmarks
-            tv_train = FGVCAircraft(root=str(self.data_root), split="trainval", annotation_level="variant", download=True)
-            tv_test = FGVCAircraft(root=str(self.data_root), split="test", annotation_level="variant", download=True)
-
-            raw_to_mapped = {i: i for i in range(self.num_classes)}
-            train_src = TorchvisionAircraftWrapper(tv_train, raw_to_mapped)
-            test_src = TorchvisionAircraftWrapper(tv_test, raw_to_mapped)
-            return train_src, test_src, train_src.fine_label, test_src.fine_label
-        except Exception as exc:
-            print(f"Notice: FGVC-Aircraft not found or download failed ({exc}). Falling back to MockImageSource.")
-            return self._create_mock_dataset()
+        # No fallback to mock data: a failed download must stop the run.
+        train_src, test_src = load_fgvc_aircraft()
+        return train_src, test_src, list(train_src["fine_label"]), list(test_src["fine_label"])
 
     def _create_mock_dataset(self) -> Tuple[Any, Any, Sequence[int], Sequence[int]]:
         """Create deterministic mock dataset: ~33 train & ~33 test samples per class."""

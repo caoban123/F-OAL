@@ -1,0 +1,40 @@
+# FGVC-Aircraft, Table 4 condition a0_full. Paper reports 62.2%.
+# Official train/test splits; LANCZOS resize and raw [0, 1] input as in the author's Aircraft pipeline.
+class_order_seed: 42
+dataset:
+  class_order: null
+  classes_per_task: 10
+  image_size: 224
+  interpolation: lanczos
+  mean: null
+  name: fgvc_aircraft
+  normalize: false
+  num_classes: 100
+  std: null
+logging:
+  base_url: https://api.forge.coreweave.com
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  group: aircraft_table4_ablation
+  project: hcmus-foal-reproduction
+  results_dir: results
+  use_wandb: true
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  feature_fusion: true
+  gamma: 1.0
+  pretrained: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  rls_dtype: float64
+  smooth_projection: true
+projection:
+  dimension: 1000
+  initialization: official_uniform
+  seed: 42
+projection_seed: 42
+seed: 42
+stream_seed: 42
+training:
+  batch_size: 10
+  device: auto
+  num_workers: 2
