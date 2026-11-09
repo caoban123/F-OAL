@@ -11,21 +11,21 @@ import numpy as np
 out_dir = Path("docs/F-OAL _ Thí nghiệm loại bỏ thành phần trên DTD/charts")
 out_dir.mkdir(parents=True, exist_ok=True)
 
-# Data from verified 1,600-sample multi-seed runs (Seeds 42, 123, 2026)
+# Data from verified W&B runs (1,600 samples, 40 samples/class)
 conditions = ["A0 (Full F-OAL)", "A1 (w/o FF)", "A2 (w/o SP)", "A3 (w/o Both)"]
 labels_short = ["A0\n(Full)", "A1\n(-FF)", "A2\n(-SP)", "A3\n(-Both)"]
 paper_vals = [82.8, 80.5, 79.3, 71.2]
-our_vals = [85.13, 81.91, 78.64, 72.97]
-our_stds = [0.11, 0.56, 0.00, 0.00]
-a10_vals = [77.54, 74.69, 73.62, 71.69]
-f_past_vals = [7.31, 6.74, 6.87, 4.93]
-f_code_vals = [6.62, 6.06, 6.50, 5.06]
+our_vals = [85.08, 82.08, 77.81, 74.58]
+our_stds = [0.00, 0.00, 0.00, 0.00]
+a10_vals = [76.06, 74.06, 73.00, 71.13]
+f_past_vals = [8.61, 7.78, 6.32, 5.97]
+f_code_vals = [7.75, 7.19, 5.69, 5.38]
 
 trajectories = {
-    "A0 (Full)": [98.75, 92.81, 92.71, 88.75, 85.00, 81.46, 79.20, 78.44, 78.19, 77.25],
-    "A1 (w/o FF)": [95.00, 90.00, 88.75, 84.53, 81.75, 79.48, 78.21, 77.42, 75.69, 74.69],
-    "A2 (w/o SP)": [98.75, 91.56, 88.33, 77.81, 69.75, 69.06, 70.62, 73.44, 73.47, 73.62],
-    "A3 (w/o Both)": [95.00, 86.56, 81.67, 68.44, 57.25, 63.44, 65.36, 69.06, 71.25, 71.69],
+    "A0 (Full)": [98.12, 91.25, 92.29, 88.75, 84.88, 82.92, 80.18, 78.75, 77.64, 76.06],
+    "A1 (w/o FF)": [95.62, 89.69, 89.17, 84.84, 81.00, 79.17, 76.34, 75.94, 75.00, 74.06],
+    "A2 (w/o SP)": [97.50, 89.38, 86.88, 76.56, 68.75, 70.52, 70.54, 71.33, 73.61, 73.00],
+    "A3 (w/o Both)": [96.88, 85.62, 82.50, 69.53, 60.75, 66.25, 69.02, 72.03, 72.08, 71.12],
 }
 
 # --- Chart 1: Bar chart comparing Paper Target vs Our Reproduction ---

@@ -1,0 +1,46 @@
+[
+  {
+    "condition": "A0 (Full F-OAL)",
+    "feature_fusion": "ON",
+    "smooth_projection": "ON",
+    "paper_a_bar": 82.8,
+    "our_a_bar": 85.0838,
+    "delta": 2.2838,
+    "a_10": 76.0625,
+    "f_past": 8.6111,
+    "f_code": 7.75
+  },
+  {
+    "condition": "A1 (w/o FF)",
+    "feature_fusion": "OFF",
+    "smooth_projection": "ON",
+    "paper_a_bar": 80.5,
+    "our_a_bar": 82.0829,
+    "delta": 1.5829,
+    "a_10": 74.0625,
+    "f_past": 7.7778,
+    "f_code": 7.1875
+  },
+  {
+    "condition": "A2 (w/o SP)",
+    "feature_fusion": "ON",
+    "smooth_projection": "OFF",
+    "paper_a_bar": 79.3,
+    "our_a_bar": 77.8058,
+    "delta": -1.4942,
+    "a_10": 73.0,
+    "f_past": 6.3194,
+    "f_code": 5.6875
+  },
+  {
+    "condition": "A3 (w/o Both)",
+    "feature_fusion": "OFF",
+    "smooth_projection": "OFF",
+    "paper_a_bar": 71.2,
+    "our_a_bar": 74.5789,
+    "delta": 3.3789,
+    "a_10": 71.125,
+    "f_past": 5.9722,
+    "f_code": 5.375
+  }
+]

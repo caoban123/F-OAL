@@ -1,0 +1,342 @@
+{
+  "paper": "F-OAL NeurIPS 2024",
+  "method": "foal_no_fusion",
+  "experiment_type": "ablation",
+  "run_name": "dtd_a1_seed123",
+  "git_commit": "acea57e36e59ce4eae1eeb286f1bde79eb599b16",
+  "seeds": {
+    "base": 123,
+    "dataset": 123,
+    "class_order": 42,
+    "projection": 42,
+    "stream": 42
+  },
+  "model_config": {
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "pretrained": true,
+    "pretrained_cfg": {
+      "hf_hub_id": "timm/vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "tag": "augreg2_in21k_ft_in1k",
+      "architecture": "vit_base_patch16_224",
+      "url": "",
+      "input_size": [
+        3,
+        224,
+        224
+      ],
+      "interpolation": "bicubic",
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "num_classes": 1000
+    },
+    "feature_fusion": false,
+    "smooth_projection": true,
+    "projection_dim": 1000,
+    "projection_init": "official_uniform",
+    "gaussian_std": 1.0,
+    "gamma": 1.0,
+    "rls_dtype": "float64"
+  },
+  "projection_metadata": {
+    "initialization": "official_uniform",
+    "input_dim": 768,
+    "output_dim": 1000,
+    "seed": 42,
+    "theoretical_mean": 0.0,
+    "theoretical_std": 0.020833333333333332,
+    "theoretical_variance": 0.00043402777777777775,
+    "uniform_bound": 0.036084391824351615,
+    "measured_mean": -1.4644038856204133e-05,
+    "measured_std": 0.02083195559680462,
+    "measured_variance": 0.0004339703591540456,
+    "measured_min": -0.0360843725502491,
+    "measured_max": 0.03608420491218567,
+    "matrix_sha256": "6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b"
+  },
+  "training_protocol": {
+    "dataset": "tanganke/dtd",
+    "num_classes": 40,
+    "classes_per_task": 4,
+    "max_tasks": 10,
+    "limit_train_per_task": null,
+    "limit_test_per_task": null,
+    "batch_size": 10,
+    "device": "cuda",
+    "one_pass": true,
+    "feature_cache_enabled": true
+  },
+  "task_split_fingerprint": {
+    "sha256": "42b13803af83abc522b7f814a6b9e450f884a4a7b675d77a0067491a72e79590",
+    "class_order_sha256": "86ccb777b4fb18409b81b68c2d0c6bb2626ca4b72d461ff71eb3ebe1dbe4b8fa",
+    "num_tasks": 10,
+    "tasks": [
+      {
+        "task_id": 0,
+        "new_original_labels": [
+          2,
+          46,
+          11,
+          22
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "3ee3b0af3366ae6a939e7643851ab7a98042b91081fe6471f9fc6ce1e3388d2e",
+        "test_indices_sha256": "e148d1af1e5a970d60614e1fd26fb170e57b957478b8e24e11c1d4db47320099"
+      },
+      {
+        "task_id": 1,
+        "new_original_labels": [
+          34,
+          5,
+          36,
+          17
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "126b634815b0ae93e43ab575fd0a96e86b07a1e4c60dce9cd64a202ef35ebb17",
+        "test_indices_sha256": "7f1c8097d93c9185a6d385548b9383c935fd3e52351f89dc51ab2ee500e48593"
+      },
+      {
+        "task_id": 2,
+        "new_original_labels": [
+          28,
+          30,
+          15,
+          32
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "019858136181d9f80cdbe0b4aba119295873f4d350bac441c5153224a214ac05",
+        "test_indices_sha256": "9357266476d9c3ddc490de91866a2140c2e9c06a7412256e68c4b24ef4fe6901"
+      },
+      {
+        "task_id": 3,
+        "new_original_labels": [
+          14,
+          12,
+          8,
+          26
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "68081957cf20f1e88559c56d30c5c2983f27b7aa67e106d52fe1c8bfd4ebd438",
+        "test_indices_sha256": "9619c8dcf182d1c16a043a067cadb315683e7cc9b00533a8c0f1f3491e5119c2"
+      },
+      {
+        "task_id": 4,
+        "new_original_labels": [
+          27,
+          44,
+          4,
+          39
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "5aacfe2c7ab83d4a4d9d59e0aead5becb940ca26b4014830f1983a15b6ba8876",
+        "test_indices_sha256": "c88bd6602adbbe391f41e95412d53a30dd23ba79468d96bdd26a1ff4bfbd7e0b"
+      },
+      {
+        "task_id": 5,
+        "new_original_labels": [
+          19,
+          16,
+          1,
+          6
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "9970100b68b3885d98610ca0a5c68bb4c04edc200f40b0921fb4c5574cc12921",
+        "test_indices_sha256": "c429146bf0cd3f5d7ef04aa0544ba446134be73cb9fa4453afbdde91afebc859"
+      },
+      {
+        "task_id": 6,
+        "new_original_labels": [
+          25,
+          0,
+          10,
+          3
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "f2043a3a2c318954991de85ddc6dc99eb8b87fb20f7bafa8ff35b5ce3b9af1a0",
+        "test_indices_sha256": "e19872070f291c9058645175469a75d4f0829bf2ff7f9bd8b7f6d97e274c13fa"
+      },
+      {
+        "task_id": 7,
+        "new_original_labels": [
+          24,
+          40,
+          41,
+          9
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "c0750b876cad3c45e44b09e9d3ed8c9ce09a0c3f72191444e5f95ca199ac25a2",
+        "test_indices_sha256": "22217fae661f2debc7c1ccc1a3f05aab872ddbd246509be369ce69dde67a9206"
+      },
+      {
+        "task_id": 8,
+        "new_original_labels": [
+          37,
+          45,
+          21,
+          43
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "7b90a8707ccf60e384a3dca54f8aa8f8d75dc510fa8bf911bcdb0ed6148cf13c",
+        "test_indices_sha256": "2fedb0f2cc9d54997c24fc8dc5225a75e80a34f59fa8559de0a14b6a3f6598c3"
+      },
+      {
+        "task_id": 9,
+        "new_original_labels": [
+          31,
+          18,
+          13,
+          29
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "5bfbbb869941d49db31e132bf173ffb543fdaf546959e08412721ada92b56f53",
+        "test_indices_sha256": "5da4a4b9347b8baebc8740ba5dc49de36cdbb2aeb3df5b6bf9bc7e18e57f32ea"
+      }
+    ]
+  },
+  "class_order": [
+    2,
+    46,
+    11,
+    22,
+    34,
+    5,
+    36,
+    17,
+    28,
+    30,
+    15,
+    32,
+    14,
+    12,
+    8,
+    26,
+    27,
+    44,
+    4,
+    39,
+    19,
+    16,
+    1,
+    6,
+    25,
+    0,
+    10,
+    3,
+    24,
+    40,
+    41,
+    9,
+    37,
+    45,
+    21,
+    43,
+    31,
+    18,
+    13,
+    29
+  ],
+  "environment": {
+    "os": {
+      "system": "Linux",
+      "release": "6.6.159+",
+      "version": "#1 SMP Thu Oct 22 03:07:54 UTC 2026",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+      "implementation": "CPython"
+    },
+    "libraries": {
+      "torch": "2.14.1+cu130",
+      "torchvision": "0.29.1+cu130",
+      "timm": "1.0.31",
+      "datasets": "4.8.5",
+      "wandb": "0.31.0"
+    },
+    "hardware": {
+      "cuda_available": true,
+      "gpu": {
+        "count": 1,
+        "device_name": "Tesla T4",
+        "total_memory_gb": 14.56,
+        "cuda_version": "13.0",
+        "capability": [
+          7,
+          5
+        ]
+      },
+      "cpu_count": 2
+    },
+    "git": {
+      "commit": "acea57e36e59ce4eae1eeb286f1bde79eb599b16",
+      "branch": "experiment/dtd-ablation",
+      "dirty": false
+    }
+  },
+  "config": {
+    "seed": 42,
+    "class_order_seed": 42,
+    "projection_seed": 42,
+    "stream_seed": 42,
+    "dataset": {
+      "name": "tanganke/dtd",
+      "type": "dtd",
+      "total_classes": 47,
+      "num_classes": 40,
+      "classes_per_task": 4,
+      "samples_per_class": 40,
+      "class_order": null,
+      "image_size": 224,
+      "mean": null,
+      "std": null,
+      "interpolation": "bilinear",
+      "normalize": false
+    },
+    "projection": {
+      "dimension": 1000,
+      "initialization": "official_uniform",
+      "seed": 42
+    },
+    "model": {
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "pretrained": true,
+      "feature_fusion": false,
+      "smooth_projection": true,
+      "projection_dim": 1000,
+      "projection_init": "official_uniform",
+      "gamma": 1.0,
+      "rls_dtype": "float64"
+    },
+    "training": {
+      "batch_size": 10,
+      "num_workers": 2,
+      "device": "auto"
+    },
+    "logging": {
+      "use_wandb": true,
+      "project": "hcmus-foal-reproduction",
+      "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+      "base_url": "https://api.forge.coreweave.com",
+      "group": "table4_ablation_dtd",
+      "results_dir": "results"
+    }
+  }
+}
