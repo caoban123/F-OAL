@@ -286,7 +286,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 total_classes=total_dtd_classes,
                 seed=class_order_seed,
             )
-        specs = make_dtd_task_specs(labels_train, labels_test, order, classes_per_task)
+        dtd_samples_per_class = data_cfg.get('samples_per_class', 40)
+        specs = make_dtd_task_specs(
+            labels_train, labels_test, order, classes_per_task,
+            samples_per_class=dtd_samples_per_class, seed=class_order_seed
+        )
     else:
         train_source, test_source = load_cifar100()
         labels_train = train_source['fine_label']

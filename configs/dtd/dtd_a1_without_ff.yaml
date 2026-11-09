@@ -26,6 +26,7 @@ dataset:
   total_classes: 47
   num_classes: 40
   classes_per_task: 4
+  samples_per_class: 40
   class_order: null
   image_size: 224
   mean: null

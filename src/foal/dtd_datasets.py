@@ -160,11 +160,15 @@ def select_dtd_classes(num_classes_to_use: int = 40, total_classes: int = 47,
 
 
 def make_dtd_task_specs(train_labels: Sequence[int], test_labels: Sequence[int],
-                        order: Sequence[int], classes_per_task: int = 4) -> list[TaskSpec]:
+                        order: Sequence[int], classes_per_task: int = 4,
+                        samples_per_class: int | None = 40,
+                        seed: int = 42) -> list[TaskSpec]:
     """Create task specifications for DTD.
 
     With 40 selected classes and classes_per_task=4:
     - 10 tasks × 4 classes each = 40 classes (divides evenly)
+    - If samples_per_class is set (default 40 per paper), limits each class to 40 samples
+      (yielding 160 train samples per task, 1,600 total across 10 tasks).
     """
     num_classes = len(order)
     if classes_per_task < 1:
@@ -183,13 +187,26 @@ def make_dtd_task_specs(train_labels: Sequence[int], test_labels: Sequence[int],
     specs = []
     seen = set()
     all_train_indices = set()
+    rng = np.random.default_rng(seed)
 
     for task_id, start in enumerate(range(0, num_classes, classes_per_task)):
         end = start + classes_per_task
         new_labels = tuple(order[start:end])
         new_set = set(new_labels)
 
-        train_ids = np.flatnonzero(np.isin(train, list(new_set))).tolist()
+        if samples_per_class is not None:
+            task_train_ids = []
+            for cls in new_labels:
+                cls_indices = np.flatnonzero(train == cls).tolist()
+                if len(cls_indices) > samples_per_class:
+                    chosen = rng.choice(cls_indices, size=samples_per_class, replace=False).tolist()
+                else:
+                    chosen = cls_indices
+                task_train_ids.extend(chosen)
+            train_ids = task_train_ids
+        else:
+            train_ids = np.flatnonzero(np.isin(train, list(new_set))).tolist()
+
         if any(i in all_train_indices for i in train_ids):
             raise AssertionError('A training sample would be replayed')
         all_train_indices.update(train_ids)
