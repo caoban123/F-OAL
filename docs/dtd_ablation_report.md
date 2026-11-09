@@ -161,3 +161,10 @@ Nhóm đã tiến hành kiểm toán pháp y toàn diện và giải quyết tri
    * Chuẩn hóa phiên bản thư viện: `timm 1.0.31` và `torch 2.14.1+cu130` trên GPU Tesla T4.
    * Làm rõ kiến trúc: Trong A2 và A3, `self.projection = None` và `projection_metadata = null`, chứng minh không có ma trận chiếu nào can thiệp.
    * Xây dựng bộ kiểm thử pháp y tự động [`tests/test_dtd_forensic_verification.py`](../tests/test_dtd_forensic_verification.py), vượt qua $100\%$ các bài kiểm thử xác nhận khớp nối ma trận 10x10, nguyên lý Zero-Replay ($\mathcal{M} = 0$), và Zero Data Leakage.
+
+5. **Giải mã nghịch lý độ quên khi bỏ Smooth Projection (Plasticity-Forgetting Paradox):**
+   * Phân tích chuyên sâu tại [`docs/Limitations_2.md`](Limitations_2.md).
+   * Khi bỏ SP (A2), $\bar{A}$ giảm $2.85\text{ pp}$, $A_{10}$ chỉ giảm $0.44\text{ pp}$, nhưng $F_{\text{past}}$ giảm từ $7.99\% \to 5.76\%$ (ngỡ như quên ít hơn).
+   * Phân rã toán học pháp y: $\Delta F = \Delta \text{Peak} - \Delta \text{Final} = (87.36\% - 84.65\%) - (79.38\% - 78.89\%) = +2.71\% - 0.49\% = \mathbf{+2.22\text{ pp}}$.
+   * Điểm cuối của cả hai mô hình ở Task 10 hội tụ về ngưỡng trần dung lượng ($\sim 79.1\% - 79.5\%$), nhưng A0 sở hữu năng lực tiếp thu phi tuyến (Plasticity) vượt trội ở các task đầu ($91.25\%$ vs $83.75\%$ ở Task 2). Độ quên của A2 thấp hơn hoàn toàn do đỉnh học ban đầu quá thấp ("học kém làm giảm độ quên giả tạo").
+   * Quy luật nghịch đảo này diễn ra đơn điệu trên toàn bộ 4 điều kiện Table 4: $F_{\text{past}}(\text{A3}: 5.56\%) < F_{\text{past}}(\text{A2}: 5.76\%) < F_{\text{past}}(\text{A1}: 7.01\%) < F_{\text{past}}(\text{A0}: 7.99\%)$, xác lập nguyên tắc phương pháp luận: **Không bao giờ dùng chỉ số Forgetting độc lập để xếp hạng mô hình Continual Learning**.

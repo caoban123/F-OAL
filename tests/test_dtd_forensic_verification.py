@@ -177,3 +177,80 @@ def test_smooth_projection_architecture_flag_provenance():
         assert meta["model_config"]["projection_dim"] == 1000
         assert meta["projection_metadata"] is not None
         assert abs(meta["projection_metadata"]["measured_std"] - 0.02083) < 0.001
+
+
+def test_sp_ablation_plasticity_forgetting_paradox():
+    """Forensically verify the plasticity-stability paradox between A0 and A2 on DTD (docs/Limitations_2.md).
+    
+    Verifies:
+    1. Delta A_bar = +2.85 pp, Delta A_10 = +0.44 pp, Delta F_past = +2.22 pp.
+    2. Mean Peak(A0) - Mean Peak(A2) = +2.71 pp (A0 has much higher learning plasticity).
+    3. Mean Final(A0) - Mean Final(A2) = +0.49 pp (both converge at task 10).
+    4. Mathematical identity: Delta F_past = Delta Mean Peak - Delta Mean Final.
+    5. Monotonic decrease of peak learning capacity across A0 > A1 > A2 > A3.
+    """
+    metrics = {}
+    matrices = {}
+    for cond_id, folder in CONDITIONS.items():
+        with open(DTD_RESULTS_DIR / folder / "metrics.json", "r", encoding="utf-8") as f:
+            d = json.load(f)
+            metrics[cond_id] = d
+            R = np.zeros((10, 10))
+            for s, row in enumerate(d["task_matrix"]):
+                for t, v in enumerate(row):
+                    R[s, t] = float(v)
+            matrices[cond_id] = R
+
+    # 1. Delta checks between A0 and A2
+    a_bar_0 = metrics["A0"]["average_incremental_accuracy"] * 100.0
+    a_bar_2 = metrics["A2"]["average_incremental_accuracy"] * 100.0
+    delta_a_bar = a_bar_0 - a_bar_2
+    assert abs(delta_a_bar - 2.8477) < 0.01, f"Expected delta A_bar ~ 2.85 pp, got {delta_a_bar}"
+
+    a_10_0 = metrics["A0"]["last_accuracy"] * 100.0
+    a_10_2 = metrics["A2"]["last_accuracy"] * 100.0
+    delta_a_10 = a_10_0 - a_10_2
+    assert abs(delta_a_10 - 0.4375) < 0.01, f"Expected delta A_10 ~ 0.44 pp, got {delta_a_10}"
+
+    f_past_0 = metrics["A0"]["forgetting_past_tasks"] * 100.0
+    f_past_2 = metrics["A2"]["forgetting_past_tasks"] * 100.0
+    delta_f_past = f_past_0 - f_past_2
+    assert abs(delta_f_past - 2.2222) < 0.01, f"Expected delta F_past ~ 2.22 pp, got {delta_f_past}"
+
+    # 2. Decompose peaks and finals for tasks 1 to 9
+    R0 = matrices["A0"]
+    R2 = matrices["A2"]
+    peaks_0 = [np.max(R0[j:9, j]) * 100.0 for j in range(9)]
+    peaks_2 = [np.max(R2[j:9, j]) * 100.0 for j in range(9)]
+    finals_0 = [R0[9, j] * 100.0 for j in range(9)]
+    finals_2 = [R2[9, j] * 100.0 for j in range(9)]
+
+    mean_peak_0 = float(np.mean(peaks_0))
+    mean_peak_2 = float(np.mean(peaks_2))
+    delta_peak = mean_peak_0 - mean_peak_2
+
+    mean_final_0 = float(np.mean(finals_0))
+    mean_final_2 = float(np.mean(finals_2))
+    delta_final = mean_final_0 - mean_final_2
+
+    assert abs(delta_peak - 2.7083) < 0.01, f"Expected delta Peak ~ 2.71 pp, got {delta_peak}"
+    assert abs(delta_final - 0.4861) < 0.01, f"Expected delta Final ~ 0.49 pp, got {delta_final}"
+
+    # 3. Exact mathematical identity
+    identity_diff = abs(delta_f_past - (delta_peak - delta_final))
+    assert identity_diff < 1e-10, f"Identity violated: {identity_diff}"
+
+    # 4. Stage 2 gap is large (> 9.0 pp), Stage 10 gap is small (< 0.5 pp)
+    stage_2_gap = (R0[1, :2].mean() - R2[1, :2].mean()) * 100.0
+    assert abs(stage_2_gap - 9.0625) < 0.01
+
+    # 5. Monotonic decrease of Peak across all 4 conditions
+    mean_peaks = {}
+    for c in ["A0", "A1", "A2", "A3"]:
+        Rc = matrices[c]
+        p_c = [np.max(Rc[j:9, j]) * 100.0 for j in range(9)]
+        mean_peaks[c] = float(np.mean(p_c))
+
+    assert mean_peaks["A0"] > mean_peaks["A1"] > mean_peaks["A2"] > mean_peaks["A3"], (
+        f"Expected monotonic decrease in peak capacity: {mean_peaks}"
+    )
