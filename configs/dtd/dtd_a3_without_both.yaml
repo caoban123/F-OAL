@@ -56,7 +56,7 @@ training:
 logging:
   use_wandb: true
   project: hcmus-foal-reproduction
-  entity: phongphanthe70-afsb
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
   base_url: https://api.forge.coreweave.com
   group: table4_ablation_dtd
   results_dir: results
