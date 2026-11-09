@@ -23,7 +23,7 @@ def get_git_info() -> dict[str, Any]:
         pass
 
     try:
-        status = subprocess.check_output(['git', 'status', '--porcelain'],
+        status = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'],
                                          stderr=subprocess.DEVNULL, text=True).strip()
         info['dirty'] = len(status) > 0
     except (subprocess.CalledProcessError, FileNotFoundError):

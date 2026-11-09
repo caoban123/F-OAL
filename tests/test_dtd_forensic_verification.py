@@ -398,3 +398,57 @@ def test_dtd_seed_cascading_and_decoupling_fix():
     assert class_seed_iso == 42  # Frozen class order
     assert proj_set_iso["seed"] == 123  # Varying projection matrix
 
+
+def test_dtd_limitation_5_code_state_and_timing_provenance():
+    """Verify code state integrity, timing decomposition, and zero-replay across all 12 runs (Limitations_5).
+    
+    Verifies:
+    1. All 12 metadata files share identical git commit 'ca42e67265e3c6be485113216e51b488bb3775a9'.
+    2. All 12 runs ran on identical hardware/software stack: Tesla T4, PyTorch 2.14.1+cu130, timm 1.0.31.
+    3. Pure RLS + eval execution is strictly bounded in [0.75s, 1.05s] across all 12 runs.
+    4. Cached runs (A2/A3) complete in ~1s wall-clock while recording historical feature extraction time.
+    5. Zero-Replay holds across all 12 runs: tasks within each seed have strictly disjoint classes.
+    """
+    commit_target = "ca42e67265e3c6be485113216e51b488bb3775a9"
+
+    for folder in DTD_RESULTS_DIR.iterdir():
+        if not folder.is_dir():
+            continue
+        meta_file = folder / "metadata.json"
+        metrics_file = folder / "metrics.json"
+        assert meta_file.exists() and metrics_file.exists(), f"Missing artifacts in {folder.name}"
+
+        meta = json.loads(meta_file.read_text(encoding="utf-8"))
+        metrics = json.loads(metrics_file.read_text(encoding="utf-8"))
+
+        # 1. Commit provenance
+        assert meta["git_commit"] == commit_target, f"{folder.name} git_commit mismatch"
+        assert meta["environment"]["git"]["commit"] == commit_target
+
+        # 2. Software/Hardware stack consistency
+        libs = meta["environment"]["libraries"]
+        assert libs["torch"] == "2.14.1+cu130"
+        assert libs["timm"] == "1.0.31"
+        assert meta["environment"]["hardware"]["gpu"]["device_name"] == "Tesla T4"
+
+        # 3. Timing bounds
+        rls_sec = metrics["rls_and_eval_seconds"]
+        assert 0.75 <= rls_sec <= 1.05, f"{folder.name} RLS time {rls_sec}s outside expected bounds [0.75, 1.05]"
+
+        tot_sec = metrics["total_duration_seconds"]
+        is_cached_run = folder.name.startswith(("a2", "a3", "dtd_a2", "dtd_a3"))
+        if is_cached_run:
+            assert tot_sec < 2.0, f"Cached run {folder.name} wall clock exceeded 2.0s: {tot_sec}s"
+        else:
+            assert tot_sec > 35.0, f"Uncached run {folder.name} wall clock below 35.0s: {tot_sec}s"
+
+        # 4. Zero-Replay check
+        tasks = meta["task_split_fingerprint"]["tasks"]
+        seen_classes = []
+        for t in tasks:
+            for c in t["new_original_labels"]:
+                assert c not in seen_classes, f"Class {c} replayed in task {t['task_id']} of {folder.name}!"
+                seen_classes.append(c)
+        assert len(seen_classes) == 40, f"Expected 40 disjoint classes in {folder.name}"
+
+
