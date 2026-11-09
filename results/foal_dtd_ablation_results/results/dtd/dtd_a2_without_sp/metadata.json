@@ -3,7 +3,7 @@
   "method": "foal_no_projection",
   "experiment_type": "ablation",
   "run_name": "dtd_a2_without_sp_seed42",
-  "git_commit": "acea57e36e59ce4eae1eeb286f1bde79eb599b16",
+  "git_commit": "ca42e67265e3c6be485113216e51b488bb3775a9",
   "seeds": {
     "base": 42,
     "dataset": 42,
@@ -271,16 +271,16 @@
       "cpu_count": 2
     },
     "git": {
-      "commit": "acea57e36e59ce4eae1eeb286f1bde79eb599b16",
+      "commit": "ca42e67265e3c6be485113216e51b488bb3775a9",
       "branch": "experiment/dtd-ablation",
-      "dirty": false
+      "dirty": true
     }
   },
   "config": {
     "seed": 42,
-    "class_order_seed": 42,
-    "projection_seed": 42,
-    "stream_seed": 42,
+    "class_order_seed": null,
+    "projection_seed": null,
+    "stream_seed": null,
     "dataset": {
       "name": "tanganke/dtd",
       "type": "dtd",
@@ -298,7 +298,7 @@
     "projection": {
       "dimension": 768,
       "initialization": null,
-      "seed": 42
+      "seed": null
     },
     "model": {
       "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",

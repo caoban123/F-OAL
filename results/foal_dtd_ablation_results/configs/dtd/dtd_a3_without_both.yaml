@@ -16,9 +16,9 @@
 # ==============================================================================
 
 seed: 42
-class_order_seed: 42
-projection_seed: 42
-stream_seed: 42
+class_order_seed: null   # Seed for class order permutation (defaults to seed if null)
+projection_seed: null    # Seed for random projection matrix (defaults to seed if null)
+stream_seed: null        # Seed for batch stream shuffling & sampling (defaults to seed if null)
 
 dataset:
   name: tanganke/dtd
@@ -37,7 +37,7 @@ dataset:
 projection:
   dimension: 768
   initialization: null
-  seed: 42
+  seed: null
 
 model:
   backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k

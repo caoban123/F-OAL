@@ -67,7 +67,7 @@
     0.74375,
     0.725
   ],
-  "total_duration_seconds": 1.02,
-  "feature_extraction_seconds": 42.5,
-  "rls_and_eval_seconds": 0.82
+  "total_duration_seconds": 1.03,
+  "feature_extraction_seconds": 38.99,
+  "rls_and_eval_seconds": 0.85
 }
