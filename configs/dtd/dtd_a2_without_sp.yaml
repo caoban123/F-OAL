@@ -1,0 +1,62 @@
+# ==============================================================================
+# Table 4 Ablation Study: Condition A2 (w/o Smooth Projection on DTD)
+#
+# Reference Paper: NeurIPS 2024 Table 4
+# Reported Value: \bar{A} = 79.3% (-3.5 pp)
+#
+# Architectural Configuration:
+#   - Feature Fusion (FF): ENABLED (true)
+#   - Smooth Projection (SP): DISABLED (false) - Direct to RLS (D=768)
+#
+# Preprocessing & Backbone:
+#   - Backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k (ImageNet-21K + 1K FT)
+#   - Interpolation: bilinear
+#   - Normalization: false (Raw [0, 1] tensor)
+#   - Optimization: Online Ridge RLS, batch_size=10, gamma=1.0, float64
+# ==============================================================================
+
+seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  total_classes: 47
+  num_classes: 40
+  classes_per_task: 4
+  class_order: null
+  image_size: 224
+  mean: null
+  std: null
+  interpolation: bilinear
+  normalize: false
+
+projection:
+  dimension: 768
+  initialization: null
+  seed: 42
+
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: false
+  projection_dim: 768
+  projection_init: null
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  num_workers: 2
+  device: auto
+
+logging:
+  use_wandb: true
+  project: hcmus-foal-reproduction
+  entity: phongphanthe70-afsb
+  base_url: https://api.forge.coreweave.com
+  group: table4_ablation_dtd
+  results_dir: results

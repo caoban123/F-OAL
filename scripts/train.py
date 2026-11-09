@@ -29,6 +29,7 @@ import yaml
 
 from src.foal.datasets import (load_cifar100, make_class_order, make_task_specs,
                               IndexedImageDataset, cifar100_transforms, limit_indices_per_task)
+from src.foal.dtd_datasets import load_dtd, make_dtd_class_order, make_dtd_task_specs
 from src.foal.model import FOALModel
 from src.foal.projection import VALID_PROJECTION_INITIALIZATIONS
 from src.foal.metrics import summary_from_task_matrix, format_summary_percentages
@@ -266,12 +267,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     data_cfg = cfg['dataset']
     model_cfg = cfg['model']
 
-    train_source, test_source = load_cifar100()
-    labels_train = train_source['fine_label']
-    labels_test = test_source['fine_label']
+    dataset_type = str(data_cfg.get('type', '')).lower()
+    dataset_name = str(data_cfg.get('name', '')).lower()
+    is_dtd = dataset_type == 'dtd' or 'dtd' in dataset_name
 
-    order = make_class_order(int(data_cfg['num_classes']), class_order_seed, data_cfg.get('class_order'))
-    specs = make_task_specs(labels_train, labels_test, order, int(data_cfg['classes_per_task']))
+    if is_dtd:
+        train_source, test_source = load_dtd()
+        labels_train = train_source.fine_label
+        labels_test = test_source.fine_label
+        total_dtd_classes = int(data_cfg.get('total_classes', 47))
+        num_classes = int(data_cfg.get('num_classes', 40))
+        classes_per_task = int(data_cfg.get('classes_per_task', 4))
+        if data_cfg.get('class_order') is not None:
+            order = list(data_cfg['class_order'])
+        else:
+            order = make_dtd_class_order(
+                num_classes_to_use=num_classes,
+                total_classes=total_dtd_classes,
+                seed=class_order_seed,
+            )
+        specs = make_dtd_task_specs(labels_train, labels_test, order, classes_per_task)
+    else:
+        train_source, test_source = load_cifar100()
+        labels_train = train_source['fine_label']
+        labels_test = test_source['fine_label']
+
+        order = make_class_order(int(data_cfg['num_classes']), class_order_seed, data_cfg.get('class_order'))
+        specs = make_task_specs(labels_train, labels_test, order, int(data_cfg['classes_per_task']))
 
     max_tasks = args.max_tasks or len(specs)
     if not (1 <= max_tasks <= len(specs)):
@@ -397,7 +419,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     # Weights & Biases experiment tracking (A13 / C1 Section 11.2)
     wandb_run = None
-    use_wandb = args.wandb or cfg['logging'].get('use_wandb', False)
+    use_wandb = (args.wandb or cfg['logging'].get('use_wandb', False)) and os.environ.get('WANDB_MODE') != 'disabled'
     if use_wandb:
         try:
             import wandb
@@ -606,6 +628,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         # Save metrics and summary
         metrics_payload = {'task_matrix': matrix, **metrics}
         (outdir / 'metrics.json').write_text(json.dumps(metrics_payload, indent=2), encoding='utf-8')
+        summary_payload = {
+            'accuracy_bar': metrics['average_incremental_accuracy'] * 100.0,
+            'a_10': metrics['last_accuracy'] * 100.0,
+            'f_10_past': metrics['forgetting_past_tasks'] * 100.0,
+            'f_10_code': metrics['forgetting_official_code'] * 100.0,
+            **metrics,
+        }
+        (outdir / 'summary.json').write_text(json.dumps(summary_payload, indent=2), encoding='utf-8')
+        (outdir / 'matrix.json').write_text(json.dumps(matrix, indent=2), encoding='utf-8')
 
         with (outdir / 'task_accuracy.csv').open('w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
