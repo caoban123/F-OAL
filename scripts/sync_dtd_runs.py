@@ -104,8 +104,11 @@ def sync_runs(
             art.add_file(str(csv_file))
         run.log_artifact(art)
 
-        run_url = run.get_url()
-        print(f"    SUCCESS: Synced {cond} -> {run_url}")
+        try:
+            run_url = getattr(run, "url", None) or getattr(run, "get_url", lambda: "")() or "uploaded"
+            print(f"    SUCCESS: Synced {cond} -> {run_url}")
+        except Exception:
+            print(f"    SUCCESS: Synced {cond}")
         run.finish()
 
     print("\n" + "=" * 80)
