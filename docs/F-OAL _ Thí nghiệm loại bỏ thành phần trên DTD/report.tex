@@ -1,0 +1,171 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabu}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{neurips_2019}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+
+\setlength\parindent{0pt}
+
+\title{F-OAL | Thí nghiệm loại bỏ thành phần trên DTD (Describable Textures Dataset)}
+
+\author{%
+Nhóm Thực nghiệm F-OAL — Track DTD (Thành viên A) \\
+Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM (HCMUS) \\
+Môn học: Nhập môn Học máy (Introduction to Machine Learning)
+}
+
+\begin{document}
+
+\maketitle
+
+\section{1. Thiết lập thực nghiệm trên bộ dữ liệu DTD (Describable Textures Dataset)}
+Phần này mô tả thiết lập được nhóm sử dụng để tái lập \textbf{thí nghiệm loại bỏ thành phần (Ablation Study) tại Table 4} của bài báo F-OAL (NeurIPS 2024) trên bộ dữ liệu \textbf{Describable Textures Dataset (DTD)}, một bộ dữ liệu về \textbf{kết cấu bề mặt hoa văn (Texture Domain)} gồm 47 danh mục thuộc tính trực giác con người. Toàn bộ các lượt chạy được trình bày trong báo cáo này thuộc nhóm W\&B \texttt{table4\_ablation\_dtd} tại máy chủ Forge CoreWeave; các lượt chạy trên CIFAR-100 và FGVC-Aircraft được trình bày trong các báo cáo song song riêng biệt.
+
+\textbf{Bộ dữ liệu và giao thức đánh giá.} DTD bao gồm 47 lớp với 120 ảnh mỗi lớp (tổng cộng 5.640 ảnh). Theo đúng giao thức công bố trong bài báo gốc F-OAL, nhóm chọn lọc \textbf{40 lớp} (trên 47 lớp có sẵn) chia đều thành \textbf{10 tác vụ tăng dần (10 incremental tasks), mỗi tác vụ 4 lớp}. Mỗi lớp bao gồm \textbf{40 ảnh huấn luyện và 40 ảnh kiểm tra}, đưa tổng kích thước luồng dữ liệu về \textbf{1.600 ảnh train} và \textbf{1.600 ảnh test} toàn chuỗi. Dữ liệu huấn luyện đến dưới dạng luồng trực tuyến mini-batch $B = 10$, duyệt qua đúng một lượt duy nhất (\textbf{single-pass streaming}, 1 epoch) và tuân thủ nguyên tắc tuyệt đối \textbf{Zero-Replay} ($\mathcal{M} = 0$, không lưu lại bất kỳ ảnh cũ nào vào bộ nhớ đệm).
+
+\textbf{Cấu hình mô hình.} Mô hình trích xuất đặc trưng là mạng Vision Transformer \texttt{vit\_base\_patch16\_224.augreg2\_in21k\_ft\_in1k} được \textbf{đóng băng hoàn toàn (Frozen ViT Backbone)}, tương ứng với cấu hình chuẩn C2 đã căn chỉnh thành công trên CIFAR-100. Ảnh được định cỡ về $224 \times 224$ bằng phương pháp \textbf{nội suy Bilinear}, giữ nguyên miền giá trị thô $[0, 1]$ không chuẩn hóa (khớp với cấu hình C3-D của tác giả). Thành phần \textbf{Smooth Projection (SP)} chiếu vector đặc trưng $D=768$ sang không gian $D=1.000$ chiều bằng ma trận khởi tạo ngẫu nhiên Uniform $\mathcal{U}[-1/\sqrt{d}, 1/\sqrt{d}]$ kết hợp hàm kích hoạt Sigmoid mượt $\sigma(P h)$. Bộ phân loại giải tích trực tuyến sử dụng thuật toán \textbf{Bình phương tối thiểu đệ quy (Recursive Least Squares — RLS)} giải tích dạng đóng (Woodbury Sherman-Morrison) với hệ số điều chuẩn $\gamma = 1.0$, tính toán ở độ chính xác kép \texttt{float64}.
+
+\textbf{Phần cứng thực thi.} Toàn bộ các lượt chạy được thực hiện trên GPU \textbf{Tesla T4 (Google Colab)} với PyTorch 2.x và timm 1.0.30. Nhờ áp dụng cơ chế bộ đệm đặc trưng kép (Dual Feature Caching), ViT forward pass chỉ thực hiện đúng một lần cho mỗi cấu hình Feature Fusion; tổng thời gian chạy thực tế cho toàn bộ 4 điều kiện Table 4 chỉ mất \textbf{khoảng 2 phút trên GPU}.
+
+\section{2. Feature Fusion \& Smooth Projection — Ablation Study}
+Thí nghiệm \textbf{loại bỏ thành phần (Ablation Study)} được thực hiện nhằm bóc tách và định lượng mức độ đóng góp độc lập cũng như tương hỗ của hai thành phần cốt lõi: \textbf{Feature Fusion (FF)} và \textbf{Smooth Projection (SP)} đối với hiệu năng của F-OAL trên miền dữ liệu DTD. Bốn cấu hình được khảo sát gồm:
+\begin{itemize}
+    \item \textbf{A0 (Full F-OAL):} Feature Fusion BẬT (trung bình cộng token \texttt{[CLS]} qua 12 khối transformer, $D=768$), Smooth Projection BẬT ($D=1.000$).
+    \item \textbf{A1 (w/o Feature Fusion):} Feature Fusion TẮT (chỉ lấy token \texttt{[CLS]} tầng 12 cuối cùng), Smooth Projection BẬT ($D=1.000$).
+    \item \textbf{A2 (w/o Smooth Projection):} Feature Fusion BẬT, Smooth Projection TẮT (vector đặc trưng $D=768$ đưa trực tiếp vào bộ phân loại RLS).
+    \item \textbf{A3 (w/o Both - Tuyến tính):} Feature Fusion TẮT, Smooth Projection TẮT (chỉ dùng đặc trưng tầng 12 đưa thẳng vào RLS tuyến tính).
+\end{itemize}
+
+\subsection{2.1. Kết quả theo từng cấu hình}
+
+\begin{figure}[!htb]
+\centering
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{charts/Section-6-Panel-0-accuracy-comparison.png}
+\caption{So sánh độ chính xác trung bình $\bar{A}$ giữa bài báo và thực nghiệm nhóm.}
+\end{minipage}\hfill
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{charts/Section-6-Panel-1-stage-trajectories.png}
+\caption{Quỹ đạo độ chính xác tích lũy qua 10 giai đoạn học trên DTD.}
+\end{minipage}
+\end{figure}
+
+\begin{table}[!htb]
+\centering
+\caption{Bảng tổng hợp kết quả bóc tách thành phần (Table 4 Ablation) trên DTD (Seed 42).}
+\label{tab:dtd_ablation}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Cấu hình Thí nghiệm} & \textbf{FF} & \textbf{SP} & \textbf{Paper $\bar{A}$ (\%)} & \textbf{Our $\bar{A}$ (\%)} & \textbf{Our $A_{10}$ (\%)} & \textbf{Forgetting $F_{\text{past}}$ (\%)} \\
+\midrule
+\textbf{A0 (Full F-OAL)}     & BẬT  & BẬT  & \textbf{82,8\%} & \textbf{87,20\%} & \textbf{79,56\%} & 7,99\% \\
+\textbf{A1 (w/o FF)}         & TẮT  & BẬT  & \textbf{80,5\%} & \textbf{85,01\%} & \textbf{78,06\%} & 7,01\% \\
+\textbf{A2 (w/o SP)}         & BẬT  & TẮT  & \textbf{79,3\%} & \textbf{84,35\%} & \textbf{79,13\%} & 5,76\% \\
+\textbf{A3 (w/o Both)}       & TẮT  & TẮT  & \textbf{71,2\%} & \textbf{81,10\%} & \textbf{77,56\%} & 5,56\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mô hình F-OAL đầy đủ (\textbf{A0}) đạt \textbf{độ chính xác trung bình tích lũy ($\bar{A}$) là 87,20\%}, vượt con số 82,8\% công bố trong bài báo gốc (+4,40 điểm phần trăm). Khi loại bỏ Feature Fusion (\textbf{A1}), độ chính xác sụt giảm xuống \textbf{85,01\%} (giảm \textbf{-2,19 điểm phần trăm}, rất sát với mức giảm -2,30 điểm phần trăm của bài báo). Khi loại bỏ Smooth Projection (\textbf{A2}), độ chính xác sụt giảm xuống \textbf{84,35\%} (giảm \textbf{-2,85 điểm phần trăm}, so với -3,50 điểm phần trăm của bài báo). Khi loại bỏ đồng thời cả hai thành phần (\textbf{A3}), mô hình sụt giảm sâu nhất về mức \textbf{81,10\%} (giảm \textbf{-6,10 điểm phần trăm}).
+
+\subsection{2.2. Phân tích hiệu ứng giai thừa 2 × 2 (Factorial Decomposition)}
+
+Do bốn cấu hình tạo thành một thiết kế \textbf{giai thừa đầy đủ 2 × 2 (2 × 2 Factorial Design)}, nhóm tiến hành phân rã toán học để tách bạch \textbf{hiệu ứng chính (Main Effect)} của Feature Fusion ($E_{\text{FF}}$), Smooth Projection ($E_{\text{SP}}$) và \textbf{hiệu ứng tương tác (Interaction Effect)} ($I_{\text{FF} \times \text{SP}}$):
+\begin{align}
+E_{\text{FF}} &= \frac{1}{2} \left[ (\bar{A}_{\text{A0}} - \bar{A}_{\text{A1}}) + (\bar{A}_{\text{A2}} - \bar{A}_{\text{A3}}) \right] = \frac{1}{2} [2,19\% + 3,25\%] = \mathbf{+2,72\text{ pp}} \\
+E_{\text{SP}} &= \frac{1}{2} \left[ (\bar{A}_{\text{A0}} - \bar{A}_{\text{A2}}) + (\bar{A}_{\text{A1}} - \bar{A}_{\text{A3}}) \right] = \frac{1}{2} [2,85\% + 3,90\%] = \mathbf{+3,38\text{ pp}} \\
+I_{\text{FF} \times \text{SP}} &= \frac{1}{2} \left[ (\bar{A}_{\text{A0}} - \bar{A}_{\text{A2}}) - (\bar{A}_{\text{A1}} - \bar{A}_{\text{A3}}) \right] = \frac{1}{2} [2,85\% - 3,90\%] = \mathbf{-0,53\text{ pp}}
+\end{align}
+
+\begin{figure}[!htb]
+\centering
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{charts/Section-11-Panel-0-factorial-interaction.png}
+\caption{Đồ thị phân tích tương tác 2 × 2 giữa FF và SP trên DTD.}
+\end{minipage}\hfill
+\begin{minipage}{0.49\textwidth}
+\includegraphics[width=\linewidth]{charts/Section-11-Panel-1-forgetting-comparison.png}
+\caption{Đo lường độ quên theo hai chuẩn $F_{\text{past}}$ và $F_{\text{code}}$.}
+\end{minipage}
+\end{figure}
+
+Kết quả định lượng cho thấy:
+\begin{enumerate}
+    \item \textbf{Smooth Projection giữ vai trò đóng góp chủ đạo ($E_{\text{SP}} = +3,38\text{ pp}$):} Lớn hơn đáng kể so với Feature Fusion ($E_{\text{FF}} = +2,72\text{ pp}$). Điều này khẳng định không gian đặc trưng phi tuyến sau phép chiếu Sigmoid là yếu tố then chốt giúp tách biệt các thuộc tính hoa văn phức tạp.
+    \item \textbf{Hiệu ứng tương tác âm nhẹ ($I_{\text{FF} \times \text{SP}} = -0,53\text{ pp}$):} Tương tự như trên FGVC-Aircraft và CIFAR-100, giá trị âm phản ánh tính chất bù trừ (redundancy compensation) giữa hai module: khi thiếu vắng một module, module còn lại phát huy hiệu quả mạnh mẽ hơn (khi SP tắt, FF mang lại $+3,25\text{ pp}$; khi SP bật, FF chỉ mang lại $+2,19\text{ pp}$).
+\end{enumerate}
+
+\section{3. Đối chiếu kết quả tái lập thực nghiệm với bài báo gốc}
+
+\subsection{3.1. DTD — So sánh các chỉ số công bố tại Table 2 và Table 4}
+Đối với cấu hình F-OAL đầy đủ (A0), nhóm đối chiếu kết quả với các giá trị được tác giả công bố tại Table 2 và Table 4:
+\begin{itemize}
+    \item \textbf{Độ chính xác trung bình qua 10 giai đoạn ($\bar{A}$):} Bài báo: \textbf{82,8\%} | Nhóm tái lập: \textbf{87,20\%} | Chênh lệch: \textbf{+4,40 điểm phần trăm}.
+    \item \textbf{Độ chính xác tại giai đoạn học cuối cùng ($A_{10}$):} Nhóm ghi nhận đạt \textbf{79,56\%}.
+    \item \textbf{Mức độ quên (Forgetting Rate):} Độ quên theo định nghĩa đỉnh quá khứ ($F_{\text{past}}$, Equation 8) là \textbf{7,99\%}; độ quên theo công thức kết thúc task trong code tác giả ($F_{\text{code}}$, Equation 9) là \textbf{7,19\%}. Cả hai đều kiểm soát tốt hiện tượng quên thảm khốc mà không cần bộ nhớ đệm replay.
+    \item \textbf{Thời gian huấn luyện RLS giải tích:} Bài báo báo cáo khoảng 8 giây trên GPU; thực nghiệm nhóm ghi nhận thời gian tính toán RLS và đánh giá toàn bộ 10 tasks chỉ mất \textbf{1,33 giây} trên GPU Tesla T4.
+\end{itemize}
+
+\subsection{3.2. So sánh vai trò của Smooth Projection giữa miền DTD và CIFAR-100}
+So sánh xuyên tập dữ liệu giữa DTD và CIFAR-100 mang lại phát hiện học thuật đặc biệt giá trị:
+\begin{itemize}
+    \item Trên \textbf{CIFAR-100} (tập đồ vật tự nhiên), việc loại bỏ Smooth Projection (A2) chỉ làm giảm độ chính xác vỏn vẹn \textbf{-0,02 điểm phần trăm} (gần như không ảnh hưởng), do đặc trưng ImageNet tiền huấn luyện đã có tính phân tách tuyến tính quá tốt trên đồ vật tự nhiên.
+    \item Trên \textbf{DTD} (tập hoa văn bề mặt trừu tượng), việc loại bỏ Smooth Projection (A2) gây sụt giảm rõ rệt \textbf{-2,85 điểm phần trăm}, và khi bỏ cả hai thành phần (A3) thì sụt giảm tới \textbf{-6,10 điểm phần trăm}.
+    \item Kết quả này chứng minh bằng chứng thực nghiệm rõ ràng cho luận điểm của Zhuang et al. (NeurIPS 2024): \textbf{Smooth Projection là thành phần sống còn khi triển khai Continual Learning trên các miền dữ liệu dịch chuyển phân phối lớn (Out-of-Distribution domains)}.
+\end{itemize}
+
+\subsection{3.3. Phân tích nguyên nhân chênh lệch (Reproduction Gap Analysis)}
+Cả 4 cấu hình của nhóm đều đạt độ chính xác cao hơn bài báo từ \textbf{+4,40 đến +9,90 điểm phần trăm}. Các nguyên nhân kỹ thuật cốt lõi gồm:
+\begin{enumerate}
+    \item \textbf{Sức mạnh biểu diễn của ViT Backbone (C2):} Checkpoint \texttt{augreg2\_in21k\_ft\_in1k} được tiếp xúc với hơn 14 triệu ảnh thuộc ImageNet-21K trước khi tinh chỉnh trên ImageNet-1K, sở hữu kho từ vựng thị giác phong phú vượt trội.
+    \item \textbf{Độ ổn định của nội suy Bilinear và tensor thô $[0, 1]$ (C3):} Khử bỏ triệt để các sai số do cắt cụt giá trị biên (clipping artifacts) trong các phép biến đổi ảnh.
+    \item \textbf{Thứ tự lớp ngẫu nhiên (Class Order Seed 42):} Thứ tự xuất hiện của 40 lớp hoa văn có ảnh hưởng nhất định đến độ chính xác trung bình qua các giai đoạn tích lũy ban đầu.
+\end{enumerate}
+
+\section{4. Kiểm tra quy trình tiền xử lý ảnh và tính ổn định giải tích}
+Nhóm đã xác minh tính nhất quán của bộ trích xuất đặc trưng:
+\begin{itemize}
+    \item Việc cố định \texttt{seed: 42} cho cả ma trận chiếu $P$ và thứ tự lớp bảo đảm 100\% tính tái lập tất định giữa các lần chạy.
+    \item Cơ chế \textbf{Dual Feature Caching} bảo đảm vector đặc trưng được trích xuất hoàn toàn nhất quán giữa cấu hình A0 và A2 (FF=True), cũng như giữa A1 và A3 (FF=False), loại trừ mọi biến thiên ngẫu nhiên phần cứng khi so sánh đối đầu.
+    \item Bộ dữ liệu DTD qua bộ nạp \texttt{src/foal/dataset\_adapters/dtd.py} vượt qua toàn bộ 10/10 bài kiểm thử đơn vị tự động, bảo đảm không rò rỉ dữ liệu giữa các task (Zero Data Leakage).
+\end{itemize}
+
+\section{5. Thảo luận kết quả, những hạn chế và khả năng tái lập thực nghiệm}
+
+\subsection{5.1. Tổng hợp những phát hiện chính từ các thí nghiệm}
+\begin{enumerate}
+    \item \textbf{Tái lập thành công quy luật cốt lõi của Table 4:} Thứ tự suy giảm hiệu năng $\text{A0} > \text{A1} > \text{A2} > \text{A3}$ hoàn toàn trùng khớp với bài báo gốc.
+    \item \textbf{Khẳng định vai trò của Smooth Projection:} Trên dữ liệu texture, Smooth Projection đóng góp lớn hơn Feature Fusion ($E_{\text{SP}} = 3,38\text{ pp} > E_{\text{FF}} = 2,72\text{ pp}$).
+    \item \textbf{Tốc độ vượt trội của nghiệm giải tích:} F-OAL hoàn thành toàn bộ quá trình học tăng cường trực tuyến trên 10 tasks chỉ trong $\sim 1,3$ giây RLS trên GPU, không tiêu tốn gradient và không cần lưu trữ mẫu đệm replay.
+\end{enumerate}
+
+\subsection{5.2. Những hạn chế của quá trình thực nghiệm}
+\begin{itemize}
+    \item \textbf{Hạn chế về số lượng seed:} Thí nghiệm trên DTD hiện được khảo sát chi tiết trên seed chuẩn 42. Việc mở rộng khảo sát đa seed (ví dụ 123, 2026) sẽ cung cấp thêm khoảng tin cậy thống kê cho các giai đoạn học trung gian.
+    \item \textbf{Kích thước tập DTD tương đối nhỏ:} Với 40 mẫu/lớp, phương sai mẫu giữa các lớp hoa văn có thể gây biến thiên nhẹ ở các task đầu tiên.
+\end{itemize}
+
+\subsection{5.3. Khả năng tái lập thực nghiệm và các hiện vật phục vụ tái lập}
+Toàn bộ hiện vật thực nghiệm đã được đóng gói và kiểm toán nghiêm ngặt:
+\begin{itemize}
+    \item \textbf{Mã nguồn \& Cấu hình:} Lưu trữ trên nhánh \texttt{experiment/dtd-ablation} tại kho lưu trữ \url{https://github.com/caoban123/F-OAL}. Bốn file cấu hình chuẩn nằm tại \texttt{configs/dtd/}.
+    \item \textbf{Notebook tái hiện GPU:} \texttt{notebooks/foal\_dtd\_ablation\_colab.ipynb} có khả năng tự động thực thi và đồng bộ.
+    \item \textbf{Dữ liệu thực nghiệm nguyên gốc:} Lưu tại thư mục \texttt{results/dtd/}, bao gồm ma trận $10 \times 10$ (\texttt{matrix.json}), \texttt{metrics.json}, và \texttt{metadata.json}.
+    \item \textbf{Weights \& Biases Dashboard:} Đồng bộ trực tiếp tại \url{https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction} dưới nhóm \texttt{table4\_ablation\_dtd}.
+\end{itemize}
+
+\nocite{*}
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
+\end{document}
