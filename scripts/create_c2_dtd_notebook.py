@@ -109,22 +109,39 @@ for cfg_path in CONFIGS:
 !pip install -q timm pyyaml pytest datasets matplotlib pandas
 !pip install -q --upgrade wandb
 
+import os
 import wandb
 
-WANDB_BASE_URL = "https://api.forge.coreweave.com"
+# 1. Retrieve W&B API Key from Colab Secrets or Environment
+try:
+    from google.colab import userdata
+    if "WANDB_API_KEY" in userdata:
+        os.environ["WANDB_API_KEY"] = userdata.get("WANDB_API_KEY")
+except Exception:
+    pass
+
+api_key = os.environ.get("WANDB_API_KEY", "").strip()
+wandb_base_url = os.environ.get("WANDB_BASE_URL", "https://api.forge.coreweave.com")
+
 WANDB_PROJECT = "hcmus-foal-reproduction"
-WANDB_ENTITY = "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm"
+WANDB_ENTITY = os.environ.get("WANDB_ENTITY", "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm")
 WANDB_GROUP = "c2_backbone_alignment_dtd"
 
-os.environ["WANDB_BASE_URL"] = WANDB_BASE_URL
-print("Get your API key from Forge CoreWeave: https://forge.coreweave.com/wandb/authorize")
-USE_WANDB = True
-try:
-    wandb.login(host=WANDB_BASE_URL)
-    print("SUCCESS: W&B logged in.")
-except Exception as exc:
-    print(f"WARNING: W&B login failed ({exc}); continuing with --wandb-offline or local logging.")
-    USE_WANDB = False"""))
+USE_WANDB = False
+if api_key:
+    try:
+        if "forge" in wandb_base_url or "coreweave" in wandb_base_url:
+            wandb.login(key=api_key, host=wandb_base_url)
+        else:
+            wandb.login(key=api_key)
+        USE_WANDB = True
+        print("SUCCESS: Logged in to Weights & Biases (cloud tracking enabled).")
+    except Exception as exc:
+        print(f"WARNING: W&B login failed ({exc}); continuing with local logging.")
+else:
+    print("NOTE: WANDB_API_KEY not found in environment or Colab Secrets.")
+    print("      To enable cloud tracking: add WANDB_API_KEY in Colab Secrets (key icon on left) or run `wandb.login(key='...')`.")
+    print("      Continuing with local logging.")"""))
 
     cells.append(make_code("""# === CELL 4: Run Unit & Single-Factor Isolation Tests ===
 ret = subprocess.run([sys.executable, "-m", "pytest", "tests/test_c2_dtd.py", "-v"], check=False)
@@ -214,19 +231,34 @@ if plot_file.exists():
     display(Image(filename=str(plot_file)))"""))
 
     cells.append(make_code("""# === CELL 11: Cross-Run Verification & Archive Artifacts ===
+import hashlib
+import zipfile
+
 b0_meta = json.loads(Path("results/dtd_c2_full/b0_augreg_in1k/metadata.json").read_text(encoding="utf-8"))
 b1_meta = json.loads(Path("results/dtd_c2_full/b1_augreg2_in21k_ft_in1k/metadata.json").read_text(encoding="utf-8"))
 
 assert b0_meta["task_split_fingerprint"]["sha256"] == b1_meta["task_split_fingerprint"]["sha256"], "Split fingerprint mismatch across B0 and B1!"
 print("Verified exact split SHA256 parity:", b0_meta["task_split_fingerprint"]["sha256"])
 
-shutil.make_archive("dtd_c2_results_bundle", "zip", "results")
-print("Created dtd_c2_results_bundle.zip. Ready for download.")
+archive_name = "dtd_c2_results_bundle.zip"
+with zipfile.ZipFile(archive_name, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+    for sub in ["dtd_c2_full", "dtd_c2_analysis", "dtd_c2_diagnostics"]:
+        sub_dir = Path("results") / sub
+        if sub_dir.exists():
+            for f in sorted(sub_dir.rglob("*")):
+                if f.is_file() and not f.name.endswith(".pt") and not f.name.endswith(".pth"):
+                    zf.write(f, arcname=str(f.relative_to(Path("results"))))
+
+print(f"Archive verified: {archive_name} ({Path(archive_name).stat().st_size:,} bytes)")
+
+# Trigger Automatic Browser Download in Google Colab
 try:
     from google.colab import files
-    files.download("dtd_c2_results_bundle.zip")
-except ImportError:
-    print("Not in Colab runtime; archive saved locally at dtd_c2_results_bundle.zip")"""))
+    print(f"Triggering automatic browser download for {archive_name}...")
+    files.download(archive_name)
+except Exception as exc:
+    print(f"Automatic browser download not available or blocked ({exc}).")
+    print(f"To download manually, open the Colab Files sidebar on the left and right-click -> Download '{archive_name}'")"""))
 
     return {
         "nbformat": 4,

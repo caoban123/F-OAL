@@ -104,17 +104,39 @@ Run F-OAL on full DTD benchmark (10 tasks $\\times$ 4 classes, 40 train and 40 t
 
 Checkpoints are saved after every task (`task_01.pt` ... `task_10.pt`)."""))
 
-    cells.append(make_code("""# Set W&B mode: offline by default to avoid hanging if no API key is provided.
-# To sync to cloud, configure your API key or W&B credentials:
-# import os; os.environ["WANDB_API_KEY"] = "your_api_key_here"
+    cells.append(make_code("""import os
+import subprocess
 
-!python -m scripts.train \\
-    --config configs/dtd_full_reproduction.yaml \\
-    --seed 42 \\
-    --device cuda \\
-    --run-name foal_full_dtd_seed42 \\
-    --wandb \\
-    --wandb-offline"""))
+# Check Colab Secrets or Environment for W&B API Key
+try:
+    from google.colab import userdata
+    if "WANDB_API_KEY" in userdata:
+        os.environ["WANDB_API_KEY"] = userdata.get("WANDB_API_KEY")
+except Exception:
+    pass
+
+api_key = os.environ.get("WANDB_API_KEY", "").strip()
+use_online = bool(api_key)
+
+if use_online:
+    print("SUCCESS: WANDB_API_KEY detected. Logging to W&B cloud.")
+else:
+    print("NOTE: WANDB_API_KEY not found in environment or Colab Secrets.")
+    print("To enable cloud tracking: add WANDB_API_KEY in Colab Secrets (key icon on left).")
+    print("Continuing with --wandb-offline (runs will be saved locally).")
+
+cmd = [
+    "python", "-m", "scripts.train",
+    "--config", "configs/dtd_full_reproduction.yaml",
+    "--seed", "42",
+    "--device", "cuda",
+    "--run-name", "foal_full_dtd_seed42",
+    "--wandb",
+]
+if not use_online:
+    cmd.append("--wandb-offline")
+
+subprocess.run(cmd, check=True)"""))
 
     # Section 5: Independent Checkpoint Evaluation
     cells.append(make_md("""## 5. Independent Checkpoint Evaluation
@@ -150,9 +172,32 @@ The summarizer strictly verifies run completeness, isolates protocols, and expor
 
     # Section 8: Export & Archive Results
     cells.append(make_md("""## 8. Export & Archive Results
-Compress all result checkpoints, CSVs, metrics, and metadata into a zip archive for persistent download."""))
+Compress all result CSVs, metrics, and metadata into a zip archive for persistent download (excluding large .pt weights)."""))
 
-    cells.append(make_code("!zip -r foal_dtd_single_seed42_results.zip results/"))
+    cells.append(make_code("""import zipfile
+from pathlib import Path
+
+archive_name = "foal_dtd_single_seed42_results.zip"
+target_dir = Path("results/foal_full_dtd_seed42")
+
+with zipfile.ZipFile(archive_name, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+    if target_dir.exists():
+        for f in sorted(target_dir.rglob("*")):
+            if f.is_file() and not f.name.endswith(".pt") and not f.name.endswith(".pth"):
+                zf.write(f, arcname=str(f.relative_to(Path("results"))))
+    for summary_file in Path("results").glob("summary_*.csv"):
+        zf.write(summary_file, arcname=summary_file.name)
+
+print(f"Archive verified: {archive_name} ({Path(archive_name).stat().st_size:,} bytes)")
+
+# Trigger Automatic Browser Download in Google Colab
+try:
+    from google.colab import files
+    print(f"Triggering automatic browser download for {archive_name}...")
+    files.download(archive_name)
+except Exception as exc:
+    print(f"Automatic browser download not available or blocked ({exc}).")
+    print(f"To download manually, open the Colab Files sidebar on the left and right-click -> Download '{archive_name}'")"""))
 
     return {
         "nbformat": 4,
