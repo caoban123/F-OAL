@@ -1,14 +1,16 @@
 """Generate notebooks/foal_dtd_full_reproduction.ipynb for Google Colab / Kaggle.
 
-Follows the exact structure of notebooks/foal_cifar100_full_reproduction.ipynb:
-1. Hardware & Environment Verification (!nvidia-smi, PyTorch, CUDA)
-2. Clone Repository & Install Dependencies
-3. Preflight Unit Test Suite
-4. Single-Seed Full Reproduction (Seed 42) via scripts/train.py
-5. Independent Checkpoint Evaluation via scripts/evaluate.py
-6. Official Results Table & Summary via scripts/summarize_runs.py
-7. Multi-Seed Full Reproduction (Optional - Phase P1.3) via scripts/run_seeds.py
-8. Export & Archive Results
+Follows the structural guidelines of notebooks/foal_cifar100_full_reproduction.ipynb while aligning
+with the standardized Colab setup, branch cloning, and W&B tracking conventions across all DTD notebooks:
+1. Environment Preflight (!nvidia-smi, PyTorch, CUDA, VRAM, Disk)
+2. Clone Group Repository (branch: experiment/dtd-ablation) & Verify DTD Full Config
+3. Install Dependencies & Setup W&B Logging (Colab Secrets / API Key support)
+4. Run Preflight Test Suite (pytest)
+5. Single-Seed Full Reproduction (Seed 42) via scripts/train.py
+6. Independent Checkpoint Evaluation via scripts/evaluate.py
+7. Official Results Table & Summary via scripts/summarize_runs.py
+8. Multi-Seed Full Reproduction (Optional - Phase P1.3) via scripts/run_seeds.py
+9. Export & Archive Results (auto-download with fallback)
 """
 from __future__ import annotations
 
@@ -68,46 +70,82 @@ Ensure that an NVIDIA GPU (T4, P100, V100, A100, or L4) is active in this runtim
 
     cells.append(make_code("!nvidia-smi"))
 
-    cells.append(make_code("""import sys
+    cells.append(make_code("""# === CELL 1: Environment Preflight (T4 / L4 / A100 GPU) ===
+import os
+import sys
+import shutil
+import platform
+import subprocess
 import torch
 
-print(f"Python Version: {sys.version}")
-print(f"PyTorch Version: {torch.__version__}")
-print(f"CUDA Available: {torch.cuda.is_available()}")
-if torch.cuda.is_available():
-    print(f"Device Name: {torch.cuda.get_device_name(0)}")
-    print(f"Device Count: {torch.cuda.device_count()}")
-    print(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f} GB")
-else:
-    raise SystemError("CUDA GPU not detected! Please enable GPU accelerator in Kaggle/Colab runtime settings.")"""))
+print(f"Python version   : {sys.version}")
+print(f"Platform         : {platform.platform()}")
+print(f"PyTorch version  : {torch.__version__}")
+print(f"CUDA available   : {torch.cuda.is_available()}")
 
-    # Section 2: Clone Repository & Install Dependencies
-    cells.append(make_md("""## 2. Clone Repository & Install Dependencies
-Clone the repository if not already in workspace and install all dependencies."""))
+if not torch.cuda.is_available():
+    raise RuntimeError("FATAL: CUDA GPU is not available! Switch Colab runtime to GPU (T4 / L4 / A100) before running.")
 
-    cells.append(make_code("""# If running in Colab/Kaggle and repo is not cloned, uncomment:
-# !git clone https://github.com/caoban123/F-OAL.git
-# %cd F-OAL
+device_name = torch.cuda.get_device_name(0)
+device_props = torch.cuda.get_device_properties(0)
+vram_gb = device_props.total_memory / (1024 ** 3)
+print(f"GPU Device       : {device_name}")
+print(f"CUDA version     : {torch.version.cuda}")
+print(f"Total VRAM       : {vram_gb:.2f} GB")
 
-!pip install -q timm datasets wandb pyyaml pytest matplotlib pandas
-!pip install -q -e ."""))
+free_bytes = shutil.disk_usage(".").free
+print(f"Free Disk Space  : {free_bytes / (1024**3):.2f} GB")"""))
 
-    # Section 3: Run Preflight Test Suite
-    cells.append(make_md("""## 3. Run Preflight Test Suite
-Verify mathematical correctness, Woodbury RLS updates, DTD dataset partitioning, and protocol isolation."""))
+    # Section 2: Clone Repository & Verify Configs
+    cells.append(make_md("""## 2. Clone Repository & Verify DTD Configuration
+Clone the group repository on branch `experiment/dtd-ablation` and verify the full reproduction configuration."""))
 
-    cells.append(make_code("!python -m pytest tests/test_dtd_dataset.py tests/test_dtd_full_reproduction.py tests/test_rls.py tests/test_projection.py tests/test_metrics.py -v"))
-
-    # Section 4: Single-Seed Full Reproduction (Seed 42)
-    cells.append(make_md("""## 4. Single-Seed Full Reproduction (Seed 42)
-Run F-OAL on full DTD benchmark (10 tasks $\\times$ 4 classes, 40 train and 40 test samples/class, streaming batch size 10, one-pass).
-
-Checkpoints are saved after every task (`task_01.pt` ... `task_10.pt`)."""))
-
-    cells.append(make_code("""import os
+    cells.append(make_code("""# === CELL 2: Clone Group Repository & Verify DTD Full Config ===
+from pathlib import Path
+import os
+import shutil
 import subprocess
+import sys
+import yaml
 
-# Check Colab Secrets or Environment for W&B API Key
+REPO_DIR = Path("/content/F-OAL")
+BRANCH_NAME = "experiment/dtd-ablation"
+PINNED_COMMIT = None  # Optional: pin exact commit SHA
+
+if REPO_DIR.exists():
+    print(f"Removing existing {REPO_DIR} for clean clone...")
+    shutil.rmtree(REPO_DIR)
+
+subprocess.run(["git", "clone", "-b", BRANCH_NAME, "https://github.com/caoban123/F-OAL.git", str(REPO_DIR)], check=True)
+if PINNED_COMMIT:
+    subprocess.run(["git", "checkout", PINNED_COMMIT], cwd=str(REPO_DIR), check=True)
+
+commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(REPO_DIR), text=True).strip()
+print(f"SUCCESS: Repository ready at commit {commit_hash} (branch: {BRANCH_NAME})")
+
+os.chdir(str(REPO_DIR))
+if str(REPO_DIR) not in sys.path:
+    sys.path.insert(0, str(REPO_DIR))
+
+CONFIG_PATH = "configs/dtd_full_reproduction.yaml"
+p = Path(CONFIG_PATH)
+assert p.exists(), f"Missing config: {CONFIG_PATH}"
+data = yaml.safe_load(p.read_text(encoding="utf-8"))
+print(f"Loaded {CONFIG_PATH}: backbone={data['model']['backbone']}, init={data['model']['projection_init']}, interp={data['dataset']['interpolation']}, norm={data['dataset']['normalize']}")"""))
+
+    # Section 3: Install Dependencies & Setup W&B Logging
+    cells.append(make_md("""## 3. Install Dependencies & Setup W&B Logging
+Install core dependencies and configure Weights & Biases cloud logging via Colab Secrets (`WANDB_API_KEY`) or interactive authentication."""))
+
+    cells.append(make_code("""# === CELL 3: Install Dependencies & Setup W&B Logging ===
+!pip install -q timm pyyaml pytest datasets matplotlib pandas
+!pip install -q --upgrade wandb
+!pip install -q -e .
+
+import os
+import wandb
+
+# 1. Retrieve W&B API Key from Colab Secrets or Environment
 try:
     from google.colab import userdata
     if "WANDB_API_KEY" in userdata:
@@ -116,45 +154,81 @@ except Exception:
     pass
 
 api_key = os.environ.get("WANDB_API_KEY", "").strip()
-use_online = bool(api_key)
+wandb_base_url = os.environ.get("WANDB_BASE_URL", "https://api.forge.coreweave.com")
 
-if use_online:
-    print("SUCCESS: WANDB_API_KEY detected. Logging to W&B cloud.")
+WANDB_PROJECT = "hcmus-foal-reproduction"
+WANDB_ENTITY = os.environ.get("WANDB_ENTITY", "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm")
+WANDB_GROUP = "dtd_full_reproduction"
+
+USE_WANDB = False
+if api_key:
+    try:
+        if "forge" in wandb_base_url or "coreweave" in wandb_base_url:
+            wandb.login(key=api_key, host=wandb_base_url)
+        else:
+            wandb.login(key=api_key)
+        USE_WANDB = True
+        print("SUCCESS: Logged in to Weights & Biases (cloud tracking enabled).")
+    except Exception as exc:
+        print(f"WARNING: W&B login failed ({exc}); continuing with local logging.")
 else:
     print("NOTE: WANDB_API_KEY not found in environment or Colab Secrets.")
-    print("To enable cloud tracking: add WANDB_API_KEY in Colab Secrets (key icon on left).")
-    print("Continuing with --wandb-offline (runs will be saved locally).")
+    print("      To enable cloud tracking: add WANDB_API_KEY in Colab Secrets (key icon on left) or run `wandb.login(key='...')`.")
+    print("      Continuing with local logging.")"""))
 
+    # Section 4: Run Preflight Test Suite
+    cells.append(make_md("""## 4. Run Preflight Test Suite
+Verify mathematical correctness, Woodbury RLS updates, DTD dataset partitioning, and protocol isolation."""))
+
+    cells.append(make_code("!python -m pytest tests/test_dtd_dataset.py tests/test_dtd_full_reproduction.py tests/test_rls.py tests/test_projection.py tests/test_metrics.py -v"))
+
+    # Section 5: Single-Seed Full Reproduction (Seed 42)
+    cells.append(make_md("""## 5. Single-Seed Full Reproduction (Seed 42)
+Run F-OAL on the full DTD benchmark (10 tasks $\\times$ 4 classes, 40 train and 40 test samples/class, streaming batch size 10, one-pass).
+
+Checkpoints are saved after every task (`task_01.pt` ... `task_10.pt`)."""))
+
+    cells.append(make_code("""# === CELL 5: Execute Single-Seed Full Reproduction (Seed 42) ===
 cmd = [
-    "python", "-m", "scripts.train",
+    sys.executable, "-m", "scripts.train",
     "--config", "configs/dtd_full_reproduction.yaml",
     "--seed", "42",
     "--device", "cuda",
     "--run-name", "foal_full_dtd_seed42",
-    "--wandb",
 ]
-if not use_online:
-    cmd.append("--wandb-offline")
+if USE_WANDB:
+    cmd.extend([
+        "--wandb",
+        "--wandb-project", WANDB_PROJECT,
+        "--wandb-entity", WANDB_ENTITY,
+        "--wandb-group", WANDB_GROUP,
+    ])
+    if "forge" in wandb_base_url or "coreweave" in wandb_base_url:
+        cmd.extend(["--wandb-base-url", wandb_base_url])
+else:
+    cmd.extend(["--wandb", "--wandb-offline"])
 
+print(">>> Running Full DTD Reproduction (Seed 42)...")
 subprocess.run(cmd, check=True)"""))
 
-    # Section 5: Independent Checkpoint Evaluation
-    cells.append(make_md("""## 5. Independent Checkpoint Evaluation
+    # Section 6: Independent Checkpoint Evaluation
+    cells.append(make_md("""## 6. Independent Checkpoint Evaluation
 Verify checkpoint roundtrip and numerical stability by loading `task_10.pt` from disk into a fresh model instance and evaluating against all 10 tasks."""))
 
     cells.append(make_code("""!python -m scripts.evaluate \\
     --checkpoint results/foal_full_dtd_seed42/task_10.pt \\
     --device cuda"""))
 
-    # Section 6: Official Results Table & Summary
-    cells.append(make_md("""## 6. Official Results Table & Summary
+    # Section 7: Official Results Table & Summary
+    cells.append(make_md("""## 7. Official Results Table & Summary
 Summarize the reproduction run using `scripts/summarize_runs.py`.
 The summarizer strictly verifies run completeness, isolates protocols, and exports summary CSVs."""))
 
     cells.append(make_code("!python -m scripts.summarize_runs --results-dir results"))
 
-    # Section 7: Multi-Seed Full Reproduction (Optional — Phase P1.3)
-    cells.append(make_md("""> **NOTE:** In Phase P1.2, only Single-Seed (Seed 42) is executed.
+    # Section 8: Multi-Seed Full Reproduction (Optional — Phase P1.3)
+    cells.append(make_md("""## 8. Multi-Seed Full Reproduction (Optional — Phase P1.3)
+> **NOTE:** In Phase P1.2, only Single-Seed (Seed 42) is executed.
 > The multi-seed command below is intentionally commented out and should only be triggered during Phase P1.3."""))
 
     cells.append(make_code("""# Multi-seed orchestration is disabled in Phase P1.2.
@@ -170,8 +244,8 @@ The summarizer strictly verifies run completeness, isolates protocols, and expor
 
 # !python -m scripts.summarize_runs --results-dir results"""))
 
-    # Section 8: Export & Archive Results
-    cells.append(make_md("""## 8. Export & Archive Results
+    # Section 9: Export & Archive Results
+    cells.append(make_md("""## 9. Export & Archive Results
 Compress all result CSVs, metrics, and metadata into a zip archive for persistent download (excluding large .pt weights)."""))
 
     cells.append(make_code("""import zipfile
