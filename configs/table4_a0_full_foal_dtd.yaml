@@ -1,0 +1,40 @@
+seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  total_classes: 47
+  num_classes: 40
+  classes_per_task: 4
+  class_order: null
+  image_size: 224
+  mean: null
+  std: null
+  interpolation: bilinear
+  normalize: false
+projection:
+  dimension: 1000
+  initialization: official_uniform
+  seed: 42
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  gamma: 1.0
+  rls_dtype: float64
+training:
+  batch_size: 10
+  num_workers: 2
+  device: auto
+logging:
+  use_wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: table4_ablation_dtd
+  results_dir: results

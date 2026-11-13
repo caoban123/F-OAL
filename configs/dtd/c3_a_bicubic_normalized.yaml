@@ -1,0 +1,59 @@
+# C3 Controlled Experiment (DTD) — C3-A: Bicubic + Normalized [-1, 1]
+# 2x2 Factorial: Interpolation (bicubic vs bilinear) x Normalization ([-1, 1] vs raw [0, 1])
+# Identity guarantee: C3-A == C2-B1 (identical hyperparameters and seeds)
+
+seed: 42
+dataset_seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  root: ./data
+  total_classes: 47
+  num_classes: 40
+  classes_per_task: 4
+  samples_per_class: 40
+  image_size: 224
+  interpolation: bicubic
+  normalize: true
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  gaussian_std: 1.0
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  device: auto
+  num_workers: 0
+  pin_memory: false
+  one_pass: true
+  feature_cache_dir: null
+
+logging:
+  output_dir: results/dtd_c3_full/c3_a_bicubic_normalized
+  run_name: dtd_c3_a_bicubic_normalized_seed42
+  experiment_type: controlled_ablation
+  wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: c3_preprocessing_alignment_dtd
+  tags:
+    - c3
+    - dtd
+    - preprocessing
+    - bicubic
+    - normalized
+    - controlled-experiment

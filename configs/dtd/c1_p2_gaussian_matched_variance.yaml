@@ -1,0 +1,58 @@
+# C1 Controlled Experiment (DTD) — P2: Variance-Matched Gaussian N(0, 1/(3*768))
+# Single controlled factor vs P0 & P1: model.projection_init
+# Isolates variance scaling vs Uniform-vs-Gaussian distributional shape
+
+seed: 42
+dataset_seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  root: ./data
+  total_classes: 47
+  num_classes: 40
+  classes_per_task: 4
+  samples_per_class: 40
+  image_size: 224
+  interpolation: bicubic
+  normalize: true
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+
+model:
+  backbone: vit_base_patch16_224.augreg_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: gaussian_matched_variance
+  gaussian_std: 1.0
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  device: auto
+  num_workers: 0
+  pin_memory: false
+  one_pass: true
+  feature_cache_dir: null
+
+logging:
+  output_dir: results/dtd_c1_full/p2_gaussian_matched_variance
+  run_name: dtd_c1_p2_gaussian_matched_variance_seed42
+  experiment_type: controlled_ablation
+  wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: c1_projection_initialization_dtd
+  tags:
+    - c1
+    - dtd
+    - projection-init
+    - gaussian-matched-variance
+    - controlled-experiment
