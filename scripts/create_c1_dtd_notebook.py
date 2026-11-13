@@ -157,7 +157,7 @@ train_src, test_src = load_dtd()
 order = make_dtd_class_order(num_classes_to_use=40, total_classes=47, seed=42)
 tasks = make_dtd_task_specs(train_src["fine_label"], test_src["fine_label"], order, classes_per_task=4, samples_per_class=40, seed=42)
 print(f"DTD loaded: train={len(train_src)}, test={len(test_src)}, tasks={len(tasks)}")
-print(f"Task 1 train={len(tasks[0].train_indices)}, test={len(tasks[0].test_indices)}, class_order[:8]={order[:8]}")
+print(f"Task 1 train={len(tasks[0].train_indices)}, test={len(tasks[0].seen_test_indices)}, class_order[:8]={order[:8]}")
 
 print("Pre-caching ViT backbone vit_base_patch16_224.augreg_in1k ...")
 _enc = FrozenViT("vit_base_patch16_224.augreg_in1k", pretrained=True, feature_fusion=True)
