@@ -555,17 +555,45 @@ print(f"  Forgetting (Author 10-task formula)  : {official_forgetting_10_tasks *
 print(f"  Total Runtime                        : {total_duration_seconds:.2f}s")"""))
 
     # Cell 8: Non-Intrusive W&B Experiment Logging
-    cells.append(make_code("""# === CELL 8: Non-Intrusive W&B Experiment Logging ===
+    cells.append(make_code("""# === CELL 8: W&B Experiment Logging (Cloud Sync & Offline Fallback) ===
 import os
 import wandb
 
+# 1. Retrieve W&B API Key from Colab Secrets or Environment
+try:
+    from google.colab import userdata
+    if "WANDB_API_KEY" in userdata:
+        os.environ["WANDB_API_KEY"] = userdata.get("WANDB_API_KEY")
+except Exception:
+    pass
+
+api_key = os.environ.get("WANDB_API_KEY", "").strip()
+wandb_base_url = os.environ.get("WANDB_BASE_URL", "https://api.forge.coreweave.com")
+
+if api_key:
+    try:
+        # Check if CoreWeave Forge or standard wandb.ai
+        if "forge" in wandb_base_url or "coreweave" in wandb_base_url:
+            wandb.login(key=api_key, host=wandb_base_url)
+        else:
+            wandb.login(key=api_key)
+        WANDB_MODE = "online"
+        print("SUCCESS: Logged in to Weights & Biases (online cloud tracking enabled).")
+    except Exception as exc:
+        print(f"WARNING: wandb.login failed ({exc}); falling back to offline mode.")
+        WANDB_MODE = "offline"
+else:
+    print("NOTE: WANDB_API_KEY not found in environment or Colab Secrets.")
+    print("      To enable cloud tracking: add WANDB_API_KEY in Colab Secrets (key icon on left) or run `wandb.login(key='...')`.")
+    print("      Continuing with offline mode (run will be saved locally).")
+    WANDB_MODE = "offline"
+
 WANDB_PROJECT = "hcmus-foal-reproduction"
-WANDB_ENTITY = os.environ.get("WANDB_ENTITY", None)
-WANDB_MODE = "online" if os.environ.get("WANDB_API_KEY") else "offline"
+WANDB_ENTITY = os.environ.get("WANDB_ENTITY", "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm")
 
 run = wandb.init(
     project=WANDB_PROJECT,
-    entity=WANDB_ENTITY,
+    entity=WANDB_ENTITY if WANDB_MODE == "online" else None,
     name=f"official_foal_dtd_seed{OFFICIAL_SEED}",
     job_type="official_reproduction",
     group="official_reproduction_dtd",
@@ -597,8 +625,12 @@ for fname in ["metrics.json", "metadata.json", "task_accuracy.csv", "official_st
     if fpath.exists():
         artifact.add_file(str(fpath), name=fname)
 run.log_artifact(artifact)
+run_url = run.get_url() if hasattr(run, "get_url") else None
 run.finish()
-print(f"W&B logging finished in mode={WANDB_MODE}. Run directory stored under {RESULTS_OUT_DIR / 'wandb'}")"""))
+if WANDB_MODE == "online" and run_url:
+    print(f"SUCCESS: W&B cloud run tracked at: {run_url}")
+else:
+    print(f"W&B logging finished in mode={WANDB_MODE}. Run directory stored under {RESULTS_OUT_DIR / 'wandb'}")"""))
 
     # Cell 9: Package & Strictly Verify Archive
     cells.append(make_code("""# === CELL 9: Package & Strictly Verify Archive (/content/foal_official_dtd_results.zip) ===
@@ -634,7 +666,16 @@ with zipfile.ZipFile(ZIP_PATH, "r") as zf:
         assert req in namelist, f"Missing required entry in archive: {req}"
         assert zf.getinfo(req).file_size > 0, f"Entry {req} is 0 bytes!"
 
-print(f"Archive verified successfully: {ZIP_PATH} ({zip_size_bytes:,} bytes, {len(namelist)} files, 0 CRC errors)")"""))
+print(f"Archive verified successfully: {ZIP_PATH} ({zip_size_bytes:,} bytes, {len(namelist)} files, 0 CRC errors)")
+
+# Trigger Automatic Browser Download in Google Colab
+try:
+    from google.colab import files
+    print(f"Triggering automatic browser download for {ZIP_PATH.name}...")
+    files.download(str(ZIP_PATH))
+except Exception as exc:
+    print(f"Automatic browser download not available or blocked ({exc}).")
+    print(f"To download manually, open the Colab Files sidebar on the left and right-click -> Download '{ZIP_PATH.name}'")"""))
 
     # Cell 10: Three-Way Comparison Table
     cells.append(make_code("""# === CELL 10: Three-Way Comparison (Paper vs Official Repo Run vs Our Implementation Run) ===
