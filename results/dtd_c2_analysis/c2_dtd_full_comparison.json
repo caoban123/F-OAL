@@ -1,0 +1,44 @@
+{
+  "dataset": "tanganke/dtd",
+  "num_tasks": 10,
+  "comparison_table": [
+    {
+      "condition": "C2-B0 (Control)",
+      "short_name": "B0: augreg_in1k",
+      "backbone": "vit_base_patch16_224.augreg_in1k",
+      "pretrain_data": "ImageNet-1k",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 77.9675,
+      "last_acc": 69.1875,
+      "forgetting_past": 9.9306,
+      "forgetting_code": 8.9375,
+      "total_time_sec": 56.72,
+      "rls_time_sec": 1.04,
+      "feat_time_sec": 55.1
+    },
+    {
+      "condition": "C2-B1 (Treatment)",
+      "short_name": "B1: augreg2_in21k_ft_in1k",
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "pretrain_data": "ImageNet-21k + IN-1k FT",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 85.115,
+      "last_acc": 77.1875,
+      "forgetting_past": 8.2639,
+      "forgetting_code": 7.5,
+      "total_time_sec": 59.22,
+      "rls_time_sec": 1.05,
+      "feat_time_sec": 57.62
+    }
+  ],
+  "deltas": {
+    "b1_minus_b0": {
+      "avg_incremental_acc_pp": 7.1475,
+      "last_acc_pp": 8.0,
+      "forgetting_past_pp": -1.6667,
+      "forgetting_code_pp": -1.4375
+    }
+  }
+}
