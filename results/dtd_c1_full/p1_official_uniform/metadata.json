@@ -1,0 +1,359 @@
+{
+  "paper": "F-OAL NeurIPS 2024",
+  "method": "foal",
+  "experiment_type": "reproduction",
+  "run_name": "foal_seed42_reproduction",
+  "git_commit": "d1b4701a540bf68456c59a71ab87271f1d6693b9",
+  "seeds": {
+    "base": 42,
+    "dataset": 42,
+    "class_order": 42,
+    "projection": 42,
+    "stream": 42
+  },
+  "model_config": {
+    "backbone": "vit_base_patch16_224.augreg_in1k",
+    "pretrained": true,
+    "pretrained_cfg": {
+      "hf_hub_id": "timm/vit_base_patch16_224.augreg_in1k",
+      "tag": "augreg_in1k",
+      "architecture": "vit_base_patch16_224",
+      "url": "https://storage.googleapis.com/vit_models/augreg/B_16-i1k-300ep-lr_0.001-aug_strong2-wd_0.1-do_0.1-sd_0.1--imagenet2012-steps_20k-lr_0.01-res_224.npz",
+      "input_size": [
+        3,
+        224,
+        224
+      ],
+      "interpolation": "bicubic",
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "num_classes": 1000
+    },
+    "feature_fusion": true,
+    "smooth_projection": true,
+    "projection_dim": 1000,
+    "projection_init": "official_uniform",
+    "gaussian_std": 1.0,
+    "gamma": 1.0,
+    "rls_dtype": "float64"
+  },
+  "projection_metadata": {
+    "initialization": "official_uniform",
+    "input_dim": 768,
+    "output_dim": 1000,
+    "seed": 42,
+    "theoretical_mean": 0.0,
+    "theoretical_std": 0.020833333333333332,
+    "theoretical_variance": 0.00043402777777777775,
+    "uniform_bound": 0.036084391824351615,
+    "measured_mean": -1.4644038856204133e-05,
+    "measured_std": 0.02083195559680462,
+    "measured_variance": 0.0004339703591540456,
+    "measured_min": -0.0360843725502491,
+    "measured_max": 0.03608420491218567,
+    "matrix_sha256": "6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b"
+  },
+  "training_protocol": {
+    "dataset": "tanganke/dtd",
+    "num_classes": 40,
+    "classes_per_task": 4,
+    "max_tasks": 10,
+    "limit_train_per_task": null,
+    "limit_test_per_task": null,
+    "batch_size": 10,
+    "device": "cuda",
+    "one_pass": true,
+    "feature_cache_enabled": true
+  },
+  "task_split_fingerprint": {
+    "sha256": "f077b2e947bfd5c3151d0be1a387b10fbf78c165d02c189eb34030fda759fa41",
+    "class_order_sha256": "86ccb777b4fb18409b81b68c2d0c6bb2626ca4b72d461ff71eb3ebe1dbe4b8fa",
+    "num_tasks": 10,
+    "tasks": [
+      {
+        "task_id": 0,
+        "new_original_labels": [
+          2,
+          46,
+          11,
+          22
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "95f1a4a4a0db5b9886ed43d7e4232be174b34cec0caf34b7884d46354d3ec36a",
+        "test_indices_sha256": "0aa7727c5bb0b8d83edcd1c46959a115737f59a19d9c74888c854cfc3cd3af18"
+      },
+      {
+        "task_id": 1,
+        "new_original_labels": [
+          34,
+          5,
+          36,
+          17
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "0314681d1bf43ed5bc3701c37dbb1f174a36e631ffc7aec178fae93353ea10ac",
+        "test_indices_sha256": "88ed88cc6a73e2f90303ff366cf8cb22f9806d771b9b605929c2f0fb00f84606"
+      },
+      {
+        "task_id": 2,
+        "new_original_labels": [
+          28,
+          30,
+          15,
+          32
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "9fc901189e815b5caf83f1311607c9c40339752369004cb9d60378aa0050f315",
+        "test_indices_sha256": "257860fa3bf7991af2f6a24fbb9e6365296536bb075618bfa0ee8ebf84986e57"
+      },
+      {
+        "task_id": 3,
+        "new_original_labels": [
+          14,
+          12,
+          8,
+          26
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "3c2ad77c7aea53e246ee83a4d5086cfb330582ce59a9f0d7cbe239d8fbb10210",
+        "test_indices_sha256": "1431a942be12f13e0b528fe2cd0be7bc667953023bb4df5506991e1481993e9e"
+      },
+      {
+        "task_id": 4,
+        "new_original_labels": [
+          27,
+          44,
+          4,
+          39
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "d11371238427b2bbcd709398425cf3f890d098651b096a8c21a29f3dbcc16ee8",
+        "test_indices_sha256": "2eb712a0133f03607297a19f48f38d556b70f967edadfc333fa51d2778746c04"
+      },
+      {
+        "task_id": 5,
+        "new_original_labels": [
+          19,
+          16,
+          1,
+          6
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "49e01f6a8930d6b91355a7adf42e43e1d8382204f90c8aa3f506706eecfe94f4",
+        "test_indices_sha256": "0fb49ffd635bde708a050ab1ecf4e376df21820f732aaa8892d462a1ef70ca4b"
+      },
+      {
+        "task_id": 6,
+        "new_original_labels": [
+          25,
+          0,
+          10,
+          3
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "9bb0c0bec9f9341aeebfc617b4fdec9f2da19f3bf0c2010cc0f1d433dfafb156",
+        "test_indices_sha256": "ad71328b31f23a6332d8841fe9ffecdcaf8232dadf3107786c1916501999f294"
+      },
+      {
+        "task_id": 7,
+        "new_original_labels": [
+          24,
+          40,
+          41,
+          9
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "6dbbcea8055046055c53ece5831680b9b95a0ee60b4979811bdf8670be507d8f",
+        "test_indices_sha256": "36a1e9496498286ee3e31ff387ed267e036ee479769b5241f128a88eaec6da3c"
+      },
+      {
+        "task_id": 8,
+        "new_original_labels": [
+          37,
+          45,
+          21,
+          43
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "f5b3bb23b6e1aa16ff9dcbc497eaf764a22f5dfc18f4be0ac4a78dac86ce9ffb",
+        "test_indices_sha256": "8c583fe2eb8eeb6822b442e6dd405126de2edc972328665a67370abd02f4628e"
+      },
+      {
+        "task_id": 9,
+        "new_original_labels": [
+          31,
+          18,
+          13,
+          29
+        ],
+        "num_train_samples": 160,
+        "num_test_samples": 160,
+        "train_indices_sha256": "ce380e10f0effd733b52eab310ef4e10cf121d8434bccb9b06a442a42fddfc68",
+        "test_indices_sha256": "5cf0fa0e0bc8cc4acb4a42c9a8b47431f7ee0073c7f26a402e3cc5aa1523c636"
+      }
+    ]
+  },
+  "class_order": [
+    2,
+    46,
+    11,
+    22,
+    34,
+    5,
+    36,
+    17,
+    28,
+    30,
+    15,
+    32,
+    14,
+    12,
+    8,
+    26,
+    27,
+    44,
+    4,
+    39,
+    19,
+    16,
+    1,
+    6,
+    25,
+    0,
+    10,
+    3,
+    24,
+    40,
+    41,
+    9,
+    37,
+    45,
+    21,
+    43,
+    31,
+    18,
+    13,
+    29
+  ],
+  "environment": {
+    "os": {
+      "system": "Linux",
+      "release": "6.6.159+",
+      "version": "#1 SMP Thu Oct 22 03:07:54 UTC 2026",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+      "implementation": "CPython"
+    },
+    "libraries": {
+      "torch": "2.14.1+cu130",
+      "torchvision": "0.29.1+cu130",
+      "timm": "1.0.31",
+      "datasets": "4.8.5",
+      "wandb": "0.31.0"
+    },
+    "hardware": {
+      "cuda_available": true,
+      "gpu": {
+        "count": 1,
+        "device_name": "Tesla T4",
+        "total_memory_gb": 14.56,
+        "cuda_version": "13.0",
+        "capability": [
+          7,
+          5
+        ]
+      },
+      "cpu_count": 2
+    },
+    "git": {
+      "commit": "d1b4701a540bf68456c59a71ab87271f1d6693b9",
+      "branch": "experiment/dtd-ablation",
+      "dirty": false
+    }
+  },
+  "config": {
+    "seed": 42,
+    "dataset_seed": 42,
+    "class_order_seed": 42,
+    "projection_seed": 42,
+    "stream_seed": 42,
+    "dataset": {
+      "name": "tanganke/dtd",
+      "type": "dtd",
+      "root": "./data",
+      "total_classes": 47,
+      "num_classes": 40,
+      "classes_per_task": 4,
+      "samples_per_class": 40,
+      "image_size": 224,
+      "interpolation": "bicubic",
+      "normalize": true,
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "model": {
+      "backbone": "vit_base_patch16_224.augreg_in1k",
+      "pretrained": true,
+      "feature_fusion": true,
+      "smooth_projection": true,
+      "projection_dim": 1000,
+      "projection_init": "official_uniform",
+      "gaussian_std": 1.0,
+      "gamma": 1.0,
+      "rls_dtype": "float64"
+    },
+    "training": {
+      "batch_size": 10,
+      "device": "auto",
+      "num_workers": 0,
+      "pin_memory": false,
+      "one_pass": true,
+      "feature_cache_dir": null
+    },
+    "logging": {
+      "output_dir": "results/dtd_c1_full/p1_official_uniform",
+      "run_name": "dtd_c1_p1_official_uniform_seed42",
+      "experiment_type": "controlled_ablation",
+      "wandb": true,
+      "project": "hcmus-foal-reproduction",
+      "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+      "base_url": "https://api.forge.coreweave.com",
+      "group": "c1_projection_initialization_dtd",
+      "tags": [
+        "c1",
+        "dtd",
+        "projection-init",
+        "official-uniform",
+        "controlled-experiment"
+      ]
+    }
+  }
+}
