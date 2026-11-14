@@ -122,6 +122,11 @@ def load_dtd(root: str = './data'):
         except Exception:
             if os.environ.get('HF_DATASETS_OFFLINE') == '1':
                 os.environ['HF_DATASETS_OFFLINE'] = '0'
+                try:
+                    import datasets.config
+                    datasets.config.HF_DATASETS_OFFLINE = False
+                except Exception:
+                    pass
                 data = load_dataset('tanganke/dtd')
             else:
                 raise
