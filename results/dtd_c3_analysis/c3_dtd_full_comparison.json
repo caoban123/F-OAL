@@ -1,0 +1,46 @@
+[
+  {
+    "condition": "C3-A",
+    "name": "c3_a_bicubic_normalized",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bicubic",
+    "normalization": "normalized [-1, 1]",
+    "avg_incremental_acc_pct": 85.115,
+    "last_acc_pct": 77.1875,
+    "forgetting_past_pct": 8.2639,
+    "forgetting_code_pct": 7.5
+  },
+  {
+    "condition": "C3-B",
+    "name": "c3_b_bilinear_normalized",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bilinear",
+    "normalization": "normalized [-1, 1]",
+    "avg_incremental_acc_pct": 85.128,
+    "last_acc_pct": 76.875,
+    "forgetting_past_pct": 8.4722,
+    "forgetting_code_pct": 7.6875
+  },
+  {
+    "condition": "C3-C",
+    "name": "c3_c_bicubic_raw",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bicubic",
+    "normalization": "raw [0, 1]",
+    "avg_incremental_acc_pct": 85.134,
+    "last_acc_pct": 76.625,
+    "forgetting_past_pct": 8.5417,
+    "forgetting_code_pct": 7.6875
+  },
+  {
+    "condition": "C3-D",
+    "name": "c3_d_bilinear_raw",
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "interpolation": "bilinear",
+    "normalization": "raw [0, 1]",
+    "avg_incremental_acc_pct": 85.0838,
+    "last_acc_pct": 76.0625,
+    "forgetting_past_pct": 8.6111,
+    "forgetting_code_pct": 7.75
+  }
+]

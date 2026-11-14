@@ -1,0 +1,5 @@
+Condition,Hardware,RLS Duration (s),Memory Footprint
+A0,CPU (Intel Core Ultra),1.37s,< 2 GB
+A1,CPU (Intel Core Ultra),1.25s,< 2 GB
+A2,CPU (Intel Core Ultra),0.77s,< 2 GB
+A3,CPU (Intel Core Ultra),0.86s,< 2 GB

@@ -7,3 +7,5 @@ timm>=1.0
 datasets>=2.20
 wandb>=0.17
 pytest>=8.0
+matplotlib
+pandas

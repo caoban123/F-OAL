@@ -1,0 +1,47 @@
+[
+  {
+    "Effect Description": "Feature Fusion Benefit (SP ON)",
+    "Symbol": "E_FF|SP",
+    "Value (pp)": "+2.7029"
+  },
+  {
+    "Effect Description": "Feature Fusion Benefit (SP OFF)",
+    "Symbol": "E_FF|~SP",
+    "Value (pp)": "+5.6719"
+  },
+  {
+    "Effect Description": "Smooth Projection Benefit (FF ON)",
+    "Symbol": "E_SP|FF",
+    "Value (pp)": "+6.6127"
+  },
+  {
+    "Effect Description": "Smooth Projection Benefit (FF OFF)",
+    "Symbol": "E_SP|~FF",
+    "Value (pp)": "+9.5817"
+  },
+  {
+    "Effect Description": "Average Feature Fusion Main Effect",
+    "Symbol": "E_FF",
+    "Value (pp)": "+4.1874"
+  },
+  {
+    "Effect Description": "Average Smooth Projection Main Effect",
+    "Symbol": "E_SP",
+    "Value (pp)": "+8.0972"
+  },
+  {
+    "Effect Description": "Difference-in-Differences Interaction Contrast",
+    "Symbol": "I_FFxSP",
+    "Value (pp)": "-2.9690"
+  },
+  {
+    "Effect Description": "Interaction Regression Coefficient (+-1 coding)",
+    "Symbol": "beta_FFxSP",
+    "Value (pp)": "-0.7423"
+  },
+  {
+    "Effect Description": "Joint Benefit (Full F-OAL vs Without Both)",
+    "Symbol": "Delta_full_none",
+    "Value (pp)": "+12.2846"
+  }
+]

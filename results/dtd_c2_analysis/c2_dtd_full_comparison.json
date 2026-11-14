@@ -31,6 +31,21 @@
       "total_time_sec": 59.22,
       "rls_time_sec": 1.05,
       "feat_time_sec": 57.62
+    },
+    {
+      "condition": "C1-P1 (Reference Identity)",
+      "short_name": "C1-P1 Reference",
+      "backbone": "vit_base_patch16_224.augreg_in1k",
+      "pretrain_data": "ImageNet-1k",
+      "seed": 42,
+      "gamma": 1.0,
+      "avg_incremental_acc": 77.9332,
+      "last_acc": 68.6875,
+      "forgetting_past": 10.0,
+      "forgetting_code": 9.0625,
+      "total_time_sec": 1.45,
+      "rls_time_sec": 1.05,
+      "feat_time_sec": 55.14
     }
   ],
   "deltas": {
@@ -39,6 +54,11 @@
       "last_acc_pp": 8.0,
       "forgetting_past_pp": -1.6667,
       "forgetting_code_pp": -1.4375
+    },
+    "b0_minus_c1_p1": {
+      "avg_incremental_acc_pp": 0.0343,
+      "last_acc_pp": 0.5,
+      "forgetting_past_pp": -0.0694
     }
   }
 }

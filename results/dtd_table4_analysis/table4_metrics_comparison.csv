@@ -1,0 +1,5 @@
+Condition,Name,Feature Fusion,Smooth Projection,Dimension,Avg Incr Acc (%),Last Acc (%),Forgetting Past (%),Forgetting Code (%),Runtime (s)
+A0,Full F-OAL,True,True,1000,85.26%,77.25%,7.43%,6.69%,1.37s
+A1,w/o Feature Fusion,False,True,1000,82.55%,74.69%,6.67%,6.00%,1.25s
+A2,w/o Smooth Projection,True,False,768,78.64%,73.62%,6.87%,6.50%,0.77s
+A3,w/o Both,False,False,768,72.97%,71.69%,4.93%,5.06%,0.86s
