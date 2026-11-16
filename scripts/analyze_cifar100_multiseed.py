@@ -80,6 +80,17 @@ def load_all_runs(input_root: Path) -> dict[int, dict[str, dict[str, Any]]]:
             if seed == 42:
                 run_dir = ABLATIONS[abl_key]["seed42_dir"]
                 require_ckpts = False
+                if not run_dir.exists():
+                    manifest_path = REPO_ROOT / "results" / "cifar100_multiseed" / "seed_manifest.json"
+                    if not manifest_path.exists():
+                        raise RuntimeError(f"Seed 42 artifacts and {manifest_path} both missing.")
+                    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    s42_rec = manifest.get("seed_42_verified_runs", {}).get(abl_key)
+                    if not s42_rec or "stage_accuracies_pct" not in s42_rec:
+                        raise RuntimeError(f"Seed 42 manifest missing verified record for '{abl_key}'.")
+                    seed_fps.add(str(s42_rec["task_split_fingerprint"]))
+                    data[seed][abl_key] = {**s42_rec}
+                    continue
             else:
                 run_dir = input_root / f"seed_{seed}" / abl_key
                 require_ckpts = True

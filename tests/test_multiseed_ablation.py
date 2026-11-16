@@ -195,3 +195,24 @@ def test_multiseed_notebook_integrity() -> None:
         "scripts.analyze_cifar100_multiseed",
     ]:
         assert expected_token in full_src
+
+
+def test_fresh_clone_manifest_fallback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify build_seed_manifest and load_all_runs work on fresh git clones without git-ignored seed42 dirs."""
+    patched = {
+        k: {**v, "seed42_dir": tmp_path / "nonexistent" / k}
+        for k, v in ABLATIONS.items()
+    }
+    monkeypatch.setattr("scripts.run_cifar100_multiseed_ablation.ABLATIONS", patched)
+    monkeypatch.setattr("scripts.analyze_cifar100_multiseed.ABLATIONS", patched)
+
+    manifest = build_seed_manifest(tmp_path)
+    assert set(manifest["seed_42_verified_runs"].keys()) == {"full", "no_ff", "no_sp", "no_ff_no_sp"}
+
+    for seed in (123, 2026):
+        for abl_key in ABLATION_ORDER:
+            _write_synthetic_run(tmp_path / f"seed_{seed}" / abl_key, seed=seed, ablation_key=abl_key)
+
+    data = load_all_runs(tmp_path)
+    assert len(data[42]) == 4
+    assert len(data[42]["full"]["stage_accuracies_pct"]) == 10

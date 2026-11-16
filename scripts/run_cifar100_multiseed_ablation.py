@@ -31,7 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.foal.metrics import summary_from_task_matrix
+from src.foal.metrics import stage_accuracies, summary_from_task_matrix
 
 SEEDS: list[int] = [42, 123, 2026]
 TARGET_NEW_SEEDS: list[int] = [123, 2026]
@@ -230,7 +230,30 @@ def validate_completed_run(
 
 
 def build_seed_manifest(output_root: Path) -> dict[str, Any]:
-    """Audit Seed 42 source artifacts and generate the canonical seed_manifest.json."""
+    """Audit Seed 42 source artifacts (or load Git-tracked verified manifest on fresh clones)."""
+    import hashlib
+
+    all_s42_local = all(cfg["seed42_dir"].exists() for cfg in ABLATIONS.values())
+    canonical_manifest_path = REPO_ROOT / "results" / "cifar100_multiseed" / "seed_manifest.json"
+
+    if not all_s42_local:
+        if not canonical_manifest_path.exists():
+            raise RuntimeError(
+                f"Neither local Seed 42 artifacts nor Git-tracked {canonical_manifest_path} found."
+            )
+        manifest = json.loads(canonical_manifest_path.read_text(encoding="utf-8"))
+        s42_recs = manifest.get("seed_42_verified_runs", {})
+        if set(s42_recs.keys()) != set(ABLATIONS.keys()):
+            raise RuntimeError(f"Invalid seed_manifest.json: missing ablations in {list(s42_recs.keys())}")
+        fps = {str(s42_recs[k].get("task_split_fingerprint")) for k in ABLATIONS}
+        if len(fps) != 1:
+            raise RuntimeError(f"Seed 42 manifest ablations do not share a single task_split_fingerprint: {fps}")
+        output_root.mkdir(parents=True, exist_ok=True)
+        target_path = output_root / "seed_manifest.json"
+        if target_path.resolve() != canonical_manifest_path.resolve():
+            target_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return manifest
+
     seed42_records: dict[str, Any] = {}
     seed42_fps: set[str] = set()
 
@@ -246,9 +269,15 @@ def build_seed_manifest(output_root: Path) -> dict[str, Any]:
         )
         if not ok or summary is None:
             raise RuntimeError(f"Seed 42 audit failed for '{abl_key}' at {s42_dir}: {reasons}")
+        csv_path = s42_dir / "task_accuracy.csv"
+        matrix = load_task_matrix_csv(csv_path, expected_stages=10)
+        stages_pct = [s * 100.0 for s in stage_accuracies(matrix)]
+        csv_sha = hashlib.sha256(csv_path.read_bytes()).hexdigest()
         seed42_fps.add(str(summary["task_split_fingerprint"]))
         seed42_records[abl_key] = {
             **summary,
+            "csv_sha256": csv_sha,
+            "stage_accuracies_pct": stages_pct,
             "provenance": "REUSED_VERIFIED_SEED42",
             "wandb_run_id": abl_cfg["seed42_wandb_id"],
             "wandb_run_name": abl_cfg["seed42_wandb_name"],
