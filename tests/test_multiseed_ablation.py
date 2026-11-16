@@ -216,3 +216,25 @@ def test_fresh_clone_manifest_fallback(tmp_path: Path, monkeypatch: pytest.Monke
     data = load_all_runs(tmp_path)
     assert len(data[42]) == 4
     assert len(data[42]["full"]["stage_accuracies_pct"]) == 10
+
+
+def test_analyze_main_with_relative_input_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regression test: analyze_cifar100_multiseed.main() must handle relative --input-root without ValueError."""
+    import sys
+    from scripts.analyze_cifar100_multiseed import main as analyze_main
+
+    patched = {
+        k: {**v, "seed42_dir": tmp_path / "nonexistent" / k}
+        for k, v in ABLATIONS.items()
+    }
+    monkeypatch.setattr("scripts.run_cifar100_multiseed_ablation.ABLATIONS", patched)
+    monkeypatch.setattr("scripts.analyze_cifar100_multiseed.ABLATIONS", patched)
+
+    for seed in (123, 2026):
+        for abl_key in ABLATION_ORDER:
+            _write_synthetic_run(tmp_path / f"seed_{seed}" / abl_key, seed=seed, ablation_key=abl_key)
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["analyze_cifar100_multiseed.py", "--input-root", "."])
+    analyze_main()
+    assert (tmp_path / "analysis" / "multiseed_evidence_manifest.json").exists()

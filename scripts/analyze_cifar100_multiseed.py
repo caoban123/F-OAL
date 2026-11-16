@@ -416,6 +416,12 @@ def main() -> None:
     csv_paths = save_csv_outputs(stats, out_dir)
     fig_paths = generate_figures(data, stats, out_dir)
 
+    def _rel(p: Path) -> str:
+        try:
+            return str(p.resolve().relative_to(REPO_ROOT.resolve())).replace("\\", "/")
+        except ValueError:
+            return str(p.resolve())
+
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_runs": {
@@ -429,7 +435,7 @@ def main() -> None:
             }
             for s in SEEDS
         },
-        "outputs": {str(p.relative_to(REPO_ROOT)): sha256_file(p) for p in [summary_json, *csv_paths, *fig_paths]},
+        "outputs": {_rel(p): sha256_file(p) for p in [summary_json, *csv_paths, *fig_paths]},
     }
     (out_dir / "multiseed_evidence_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
