@@ -20,6 +20,10 @@ results/foal_full_cifar100_seed42/*.pt
 !results/c3_analysis/
 !results/table4_analysis/
 !results/headline_analysis/
+!results/cifar100_multiseed/
+results/cifar100_multiseed/*
+!results/cifar100_multiseed/seed_manifest.json
+!results/cifar100_multiseed/analysis/
 *.zip
 data/
 *.ckpt
