@@ -573,6 +573,14 @@ Trong quá trình kiểm toán định kỳ, một vấn đề pháp y nghiêm t
 - **Biện pháp khắc phục:** Nhóm đã xây dựng script kiểm toán độc lập [`scripts/audit_headline_results.py`](file:///d:/Nhập%20môn%20ML/Paper/scripts/audit_headline_results.py), đọc trực tiếp ma trận $10 \times 10$ gồm đủ 55 phần tử từ các tệp `task_accuracy.csv` nguyên bản trong `results/table4_full_gpu_verified/`, tính toán lại toàn bộ giá trị theo đúng công thức giải tích.
 - **Kết quả:** Xác nhận 100% các con số trong Bảng $11.2$ khớp tuyệt đối với dữ liệu máy chủ Colab và log W&B, bảo đảm tính liêm chính khoa học cao nhất.
 
+### 11.6. Mở Rộng Kiểm Chứng Multi-Seed (Seeds 42, 123, 2026)
+Để kiểm tra độ ổn định của các hiệu ứng nhỏ ở Bảng $11.2$, nhóm đã mở rộng Table 4 Ablation sang **3 seed độc lập (42, 123, 2026)** trên cùng giao thức `C3-D` (12 Full runs, báo cáo chi tiết tại [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/CIFAR100_MULTISEED_ABLATION_REPORT.md)):
+- **Mean ± Std ($\bar{A}$, `ddof=1`):** Full: **$90.5885 \pm 0.1619\%$** | Without FF: **$90.2257 \pm 0.1085\%$** | Without SP: **$90.5778 \pm 0.1752\%$** | Without FF & SP: **$90.1596 \pm 0.2057\%$**.
+- **Paired Within-Seed Analysis:**
+  - **Feature Fusion ($\Delta\text{FF}$):** $+0.3629 \pm 0.0538\text{ pp}$ (dương ở **3/3 seeds**), khẳng định đóng góp ổn định và nhất quán.
+  - **Smooth Projection ($\Delta\text{SP}$):** $+0.0107 \pm 0.0410\text{ pp}$ (2/3 dương ở `42, 123`, **đảo dấu $-0.0340\text{ pp}$ ở `seed=2026`**), cho thấy trên đặc trưng ViT-B/16 của CIFAR-100, hiệu ứng của SP rất nhỏ và không phân biệt được với biến thiên giữa các seed.
+- **Lưu ý đối chiếu:** Mốc `90.40%` tại `seed=42` vẫn được giữ nguyên trong Bảng so sánh trực tiếp single-seed với bài báo gốc; trung bình 3-seed ($90.59 \pm 0.16\%$) đóng vai trò bằng chứng bổ trợ về độ ổn định.
+
 ---
 
 # PHẦN IX — THỰC NGHIỆM TABLE 2: HEADLINE COMPARISON VỚI CÁC BASELINE

@@ -69,7 +69,7 @@ def sample_mean_std(values: list[float]) -> tuple[float, float]:
     return mean, std
 
 
-def load_all_runs(input_root: Path) -> dict[int, dict[str, dict[str, Any]]]:
+def load_all_runs(input_root: Path, *, require_checkpoints: bool = True) -> dict[int, dict[str, dict[str, Any]]]:
     """Load and validate all 12 (seed x ablation) runs."""
     data: dict[int, dict[str, dict[str, Any]]] = {}
 
@@ -93,7 +93,7 @@ def load_all_runs(input_root: Path) -> dict[int, dict[str, dict[str, Any]]]:
                     continue
             else:
                 run_dir = input_root / f"seed_{seed}" / abl_key
-                require_ckpts = True
+                require_ckpts = require_checkpoints
 
             ok, reasons, summary = validate_completed_run(
                 run_dir,
@@ -303,7 +303,8 @@ def generate_figures(
         ax.legend(loc="lower right", frameon=True, fontsize=8.5)
 
     fig.suptitle("CIFAR-100 Multi-Seed Table 4 Ablation Accuracy (Seeds 42, 123, 2026; ddof=1)", fontsize=13, fontweight="bold")
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.text(0.5, 0.01, "Source: Audited CIFAR-100 Table 4 Multi-Seed Artifacts (n=3 seeds, C3-D Bilinear Raw [0,1])", ha="center", fontsize=8.5, color="#555555")
+    fig.tight_layout(rect=[0, 0.03, 1, 0.94])
     fig1_path = out_dir / "fig1_multiseed_ablation_accuracy.png"
     fig.savefig(fig1_path, dpi=300)
     plt.close(fig)
@@ -326,14 +327,16 @@ def generate_figures(
     ax.axhline(0.0, color="#444444", linestyle="--", linewidth=1.0)
 
     for i, (m_val, s_val) in enumerate(zip(mean_vals, std_vals)):
-        ax.text(i + 0.28, m_val, f"{m_val:+.3f}±{s_val:.3f} pp", va="center", fontsize=8.5, fontweight="bold")
+        ax.text(i, max(m_val + s_val, 0.0) + 0.018, f"{m_val:+.3f}±{s_val:.3f} pp", ha="center", va="bottom", fontsize=9, fontweight="bold")
 
+    ax.set_ylim(min(-0.08, min(mean_vals) - max(std_vals) - 0.04), max(mean_vals) + max(std_vals) + 0.08)
     ax.set_xticks(cx)
     ax.set_xticklabels([lbl for _, lbl in contrasts], fontsize=10, fontweight="bold")
     ax.set_ylabel("Paired Accuracy Gain (percentage points, pp)", fontsize=10.5, fontweight="bold")
     ax.set_title("Paired Component Contributions on Average Incremental Accuracy ($\\bar{A}$)", fontsize=12, fontweight="bold")
     ax.legend(frameon=True, fontsize=9)
-    fig.tight_layout()
+    fig.text(0.5, 0.01, "Source: Audited CIFAR-100 Table 4 Multi-Seed Artifacts (Paired within-seed differences, n=3, ddof=1)", ha="center", fontsize=8.5, color="#555555")
+    fig.tight_layout(rect=[0, 0.03, 1, 1])
     fig2_path = out_dir / "fig2_paired_component_contributions.png"
     fig.savefig(fig2_path, dpi=300)
     plt.close(fig)
@@ -355,7 +358,8 @@ def generate_figures(
     ax.set_ylabel("Seen-Class Average Accuracy (%)", fontsize=10.5, fontweight="bold")
     ax.set_title("CIFAR-100 Stage Accuracy Progression (Mean ± 1 Std across Seeds 42, 123, 2026)", fontsize=12, fontweight="bold")
     ax.legend(frameon=True, fontsize=9.5)
-    fig.tight_layout()
+    fig.text(0.5, 0.01, "Source: Audited CIFAR-100 Table 4 Multi-Seed Artifacts (10 tasks x 10 classes, n=3 seeds)", ha="center", fontsize=8.5, color="#555555")
+    fig.tight_layout(rect=[0, 0.03, 1, 1])
     fig3_path = out_dir / "fig3_multiseed_accuracy_progression.png"
     fig.savefig(fig3_path, dpi=300)
     plt.close(fig)
@@ -385,7 +389,8 @@ def generate_figures(
     ax.set_ylabel("Average Incremental Accuracy $\\bar{A}$ (%, higher is better)", fontsize=10.5, fontweight="bold")
     ax.set_title("Accuracy vs. Past Forgetting across Configurations (3 Seeds)", fontsize=12, fontweight="bold")
     ax.legend(frameon=True, fontsize=8.8)
-    fig.tight_layout()
+    fig.text(0.5, 0.01, "Source: Audited CIFAR-100 Table 4 Multi-Seed Artifacts (n=3 seeds, ddof=1; small points = individual seeds)", ha="center", fontsize=8.5, color="#555555")
+    fig.tight_layout(rect=[0, 0.03, 1, 1])
     fig4_path = out_dir / "fig4_accuracy_vs_forgetting.png"
     fig.savefig(fig4_path, dpi=300)
     plt.close(fig)
@@ -398,6 +403,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze CIFAR-100 Multi-Seed Ablation Study.")
     parser.add_argument("--input-root", default=str(REPO_ROOT / "results" / "cifar100_multiseed"))
     parser.add_argument("--output-dir", default=None, help="Defaults to <input-root>/analysis")
+    parser.add_argument(
+        "--skip-checkpoint-files",
+        action="store_true",
+        help="Allow archived results without .pt checkpoint weights (still verifies metadata, metrics, and 55-cell matrix)",
+    )
     return parser.parse_args()
 
 
@@ -407,7 +417,7 @@ def main() -> None:
     out_dir = Path(args.output_dir) if args.output_dir else (input_root / "analysis")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    data = load_all_runs(input_root)
+    data = load_all_runs(input_root, require_checkpoints=not args.skip_checkpoint_files)
     stats = compute_statistical_summary(data)
 
     summary_json = out_dir / "multiseed_summary.json"
