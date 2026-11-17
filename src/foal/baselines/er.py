@@ -135,12 +135,30 @@ class ERAgent:
         }
 
     def predict(self, features: torch.Tensor) -> torch.Tensor:
+        """Predict argmax class indices for a batch of feature vectors.
+
+        Args:
+            features: Input feature tensor of shape (batch, feature_dim).
+
+        Returns:
+            Predicted integer class indices on CPU of shape (batch,).
+        """
         self.model.eval()
         with torch.no_grad():
             logits = self.model(features.to(self.device))
             return logits.argmax(dim=1).cpu()
 
     def evaluate(self, features: torch.Tensor, labels: torch.Tensor, batch_size: int = 128) -> float:
+        """Evaluate classification accuracy over a feature/label dataset.
+
+        Args:
+            features: Feature tensor of shape (num_samples, feature_dim).
+            labels: Ground-truth integer label tensor of shape (num_samples,).
+            batch_size: Mini-batch size for evaluation.
+
+        Returns:
+            Accuracy ratio in [0.0, 1.0], or NaN if the dataset is empty.
+        """
         self.model.eval()
         correct = 0
         total = len(labels)

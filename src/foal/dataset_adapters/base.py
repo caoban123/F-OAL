@@ -120,12 +120,14 @@ class BaseDatasetAdapter(ABC):
 
     @property
     def train_labels(self) -> list[int]:
+        """Return integer training labels, initializing the adapter if needed."""
         if not self._initialized:
             self.setup()
         return self._train_labels
 
     @property
     def test_labels(self) -> list[int]:
+        """Return integer test labels, initializing the adapter if needed."""
         if not self._initialized:
             self.setup()
         return self._test_labels

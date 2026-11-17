@@ -7,6 +7,11 @@ from typing import Any, Dict
 
 
 def get_git_info() -> dict[str, Any]:
+    """Collect current Git commit SHA, branch name, and dirty worktree flag.
+
+    Returns:
+        Dictionary with keys `commit`, `branch`, and `dirty`.
+    """
     info: dict[str, Any] = {'commit': None, 'branch': None, 'dirty': False}
     try:
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'],

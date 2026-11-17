@@ -26,6 +26,14 @@ class LwFClassifier(nn.Module):
         self.fc = nn.Linear(in_features, num_classes, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute linear classification logits from input feature vectors.
+
+        Args:
+            x: Feature tensor of shape (batch, in_features).
+
+        Returns:
+            Logit tensor of shape (batch, num_classes).
+        """
         return self.fc(x)
 
     def expand_classes(self, new_total_classes: int, device: torch.device | str = "cpu") -> None:

@@ -40,6 +40,7 @@ class OnlineRidgeRLS:
 
     @property
     def num_classes(self) -> int:
+        """Return the number of currently registered output classes."""
         return self.W.shape[1]
 
     @torch.no_grad()
@@ -91,6 +92,14 @@ class OnlineRidgeRLS:
 
     @torch.no_grad()
     def scores(self, features: torch.Tensor) -> torch.Tensor:
+        """Compute raw linear classification scores for input features.
+
+        Args:
+            features: Feature matrix of shape (batch, feature_dim).
+
+        Returns:
+            Logit score tensor of shape (batch, num_classes).
+        """
         if self.num_classes == 0:
             raise RuntimeError('No classes have been seen yet')
         H = features.to(device=self.device, dtype=self.dtype)
@@ -98,15 +107,29 @@ class OnlineRidgeRLS:
 
     @torch.no_grad()
     def predict(self, features: torch.Tensor) -> torch.Tensor:
+        """Predict argmax class indices for input features.
+
+        Args:
+            features: Feature matrix of shape (batch, feature_dim).
+
+        Returns:
+            Predicted integer class indices of shape (batch,).
+        """
         return self.scores(features).argmax(dim=1)
 
     def state_dict(self) -> dict:
+        """Serialize RLS state (R, W, hyperparameters, sample count) to a dictionary."""
         return dict(feature_dim=self.feature_dim, gamma=self.gamma,
                     R=self.R.clone(), W=self.W.clone(),
                     samples_seen=self.samples_seen,
                     dtype=str(self.dtype))
 
     def load_state_dict(self, state: dict) -> None:
+        """Restore RLS state from a serialized dictionary.
+
+        Args:
+            state: Dictionary previously returned by `state_dict()`.
+        """
         if int(state['feature_dim']) != self.feature_dim:
             raise ValueError('Mismatched feature dimension')
         self.R = state['R'].to(self.device, self.dtype)
