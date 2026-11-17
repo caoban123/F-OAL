@@ -1,0 +1,160 @@
+{
+  "created_at_utc": "2026-11-16T15:29:46.295146+00:00",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "project": "hcmus-foal-reproduction",
+  "runs_sha256": "b652b344bd64a9d165d62eb2a4ab2f7710b02f159c3915d361d961c37175a983",
+  "runs": {
+    "ifl3rz2u": {
+      "id": "ifl3rz2u",
+      "name": "headline_lwf_adapted_adamw_seed42",
+      "state": "finished",
+      "group": "headline_comparison",
+      "job_type": null,
+      "config": {
+        "seed": 42,
+        "agent": "lwf",
+        "method": "LwF (Adapted AdamW + Static Loss)",
+        "dataset": "cifar100",
+        "paradigm": "Exemplar-Free Distillation",
+        "optimizer": "adamw",
+        "batch_size": 10,
+        "provenance": {
+          "verifier": "Antigravity Scientific Auditor",
+          "import_type": "posthoc_import_from_verified_colab_artifacts",
+          "source_archive": "foal_cifar100_headline_results.zip"
+        },
+        "buffer_size": 0,
+        "feature_dim": 768,
+        "num_classes": 100,
+        "learning_rate": 0.001,
+        "feature_fusion": "12-block CLS average + LayerNorm (D=768)",
+        "class_order_seed": 42,
+        "classes_per_task": 10,
+        "execution_environment": {
+          "hardware": {
+            "gpu": {
+              "count": 1,
+              "capability": [
+                7,
+                5
+              ],
+              "device_name": "Tesla T4",
+              "cuda_version": "13.0",
+              "total_memory_gb": 14.56
+            },
+            "cpu_count": 2,
+            "cuda_available": true
+          },
+          "platform": "Google Colab GPU",
+          "git_commit": "d333705",
+          "archive_sha256": "6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551"
+        },
+        "provenance_remediation": {
+          "verified_seeds": {
+            "seed": 42,
+            "class_order_seed": 42
+          },
+          "training_script": "scripts/train_baseline.py",
+          "missing_evidence": {
+            "original_stdout_log": "MISSING",
+            "original_cli_command": "MISSING"
+          },
+          "verified_backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+          "verified_class_order": {
+            "class_order_seed": 42,
+            "explicit_class_order_list": "NOT_STORED_IN_SUMMARY_JSON (deterministic via make_class_order(100, 42))"
+          },
+          "source_worktree_dirty": true,
+          "source_commit_evidence": "recorded_in_original_summary",
+          "verified_preprocessing": {
+            "size": 224,
+            "normalize": false,
+            "interpolation": "bilinear"
+          },
+          "source_code_base_commit": "b0658c8837563d845253880da8efb1f0f11387fc",
+          "uncommitted_diff_status": "MISSING",
+          "verified_hyperparameters": {
+            "agent": "lwf",
+            "batch_size": 10,
+            "temperature": 2,
+            "weight_decay": 0.0001,
+            "learning_rate": 0.001,
+            "distill_lambda": 1,
+            "feature_fusion": true
+          },
+          "provenance_classification": "POST_HOC_IMPORT",
+          "source_artifact_references": {
+            "files": [
+              {
+                "path": "configs/headline/lwf_cifar100.yaml",
+                "sha256": "6e1eb73336315ede165f0ffe5beca49ec430927ef87c0b4a519d6dee8806ecfb",
+                "size_bytes": 826
+              },
+              {
+                "path": "results/headline_full_gpu_verified/runs/headline/lwf/summary.json",
+                "sha256": "4413d62b935903957c7f2843cb3342b2882dec6ce50b52dcaa4000e37d62b9a8",
+                "size_bytes": 4230
+              },
+              {
+                "path": "results/headline_full_gpu_verified/runs/headline/lwf/task_matrix.csv",
+                "sha256": "5a10c765158df0bb2c7953091ef6855019cc8c707782e63b672776c77dc42f6d",
+                "size_bytes": 505
+              }
+            ],
+            "archive": {
+              "sha256": "6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551",
+              "filename": "foal_cifar100_headline_results.zip"
+            },
+            "bundle_sha256": "9b612893419141bdd911d4fb7eff77a9d6dd5b15e9fd8fd73c9f08b42093d2f8"
+          },
+          "import_script_commit_evidence": "latest_git_history_commit_for_import_script_not_runtime_verified",
+          "import_script_reference_commit": "8e977037dc3fb3e4ae231d111cf0e634deebcdee",
+          "provenance_verification_status": "VERIFIED_LOCAL_PARTIAL_ON_WANDB"
+        }
+      },
+      "summary": {
+        "average_incremental_accuracy_so_far": 29.629496031746033,
+        "comparison/average_incremental_accuracy_pct": 29.629496031746033,
+        "comparison/forgetting_past_tasks_pct": 94.98888888888888,
+        "fig2_headline_final_foal_vs_baselines": "{'path': 'media/images/fig2_headline_final_foal_vs_baselines_11_56411efd75b4dbce6e94.png', 'size': 101543, '_type': 'image-file', 'width': 2400, 'format': 'png', 'height': 1500, 'sha256': '56411efd75b4dbce6e9476ebd57abff1dd1f717a132b04270d2e3dd462f10709'}",
+        "fig3_headline_final_adapted_vs_official_lwf": "{'path': 'media/images/fig3_headline_final_adapted_vs_official_lwf_12_7c942b38b6a735b2becd.png', 'size': 239507, '_type': 'image-file', 'width': 2700, 'format': 'png', 'height': 1500, 'sha256': '7c942b38b6a735b2becdff69dfa19760bc9178bc969d22fc8ff41a11a36ed79f'}",
+        "fig6_headline_final_forgetting_comparison": "{'path': 'media/images/fig6_headline_final_forgetting_comparison_13_6cd59f98bbdac7b188ea.png', 'size': 134920, '_type': 'image-file', 'width': 2700, 'format': 'png', 'height': 1500, 'sha256': '6cd59f98bbdac7b188ea64d2bfd365225f24a63b0308f7a121171dc2a8d45ae9'}",
+        "final/average_incremental_accuracy": 29.629496031746033,
+        "final/forgetting_official_code": 85.49,
+        "final/forgetting_past_tasks": 94.98888888888888,
+        "final/last_accuracy": 11.21,
+        "final/training_time_seconds": 629.5167602739989,
+        "final_task_accuracies/task_01": 0,
+        "final_task_accuracies/task_02": 0,
+        "final_task_accuracies/task_03": 0,
+        "final_task_accuracies/task_04": 0,
+        "final_task_accuracies/task_05": 0,
+        "final_task_accuracies/task_06": 0,
+        "final_task_accuracies/task_07": 0,
+        "final_task_accuracies/task_08": 0,
+        "final_task_accuracies/task_09": 14.3,
+        "final_task_accuracies/task_10": 97.8,
+        "stage_accuracy": 11.21,
+        "task": 10,
+        "task_accuracy_matrix": "{'path': 'media/table/task_accuracy_matrix_10_45e51659484c0aedb716.table.json', 'size': 719, '_type': 'table-file', 'ncols': 11, 'nrows': 10, 'sha256': '45e51659484c0aedb716afabdb5654f4aafcd94e68117218d33f8b72d5f298b8', 'log_mode': 'IMMUTABLE', 'artifact_path': 'wandb-client-artifact://wg1tdcn38t5qznxihcv9k77x9ydj79xoxe57oiesc5q1bcep01v2b2vopqlv5e6ykqjt0426qfaz0cvxtmdxw5j60fi2ij9khmpprx32mkuviafrdcr8tq0rb1wh0nzh/task_accuracy_matrix.table.json', '_latest_artifact_path': 'wandb-client-artifact://3cbilmayjpo0lraotd0aoto4k645mg0z1l7aic7zexxlgsfnmwt02hxwzrp4ktwr1e8czmvhv3ap96bzio31lj91vslpy2lo7f80rsebp1nm96yodam5wt0mutxpm6c2:latest/task_accuracy_matrix.table.json'}"
+      },
+      "history_len": 13,
+      "history_sha256": "0fe584258bee12889b2b0527b3b45a7fc2ed2465181feaef27a8847c9e218c33",
+      "logged_artifacts": [
+        {
+          "name": "run-ifl3rz2u-task_accuracy_matrix:v0",
+          "type": "run_table",
+          "version": "v0",
+          "digest": "18fd5c18b9d61a6fef45edb1e883a673"
+        },
+        {
+          "name": "run-ifl3rz2u-history:v0",
+          "type": "wandb-history",
+          "version": "v0",
+          "digest": "db5a09e47dbed6a0cb7cd22e6a332088"
+        }
+      ],
+      "used_artifacts": []
+    }
+  }
+}

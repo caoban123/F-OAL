@@ -1,0 +1,2 @@
+results/headline_analysis/wandb_provenance_backups/*.json text eol=lf
+results/headline_analysis/wandb_provenance_backups/*.sha256 text eol=lf
