@@ -6,6 +6,7 @@ import torch
 from src.foal.dataset_adapters.base import BaseDatasetAdapter
 from src.foal.dataset_adapters.dtd import DTDAdapter, DTD_ALL_CLASSES
 from src.foal.dataset_adapters.fgvc_aircraft import FGVCAircraftAdapter
+from src.foal.dtd_datasets import DTD_CLASS_NAMES
 
 
 def test_dtd_adapter_specs_and_invariants():
@@ -44,6 +45,18 @@ def test_dtd_adapter_reference_metrics():
     assert DTDAdapter.REFERENCE_METRICS["without_ff"] == 80.5
     assert DTDAdapter.REFERENCE_METRICS["without_sp"] == 79.3
     assert DTDAdapter.REFERENCE_METRICS["without_both"] == 71.2
+
+
+def test_dtd_adapter_aligned_with_dtd_datasets():
+    """Verify DTDAdapter class list and default subsampling align with src.foal.dtd_datasets."""
+    assert len(DTD_ALL_CLASSES) == 47
+    assert DTD_ALL_CLASSES == list(DTD_CLASS_NAMES)
+    adapter = DTDAdapter(num_classes=40, classes_per_task=4, seed=42, use_mock=True)
+    assert adapter.samples_per_class == 40
+    total_train = sum(len(spec.train_indices) for spec in adapter.task_specs)
+    total_test = len(adapter.task_specs[-1].seen_test_indices)
+    assert total_train == 1600
+    assert total_test == 1600
 
 
 def test_fgvc_aircraft_adapter_specs_and_invariants():

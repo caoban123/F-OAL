@@ -42,6 +42,7 @@ from src.foal.model import FOALModel
 from src.foal.projection import VALID_PROJECTION_INITIALIZATIONS
 from src.foal.metrics import summary_from_task_matrix, format_summary_percentages
 from src.foal.environment import get_environment_info
+from scripts.train import compute_task_split_fingerprint
 
 
 def resolve_device(requested_device: str | None, config_device: str) -> str:
@@ -228,19 +229,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     classes_per_task = int(data_cfg.get('classes_per_task', 4))
 
     # Generate class order for DTD (select subset + permute)
-    order = make_dtd_class_order(
-        num_classes_to_use=num_classes,
-        total_classes=total_classes,
-        seed=class_order_seed,
-    )
+    if data_cfg.get('class_order') is not None:
+        order = list(data_cfg['class_order'])
+    else:
+        order = make_dtd_class_order(
+            num_classes_to_use=num_classes,
+            total_classes=total_classes,
+            seed=class_order_seed,
+        )
 
     # Filter training and test data to only include selected classes
     selected_classes = set(order)
     print(f"Selected {len(selected_classes)} DTD classes: {sorted(selected_classes)}")
     print(f"Class names: {[DTD_CLASS_NAMES[c] for c in sorted(selected_classes)]}")
 
-    # Create task specs
-    specs = make_dtd_task_specs(labels_train, labels_test, order, classes_per_task)
+    # Create task specs (default 40 train samples/class per paper protocol)
+    dtd_samples_per_class = data_cfg.get('samples_per_class', 40)
+    specs = make_dtd_task_specs(
+        labels_train, labels_test, order, classes_per_task,
+        samples_per_class=dtd_samples_per_class, seed=class_order_seed,
+    )
 
     max_tasks = args.max_tasks or len(specs)
     if not (1 <= max_tasks <= len(specs)):
@@ -315,6 +323,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     env_info = get_environment_info()
     projection_meta = model.projection.get_metadata() if model.projection is not None else None
     pretrained_cfg_info = get_resolved_pretrained_cfg(model)
+    task_split_fp = compute_task_split_fingerprint(
+        order=order,
+        specs=specs,
+        max_tasks=max_tasks,
+        limit_train=args.limit_train_per_task,
+        limit_test=args.limit_test_per_task,
+        stream_seed=stream_seed,
+        labels_test=labels_test,
+    )
 
     feature_cache_dir = Path(args.feature_cache_dir) if getattr(args, 'feature_cache_dir', None) else None
 
@@ -327,6 +344,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         'git_commit': env_info.get('git', {}).get('commit'),
         'seeds': {
             'base': base_seed,
+            'dataset': base_seed,
             'class_order': class_order_seed,
             'projection': projection_seed,
             'stream': stream_seed,
@@ -345,11 +363,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         },
         'projection_metadata': projection_meta,
         'training_protocol': {
+            'dataset': data_cfg['name'],
             'dataset_source': data_cfg['name'],
             'dataset_type': 'dtd',
             'total_classes': total_classes,
+            'num_classes': num_classes,
             'num_classes_used': num_classes,
             'classes_per_task': classes_per_task,
+            'samples_per_class': dtd_samples_per_class,
             'max_tasks': max_tasks,
             'limit_train_per_task': args.limit_train_per_task,
             'limit_test_per_task': args.limit_test_per_task,
@@ -358,6 +379,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             'one_pass': True,
             'feature_cache_enabled': feature_cache_dir is not None,
         },
+        'task_split_fingerprint': task_split_fp,
         'class_order': order,
         'selected_classes': sorted(selected_classes),
         'class_names': [DTD_CLASS_NAMES[c] for c in order],
@@ -375,7 +397,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     # W&B
     wandb_run = None
-    use_wandb = args.wandb or cfg['logging'].get('use_wandb', False)
+    use_wandb = (args.wandb or cfg['logging'].get('use_wandb', False)) and os.environ.get('WANDB_MODE') != 'disabled'
     if use_wandb:
         try:
             import wandb

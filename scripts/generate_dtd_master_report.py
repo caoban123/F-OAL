@@ -11,13 +11,15 @@ report_content = r"""# BÁO CÁO TỔNG KẾT TOÀN DIỆN VÀ KIỂM TOÁN TÁI
 **Cơ sở đào tạo:** Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM (HCMUS) — Khoa Công nghệ Thông tin — Bộ môn Khoa học Máy tính  
 **Môn học:** Nhập môn Học máy (Introduction to Machine Learning)  
 **Tập dữ liệu nghiên cứu:** **Describable Textures Dataset (DTD)** — 40 Lớp chọn lọc ($10\text{ tasks} \times 4\text{ lớp/task}$)  
-**Nhánh Git thực thi chính:** `main` (commit cơ sở: [`747b828`](https://github.com/caoban123/F-OAL))  
+**Nhánh Git thực thi chính:** `experiment/dtd-ablation` (lượt chạy chính thức: [`ca42e672`](https://github.com/caoban123/F-OAL); ghi chú đối chiếu suite CPU cache lịch sử: `747b828`)  
 **Kho lưu trữ mã nguồn:** [https://github.com/caoban123/F-OAL](https://github.com/caoban123/F-OAL)  
+**Weights & Biases Official Group:** [https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction) (`table4_ablation_dtd`; legacy CPU runs at `747b828`: `phongphanthe70-afsb`)  
 **Trạng thái đóng hồ sơ:** **`DTD_REPORT_READY_VERIFIED_SIGN_OFF`**  
 **Tập tin đính kèm:**  
+- Báo cáo Phân tích Chính thức (`results/dtd/`): [`docs/dtd_ablation_report.md`](dtd_ablation_report.md)  
 - Báo cáo PDF Chuyên khảo A4: [`docs/DTD_COMPLETE_WORK_REPORT.pdf`](DTD_COMPLETE_WORK_REPORT.pdf)  
-- Notebook Tái hiện GPU Độc lập: [`notebooks/foal_dtd_full_reproduction.ipynb`](../notebooks/foal_dtd_full_reproduction.ipynb)  
-- Thư mục Kết quả & Biểu đồ: [`results/dtd_table4_analysis/`](../results/dtd_table4_analysis/), [`results/dtd_c1_analysis/`](../results/dtd_c1_analysis/), [`results/dtd_c2_analysis/`](../results/dtd_c2_analysis/), [`results/dtd_c3_analysis/`](../results/dtd_c3_analysis/)  
+- Notebook Tái hiện GPU Độc lập: [`notebooks/foal_dtd_ablation_colab.ipynb`](../notebooks/foal_dtd_ablation_colab.ipynb)  
+- Thư mục Kết quả & Biểu đồ: [`results/dtd/`](../results/dtd/), [`results/dtd_table4_analysis/`](../results/dtd_table4_analysis/), [`results/dtd_c1_analysis/`](../results/dtd_c1_analysis/), [`results/dtd_c2_analysis/`](../results/dtd_c2_analysis/), [`results/dtd_c3_analysis/`](../results/dtd_c3_analysis/)  
 
 ---
 
@@ -74,14 +76,14 @@ Mục tiêu tối thượng của báo cáo này là tái hiện độc lập, k
 
 | Giai đoạn / Mốc | Git Commit | Hành động Kỹ thuật & Thực thi | Phát hiện Khoa học & Bằng chứng Số liệu | Trạng thái Pháp y |
 |:---|:---:|:---|:---|:---:|
-| **P0: Thiết lập Hạ tầng DTD** | `747b828` | Xây dựng bộ nạp `src/foal/dtd_datasets.py`, cấu hình `configs/dtd.yaml`, bộ 5 unit tests `tests/test_dtd_dataset.py`. | Kiểm thử tính tất định của seed: 40 lớp chọn lọc và phân chia 10 tasks đạt 100% Zero-Replay. | `VERIFIED` |
-| **P1: Single-Pass Dual Feature Caching** | `747b828` | Triển khai `DualFeatureExtractor` thu thập đồng thời cả 12 block CLS (FF) và block 12 (No-FF) trong 1 forward pass. | Tiết kiệm 50% thời gian CPU; hoàn thành lập cache 3.200 ảnh DTD trong 8.6 phút. | `VERIFIED` |
-| **P2: Table 4 Ablation Suite (A0..A3)** | `747b828` | Chạy 4 cấu hình tổ hợp trên cùng tập đặc trưng DTD chuẩn. | A0: **85.26%**, A1: **82.55%**, A2: **78.64%**, A3: **72.97%**. Tái hiện sụt giảm **12.29 pp** (Paper: 11.60 pp). | `VERIFIED` |
-| **P3: Khảo sát Phép Chiếu C1 (P0..P2)** | `747b828` | Đối chứng P0 ($\mathcal{N}(0, 1)$), P1 ($\mathcal{U}$ tác giả), P2 ($\mathcal{N}$ khớp phương sai). | P0 sụp đổ về **70.82%** (bão hòa Sigmoid). P1 đạt **85.26%**, P2 đạt **85.30%**. Khẳng định vai trò của phương sai ma trận chiếu. | `VERIFIED` |
-| **P4: Khảo sát Backbone C2 (B0..B1)** | `747b828` | Đối chứng B0 (`augreg_in1k`) và B1 (`augreg2_in21k_ft_in1k`). | B1 (**85.26%**) vượt trội B0 (**79.45%**) tới **+5.81 pp**, chứng minh vai trò tiên quyết của kho ngữ nghĩa ImageNet-21K. | `VERIFIED` |
-| **P5: Khảo sát Tiền xử lý C3 (A & D)** | `747b828` | Đối chứng C3-A (Bicubic, Norm) và C3-D (Bilinear, Raw). | C3-A đạt **84.80%**, C3-D đạt **85.26%**. Độ lệch nhỏ (0.46 pp) nhờ LayerNorm của ViT triệt tiêu bias độ sáng. | `VERIFIED` |
-| **P6: Kiểm định Đa Seed (42, 123, 2026)** | `747b828` | Chạy 3 hạt giống ngẫu nhiên độc lập trên DTD. | Độ chính xác trung bình đạt **85.13 ± 0.11%**. Độ lệch chuẩn cực nhỏ khẳng định tính vững chắc của nghiệm giải tích. | `VERIFIED` |
-| **P7: Xuất Bản Phẩm & Đóng Hồ Sơ** | `747b828` | Xuất 7 biểu đồ ấn phẩm vào `results/dtd_plots/` và báo cáo PDF `docs/DTD_COMPLETE_WORK_REPORT.pdf`. | Hoàn thành 100% mục tiêu nghiên cứu DTD, sẵn sàng bảo vệ trước hội đồng môn học HCMUS. | `SIGN-OFF` |
+| **P0: Thiết lập Hạ tầng DTD & Đồng nhất Adapter** | `ca42e672` / `cd0843e+` | Chuẩn hóa `src/foal/dtd_datasets.py`, đồng bộ 47 nhãn thật & `samples_per_class=40` sang `src/foal/dataset_adapters/dtd.py`, thêm fingerprint cho `train_dtd.py`. | Kiểm thử đơn vị bảo đảm 40 lớp chọn lọc (1.600 train / 1.600 test), Zero-Replay; công bố minh bạch 7 cặp ảnh trùng byte thô trong `tanganke/dtd`. | `VERIFIED` |
+| **P1: Dual Feature Caching** | `ca42e672` | Trích xuất đặc trưng ViT-B/16 cho A0 (FF=True) và A1 (FF=False) trên Tesla T4 (`38.99–42.17s`), tái sử dụng cache cho A2/A3 cùng seed (`0.97–1.27s`). | Loại bỏ sai số trích xuất lại; RLS+Eval chạy dưới $1.0\text{ s}$ (`0.79–1.00s`). | `VERIFIED` |
+| **P2: Table 4 Ablation Độc lập (A0..A3 × 3 Seeds)** | `ca42e672` | Chạy 12 cấu hình tách biến độc lập (`Seeds 42, 123, 2026`) lưu tại `results/dtd/`. | **A0: 85.85 ± 0.92%**, **A1: 82.93 ± 0.95%**, **A2: 79.32 ± 1.97%**, **A3: 75.24 ± 1.26%** (s42: `85.08 / 82.08 / 77.81 / 74.58%`). Mức sụt **-10.61 ± 0.50 pp** (Paper: `-11.60 pp`). | `VERIFIED` |
+| **P3: Khảo sát Phép Chiếu C1 (P0..P2)** | `d1b4701a` | Đối chứng P0 ($\mathcal{N}(0, 1)$), P1 ($\mathcal{U}$ tác giả), P2 ($\mathcal{N}$ khớp phương sai) tại `results/dtd_c1_full/` (`augreg_in1k`, `torchvision`). | P0 sụp đổ về **61.45%** (bão hòa Sigmoid). P1 đạt **77.93%**, P2 đạt **77.70%** (lệch `-0.24 pp`), chứng minh vai trò quyết định của phương sai ma trận chiếu. | `VERIFIED` |
+| **P4: Khảo sát Backbone C2 (B0..B1)** | `d1b4701a` | Đối chứng B0 (`augreg_in1k`) và B1 (`augreg2_in21k_ft_in1k`) tại `results/dtd_c2_full/` (`tanganke/dtd`, `bicubic+norm`). | B1 (**85.12%**) vượt trội B0 (**77.97%**) tới **+7.15 pp**, chứng minh sức mạnh ImageNet-21K là nguyên nhân chính vượt mốc paper `82.8%`. | `VERIFIED` |
+| **P5: Khảo sát Tiền xử lý C3 (A–D)** | `d1b4701a` / `44910a1f` | Đối chứng đủ 2×2 Bilinear/Bicubic × Raw/Normalized tại `results/dtd_c3_full/`. | C3-A `85.12%`, C3-B `85.13%`, C3-C `85.13%`, C3-D `85.08%` (biên độ `< 0.05 pp` nhờ LayerNorm của ViT). | `VERIFIED` |
+| **P6: Kiểm định Đa Seed Tách biến (42, 123, 2026)** | `ca42e672` | Thử nghiệm 3 bộ `class_order`/`dataset`/`projection`/`stream` độc lập hoàn toàn trên GPU Tesla T4. | A0 đạt **85.85 ± 0.92%** ($\text{CI}_{95\%} = [83.57\%, 88.14\%]$, $p = 0.029 < 0.05$ vs `82.8%`). *(Suite CPU cache cũ ở `747b828` khóa `class_order=42` đạt `85.13 ± 0.11%`.)* | `VERIFIED` |
+| **P7: Xuất Bản Phẩm & Kiểm thử Pháp y** | `cd0843e+` | Tạo bảng/biểu đồ chính thức tại `results/dtd_table4_analysis/`, `charts/`, cập nhật LaTeX/Markdown/PDF và bộ pytest `test_dtd_forensic_verification.py`. | Khớp toán học $<10^{-12}$ trên toàn bộ 12 lượt chạy chính thức; kiểm thử đơn vị và kiểm chứng số liệu đồng bộ 100%. | `SIGN-OFF` |
 
 ---
 
@@ -139,19 +141,17 @@ Do $B = 10$ rất nhỏ, phép nghịch đảo ma trận $\mathbf{A} \in \mathbb
 
 ## 6. Cấu hình Phần mềm, Thư viện và Phần cứng Thực thi
 
-- **Hệ điều hành:** Windows 11 Enterprise (64-bit, Build 26300).
-- **Phần cứng:** Intel Core Ultra (12 logical cores), 32 GB RAM; Card đồ họa hỗ trợ: NVIDIA GeForce RTX 4050 Laptop GPU (6.14 GB VRAM, Driver 621.01).
-- **Thư viện Cốt lõi:** Python 3.14.0, PyTorch 2.15.0+cpu, torchvision 0.29.2+cpu, timm 1.0.31, datasets 5.1.0, wandb 0.31.0, reportlab 5.1.0.
-- **Tính khả lặp:** Git commit cơ sở `747b8283536376cbaf4f180de38555fc821bd67a`.
+- **Môi trường thực thi chính thức (`results/dtd/`, Google Colab GPU):** Linux 6.6.159+, Python 3.13.16, PyTorch 2.14.1+cu130, torchvision 0.29.1+cu130, timm 1.0.31, datasets 4.8.5, wandb 0.31.0 trên **NVIDIA Tesla T4** (14.56 GB VRAM, CUDA 13.0). Commit thực thi: `ca42e672` (nhánh `experiment/dtd-ablation`; lưu ý 11/12 metadata ghi `git_dirty=true` do các thư mục `results/` chưa theo dõi tồn tại trước bản vá `9f955ca`).
+- **Môi trường phát triển / kiểm chứng CPU cục bộ:** Windows 11, Python 3.14, PyTorch CPU (cũng là môi trường chạy suite feature-cache lịch sử ở commit `747b828` với `85.26%` / `85.13 ± 0.11%`).
 
 ---
 
-## 7. Đột phá Tối ưu Hóa: Single-Pass Dual-Extractor Caching
+## 7. Đột phá Tối ưu Hóa: Caching Đặc trưng ViT
 
-Do đặc trưng của ViT-B/16 đòi hỏi hàng tỷ phép tính nhân ma trận dấu phẩy động (FLOPs), việc chạy lại mạng nơ-ron nhiều lần trên CPU cho các biến thể Ablation sẽ tốn rất nhiều thời gian. Nhóm đã phát triển lớp `DualFeatureExtractor`:
-- Trong **một lượt lan truyền xuôi duy nhất** (single forward pass), bộ hook đăng ký tại 12 block transformer thu thập đồng thời cả 12 token `[CLS]` để tính trung bình Feature Fusion (FF), đồng thời lưu trữ riêng token `[CLS]` của layer 12 (No-FF).
-- Tiết kiệm chính xác **50% thời gian tính toán của CPU**, hoàn thành việc lập cache cho toàn bộ 1,600 ảnh train và 1,600 ảnh test trong vòng 8.6 phút.
-- Toàn bộ các lượt chạy RLS tiếp theo chỉ mất từ **$1.2\text{--}4.0\text{ giây}$** cho toàn bộ 10 tasks.
+Do đặc trưng của ViT-B/16 chiếm >95% tổng chi phí tính toán, việc kích hoạt bộ đệm đặc trưng (`feature_cache_enabled = true`) cho phép:
+- Trên Google Colab Tesla T4 (`results/dtd/`), pha trích xuất đặc trưng ViT của `A0` và `A1` tốn **$38.99\text{--}42.17\text{ giây}$** cho $3.200$ lượt forward ảnh (1.600 train + 1.600 test). Các điều kiện `A2`/`A3` cùng hạt giống tái sử dụng bộ đệm đặc trưng từ `A0`/`A1`, rút ngắn wall-clock xuống còn **$0.97\text{--}1.27\text{ giây}$**.
+- Pha giải tích RLS và đánh giá (`rls_and_eval_seconds`) trên cả 4 cấu hình chỉ tiêu tốn **$0.79\text{--}1.00\text{ giây}$** toàn chuỗi 10 tác vụ.
+- Trên CPU cục bộ ở nhánh phát triển trước đó (`747b828`), bộ `DualFeatureExtractor` hoàn thành lập cache 3.200 ảnh trong 8.6 phút và chạy RLS trong `1.1–1.4 giây`.
 
 ---
 
@@ -159,17 +159,17 @@ Do đặc trưng của ViT-B/16 đòi hỏi hàng tỷ phép tính nhân ma tr�
 
 ## 8. Đối soát và Thống nhất Định nghĩa Độ Quên ($F_{\text{past}}$ vs $F_{\text{code}}$)
 
-Một đóng góp quan trọng của dự án là phân định rạch ròi hai định nghĩa độ quên đang bị nhầm lẫn trong cộng đồng Continual Learning:
+Một đóng góp quan trọng của dự án là phân định rạch ròi hai định nghĩa độ quên đang được dùng song song trong tài liệu và mã nguồn thực tế:
 
-1. **Định nghĩa Chuẩn Văn hiến ($F_{\text{past}}$ — Quy ước Môn học HCMUS):**
-   Chỉ chia trung bình trên $T - 1 = 9$ nhiệm vụ quá khứ (vì nhiệm vụ thứ 10 vừa học xong, độ quên định nghĩa bằng 0):
+1. **Định nghĩa Chuẩn Văn hiến có dấu ($F_{\text{past}}$ — 9 tác vụ quá khứ):**
+   Chia trung bình trên $T - 1 = 9$ nhiệm vụ quá khứ sử dụng đỉnh lịch sử $\ell \in \{j, \dots, T-1\}$ (tức trước giai đoạn $T$, cho phép giá trị âm nếu có backward transfer):
    $$F_{\text{past}} = \frac{1}{T-1} \sum_{j=1}^{T-1} \left( \max_{\ell \in \{j, \dots, T-1\}} R_{\ell, j} - R_{T, j} \right)$$
-   Trên DTD, Full F-OAL đạt $F_{\text{past}} = \mathbf{7.43\%}$.
+   Trên `results/dtd/`, Full F-OAL đạt $F_{\text{past}} = \mathbf{8.22 \pm 0.36\%}$ (Seed 42: $\mathbf{8.61\%}$).
 
-2. **Định nghĩa trong Code Gốc Tác giả ($F_{\text{code}}$):**
-   Tác giả chia trung bình cho cả 10 nhiệm vụ (bao gồm Task 10 có độ quên bằng 0):
-   $$F_{\text{code}} = \frac{1}{T} \sum_{j=1}^{T} \left( \max_{\ell \in \{1, \dots, T\}} R_{\ell, j} - R_{T, j} \right) = \frac{T-1}{T} F_{\text{past}} = 0.9 \times F_{\text{past}}$$
-   Trên DTD, Full F-OAL đạt $F_{\text{code}} = \mathbf{6.69\%}$. Quan hệ toán học được bảo toàn chính xác: $6.69\% = 0.9 \times 7.43\%$.
+2. **Định nghĩa trong Code Gốc Tác giả ($F_{\text{code}}$ — 10 tác vụ có chặn dưới 0):**
+   Lấy max bao gồm cả giai đoạn cuối $\ell \in \{j, \dots, T\}$ và chia cho $T = 10$:
+   $$F_{\text{code}} = \frac{1}{T} \sum_{j=1}^{T} \left( \max_{\ell \in \{j, \dots, T\}} R_{\ell, j} - R_{T, j} \right)$$
+   Khi không có backward transfer dương ở giai đoạn cuối ($R_{T,j} \le \max_{\ell < T} R_{\ell,j}$), đẳng thức $F_{\text{code}} = \frac{9}{10} F_{\text{past}}$ đúng tuyệt đối (ví dụ A0 Seed 42: $7.75\% = 0.9 \times 8.6111\%$). Trung bình 3 seeds đạt $F_{\text{code}} = \mathbf{7.46 \pm 0.25\%}$.
 
 ---
 
@@ -177,13 +177,15 @@ Một đóng góp quan trọng của dự án là phân định rạch ròi hai 
 
 ## 9. Hiện tượng Bão hòa Sigmoid và Căn chỉnh Phương sai Ma trận Chiếu
 
+Kết quả đo đạc trên GPU Tesla T4 (`results/dtd_c1_full/`, commit `d1b4701a`, dùng nguồn `torchvision` fallback, `augreg_in1k`, `bicubic+norm`, Seed 42):
+
 | Cấu hình | Phân phối Ma trận $\mathbf{P}$ | Phương sai Phần tử | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | Hiện tượng Khoa học |
 |:---|:---|:---:|---:|---:|---:|:---|
-| **P0** (`gaussian_std1`) | $\mathcal{N}(0, 1.0)$ | $1.0$ | **70.82%** | **63.19%** | **8.54%** | Bão hòa Sigmoid ($>95\%$ mẫu rơi vào đuôi bão hòa), sụt giảm $-14.44\text{ pp}$ |
-| **P1** (`official_uniform`) | $\mathcal{U}[-1/\sqrt{d}, +1/\sqrt{d}]$ | $\frac{1}{3d} \approx 0.00043$ | **85.26%** | **77.25%** | **7.43%** | Tối ưu vùng tuyến tính quanh 0 của Sigmoid ($\sigma'(0)=0.25$) |
-| **P2** (`gaussian_matched`) | $\mathcal{N}(0, \frac{1}{3d})$ | $\frac{1}{3d} \approx 0.00043$ | **85.30%** | **77.06%** | **7.64%** | Khớp phương sai lý thuyết với P1; hiệu năng tương đương |
+| **P0** (`gaussian_std1`) | $\mathcal{N}(0, 1.0)$ | $1.0$ | **61.45%** | **53.19%** | **10.42%** | Bão hòa Sigmoid nghiêm trọng, sụt giảm **$-16.48\text{ pp}$** so với P1 |
+| **P1** (`official_uniform`) | $\mathcal{U}[-1/\sqrt{768}, +1/\sqrt{768}]$ | $\frac{1}{3 \times 768} \approx 0.000434$ | **77.93%** | **68.69%** | **10.00%** | Tối ưu vùng tuyến tính quanh 0 của Sigmoid ($\sigma'(0)=0.25$) |
+| **P2** (`gaussian_matched_variance`) | $\mathcal{N}(0, \frac{1}{3 \times 768})$ | $\frac{1}{3 \times 768} \approx 0.000434$ | **77.70%** | **68.69%** | **9.51%** | Khớp phương sai lý thuyết với P1; độ lệch chỉ $-0.24\text{ pp}$ |
 
-> **Phát hiện Cốt lõi C1:** Chuẩn độ dài của vector đặc trưng ViT $\|\mathbf{h}\|_2 \approx \sqrt{768} \approx 27.7$. Khi nhân với $\mathbf{P} \sim \mathcal{N}(0, 1)$, tích vô hướng có độ biến thiên rất lớn, đẩy giá trị đầu vào Sigmoid ra xa vùng $[-4, +4]$, khiến đạo hàm xấp xỉ 0 và nén toàn bộ biểu diễn về 0 hoặc 1. Việc đưa phương sai về $1/(3d)$ giúp bảo toàn độ tương phản biểu diễn tuyến tính.
+> **Phát hiện Cốt lõi C1:** Chuẩn độ dài của vector đặc trưng ViT $\|\mathbf{h}\|_2 \approx \sqrt{768} \approx 27.7$. Khi nhân với $\mathbf{P} \sim \mathcal{N}(0, 1)$, tích vô hướng đẩy đầu vào Sigmoid vào vùng bão hòa, triệt tiêu độ nhạy biểu diễn ($-16.48\text{ pp}$). Chỉ cần khớp đúng phương sai ($\sigma = 1/48$), khởi tạo Gaussian P2 khôi phục hiệu năng gần như trùng khớp P1 (`77.70%` vs `77.93%`). *(Suite CPU cache trên `tanganke/dtd` với `augreg2` cũng ghi nhận quy luật tương tự: `70.82% / 85.26% / 85.30%`).*
 
 ---
 
@@ -191,57 +193,63 @@ Một đóng góp quan trọng của dự án là phân định rạch ròi hai 
 
 ## 10. Sức mạnh Biểu diễn Đa dạng của ImageNet-21K Đối với Miền Kết cấu Bề mặt
 
+Kết quả đo đạc trên GPU Tesla T4 (`results/dtd_c2_full/`, commit `d1b4701a`, `tanganke/dtd`, `bicubic+norm`, Seed 42):
+
 | Checkpoint Backbone | Dữ liệu Tiền Huấn Luyện | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | Đánh giá Biểu diễn |
 |:---|:---|---:|---:|---:|:---|
-| **B0** (`augreg_in1k`) | ImageNet-1K (1.2 triệu ảnh, 1.000 lớp) | **79.45%** | **69.56%** | **10.83%** | Thiếu biểu diễn kết cấu tần số cao; độ quên cao |
-| **B1** (`augreg2_in21k_ft_in1k`) | ImageNet-21K (14.2 triệu ảnh, 21.841 lớp) | **85.26%** | **77.25%** | **7.43%** | **Vượt trội +5.81 pp**, độ quên giảm $3.40\text{ pp}$ |
+| **B0** (`augreg_in1k`) | ImageNet-1K (1.2 triệu ảnh, 1.000 lớp) | **77.97%** | **69.19%** | **9.93%** | Thiếu biểu diễn kết cấu tần số cao; độ quên cao |
+| **B1** (`augreg2_in21k_ft_in1k`) | ImageNet-21K (14.2 triệu ảnh, 21.841 lớp) | **85.12%** | **77.19%** | **8.26%** | **Vượt trội +7.15 pp**, độ quên giảm $1.67\text{ pp}$ |
 
-Kho tri thức bao quát từ 14.2 triệu ảnh của ImageNet-21K là điều kiện sống còn giúp frozen encoder có khả năng phân tách các lớp kết cấu trừu tượng của DTD mà không cần fine-tune backbone.
+Kho tri thức bao quát từ 14.2 triệu ảnh của ImageNet-21K là động lực chính tạo nên mức chênh lệch tích cực $+2.28\text{--}+3.05\text{ pp}$ của F-OAL hiện hành so với mốc `82.8%` trong bài báo gốc.
 
 ---
 
 # PHẦN VII — THỰC NGHIỆM C3: NGHIÊN CỨU GIAI THỪA TIỀN XỬ LÝ HÌNH ẢNH
 
-## 11. Thiết kế Giai thừa 2x2 Interpolation và Normalization trên DTD
+## 11. Thiết kế Giai thừa $2 \times 2$ Interpolation và Normalization trên DTD (`results/dtd_c3_full/`)
 
 | Điều kiện | Phép Nội Suy | Khoảng Giá Trị Điểm Ảnh | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) |
 |:---|:---:|:---:|---:|---:|---:|
-| **C3-A** | Bicubic | Chuẩn hóa Mean/Std $[-1, 1]$ | **84.80%** | **77.06%** | **7.85%** |
-| **C3-D** | Bilinear | Giá trị gốc $[0, 1]$ (Mã tác giả) | **85.26%** | **77.25%** | **7.43%** |
+| **C3-A** | Bicubic | Chuẩn hóa Mean/Std $[-1, 1]$ | **85.12%** | **77.19%** | **8.26%** |
+| **C3-B** | Bilinear | Chuẩn hóa Mean/Std $[-1, 1]$ | **85.13%** | **76.88%** | **8.47%** |
+| **C3-C** | Bicubic | Giá trị gốc $[0, 1]$ | **85.13%** | **76.62%** | **8.54%** |
+| **C3-D** (= A0 s42) | Bilinear | Giá trị gốc $[0, 1]$ (Cấu hình Table 4) | **85.08%** | **76.06%** | **8.61%** |
 
-Khác biệt giữa C3-A và C3-D trên DTD chỉ là **$0.46\text{ pp}$**. Điều này khẳng định cơ chế LayerNorm ở đầu mỗi Transformer block tự động triệt tiêu phần lớn độ lệch trung bình của phân phối pixel đầu vào.
+Khác biệt giữa cả 4 điều kiện tiền xử lý chỉ dao động trong biên độ **$0.05\text{ pp}$** (`85.08%–85.13%`), khẳng định cơ chế LayerNorm của ViT triệt tiêu gần như hoàn toàn sai khác từ nội suy ảnh và chuẩn hóa tuyến tính trên tập DTD. *(Ghi chú: Thư mục `c3_a_bicubic_normalized` chỉ lưu `metadata.json`/`metrics.json` mà không xuất `matrix.json`/`summary.json`/`task_accuracy.csv` như C3-B/C/D.)*
 
 ---
 
 # PHẦN VIII — THỰC NGHIỆM TABLE 4: ABLATION STUDY THÀNH PHẦN KIẾN TRÚC
 
-## 12. Tái hiện Cú Sụt Giảm Lớn và Phân Rã Hiệu Ứng Bù Trừ Tương Tác Âm
+## 12. Tái hiện Cú Sụt Giảm Lớn và Phân Rã Hiệu Ứng Giai thừa $2 \times 2$ (`results/dtd/`)
 
-### 12.1. Bảng Số Liệu Bóc Tách 4 Cấu Hình (Table 4)
+### 12.1. Bảng Số Liệu Chính Thức 4 Cấu Hình qua 3 Hạt giống Tách biến Độc lập (`42, 123, 2026`)
 
-| Điều kiện | Feature Fusion (FF) | Smooth Projection (SP) | Số Chiều $D$ | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | Runtime (s) | Paper Table 4 |
-|:---|:---:|:---:|:---:|---:|---:|---:|---:|---:|
-| **A0 (Full F-OAL)** | $\checkmark$ | $\checkmark$ | 1000 | **85.26%** | **77.25%** | **7.43%** | 1.37s | 82.8% |
-| **A1 (w/o FF)** | $\times$ | $\checkmark$ | 1000 | **82.55%** | **74.69%** | **6.67%** | 1.25s | 80.5% |
-| **A2 (w/o SP)** | $\checkmark$ | $\times$ | 768 | **78.64%** | **73.62%** | **6.87%** | 0.77s | 79.3% |
-| **A3 (w/o Both)** | $\times$ | $\times$ | 768 | **72.97%** | **71.69%** | **4.93%** | 0.86s | 71.2% |
+| Điều kiện | FF | SP | $D$ | Seed 42 | Seed 123 | Seed 2026 | **Mean $\pm$ Std $\bar{A}$** | Mean $A_{10}$ | Mean $F_{\text{past}}$ | $T_{\text{RLS+Eval}}$ | Paper Table 4 |
+|:---|:---:|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **A0 (Full F-OAL)** | $\checkmark$ | $\checkmark$ | 1000 | 85.08% | 86.87% | 85.60% | **85.85 ± 0.92%** | **77.31%** | 8.22% | 0.88–0.89s | 82.8% |
+| **A1 (w/o FF)** | $\times$ | $\checkmark$ | 1000 | 82.08% | 83.95% | 82.75% | **82.93 ± 0.95%** | **75.56%** | 7.69% | 0.90–0.94s | 80.5% |
+| **A2 (w/o SP)** | $\checkmark$ | $\times$ | 768 | 77.81% | 81.54% | 78.60% | **79.32 ± 1.97%** | **74.48%** | 5.88% | 0.79–1.00s | 79.3% |
+| **A3 (w/o Both)** | $\times$ | $\times$ | 768 | 74.58% | 76.70% | 74.45% | **75.24 ± 1.26%** | **72.88%** | 4.54% | 0.82–1.00s | 71.2% |
 
-### 12.2. Phân Rã Hiệu Ứng Giai Thừa $2 \times 2$ (Factorial Effects Analysis)
+*(Lưu ý đối chiếu: Suite CPU cache lịch sử ở commit `747b828` cho kết quả `85.26 / 82.55 / 78.64 / 72.97%` trên Seed 42; thử nghiệm 80 ảnh/lớp chưa lấy mẫu con trước `acea57e` đạt `87.20 / 85.01 / 84.35 / 81.10%` và đã được loại bỏ khỏi báo cáo chính thức.)*
+
+### 12.2. Phân Rã Hiệu Ứng Giai Thừa $2 \times 2$ & Kiểm định $t$ Ghép cặp ($n=3, \text{df}=2$)
 
 $$\begin{aligned}
-\Delta_{\text{Joint}} &= A0 - A3 = 85.26\% - 72.97\% = \mathbf{+12.29\text{ pp}} \quad (\text{Paper: } +11.60\text{ pp}) \\
-E_{\text{FF}|\text{SP}} &= A0 - A1 = 85.26\% - 82.55\% = \mathbf{+2.71\text{ pp}} \quad (\text{Paper: } +2.30\text{ pp}) \\
-E_{\text{FF}|\neg\text{SP}} &= A2 - A3 = 78.64\% - 72.97\% = \mathbf{+5.67\text{ pp}} \quad (\text{Paper: } +8.10\text{ pp}) \\
-E_{\text{SP}|\text{FF}} &= A0 - A2 = 85.26\% - 78.64\% = \mathbf{+6.62\text{ pp}} \quad (\text{Paper: } +3.50\text{ pp}) \\
-E_{\text{SP}|\neg\text{FF}} &= A1 - A3 = 82.55\% - 72.97\% = \mathbf{+9.58\text{ pp}} \quad (\text{Paper: } +9.30\text{ pp})
+\Delta_{\text{Joint}} &= A0 - A3 = \mathbf{+10.61 \pm 0.50\text{ pp}} \quad (t_2 = 36.83,\, p = 0.00074;\; \text{Seed 42: }+10.50\text{ pp};\; \text{Paper: }+11.60\text{ pp}) \\
+E_{\text{FF}|\text{SP}} &= A0 - A1 = \mathbf{+2.93 \pm 0.07\text{ pp}} \quad (t_2 = 68.56,\, p = 0.00021;\; \text{Seed 42: }+3.00\text{ pp};\; \text{Paper: }+2.30\text{ pp}) \\
+E_{\text{FF}|\neg\text{SP}} &= A2 - A3 = \mathbf{+4.07 \pm 0.81\text{ pp}} \quad (t_2 = 8.71,\, p = 0.01292;\; \text{Seed 42: }+3.23\text{ pp};\; \text{Paper: }+8.10\text{ pp}) \\
+E_{\text{SP}|\text{FF}} &= A0 - A2 = \mathbf{+6.53 \pm 1.05\text{ pp}} \quad (t_2 = 10.74,\, p = 0.00855;\; \text{Seed 42: }+7.28\text{ pp};\; \text{Paper: }+3.50\text{ pp}) \\
+E_{\text{SP}|\neg\text{FF}} &= A1 - A3 = \mathbf{+7.68 \pm 0.55\text{ pp}} \quad (t_2 = 24.30,\, p = 0.00169;\; \text{Seed 42: }+7.50\text{ pp};\; \text{Paper: }+9.30\text{ pp})
 \end{aligned}$$
 
-- **Tác động chính (Main Effects):**
-  $$E_{\text{FF}} = \frac{2.71 + 5.67}{2} = \mathbf{+4.19\text{ pp}}, \quad E_{\text{SP}} = \frac{6.62 + 9.58}{2} = \mathbf{+8.10\text{ pp}}$$
-- **Hệ số tương tác giai thừa (Interaction Contrast):**
-  $$I_{\text{FF} \times \text{SP}} = (A0 - A1) - (A2 - A3) = 2.71 - 5.67 = \mathbf{-2.96\text{ pp}}$$
+- **Tác động chính trung bình (Main Effects):**
+  $$E_{\text{FF}} = \mathbf{+3.50 \pm 0.38\text{ pp}} \quad (t_2 = 15.80,\, p = 0.0040), \qquad E_{\text{SP}} = \mathbf{+7.11 \pm 0.72\text{ pp}} \quad (t_2 = 17.05,\, p = 0.0034)$$
+- **Độ tương phản tương tác (Interaction Contrast):**
+  $$I_{\text{DiD}} = (A0 - A1) - (A2 - A3) = \mathbf{-1.15 \pm 0.86\text{ pp}} \quad (I_{\text{half}} = -0.57 \pm 0.43\text{ pp},\; t_2 = -2.32,\, p = 0.1458)$$
 
-> **Biện Giải Cơ Chế:** Hệ số tương tác âm $-2.96\text{ pp}$ chứng minh tính chất bù trừ (sub-additive compensatory effect). Cả hai khối hoạt động như hai bức tường thành phòng thủ. Khi chỉ một khối bị phá vỡ, khối kia vẫn giữ được độ chính xác ở mức $78\text{--}82\%$. Tuy nhiên, khi cả hai cùng biến mất, bộ phân loại giải tích rơi vào vùng sụp đổ biểu diễn, xác nhận trọn vẹn hiện tượng bài báo NeurIPS 2024 công bố.
+> **Biện Giải Cơ Chế:** Cả hai tác động chính của SP ($+7.11\text{ pp}$) và FF ($+3.50\text{ pp}$) đều có ý nghĩa thống kê vững chắc trên cả 3 hạt giống độc lập ($p < 0.005$), trong khi tương tác DiD âm nhẹ ($-1.15\text{ pp}$) không đạt ngưỡng ý nghĩa ($p = 0.146$), cho thấy đóng góp của hai khối chủ yếu mang tính cộng hưởng bổ sung cho nhau và sụp đổ nặng ($-10.61\text{ pp}$) khi thiếu cả hai.
 
 ---
 
@@ -258,25 +266,27 @@ E_{\text{SP}|\neg\text{FF}} &= A1 - A3 = 82.55\% - 72.97\% = \mathbf{+9.58\text{
 | **SLCA** (ICCV 2023) | Alignment | 0 | 72.8% | 67.5% | 9.8% | — |
 | **EASE** (CVPR 2024) | Subspace Ensemble | 0 | 76.0% | 71.4% | 8.1% | 139 giây |
 | **F-OAL (Paper Báo cáo)** | Forward-only Analytic | 0 | **82.8%** | **78.2%** | **5.2%** | **8 giây** |
-| **F-OAL (Nhóm Tái hiện)** | Forward-only Analytic | 0 | **85.26%** | **77.25%** | **7.43%** | **1.37 giây (RLS)** |
+| **F-OAL (`results/dtd/`, 3 seeds)** | Forward-only Analytic | 0 | **85.85 ± 0.92%** | **77.31 ± 1.17%** | **8.22 ± 0.36%** | **0.88s RLS** *(+40s ViT)* |
 
-- **Vượt trội baseline tốt nhất:** F-OAL vượt qua baseline Exemplar-Free tốt nhất (**EASE**) tới **$+9.26\text{ điểm phần trăm}$** trên DTD.
-- **Tốc độ:** F-OAL nhanh hơn EASE tới **34 lần** nhờ loại bỏ hoàn toàn các vòng lặp lan truyền ngược lặp đi lặp lại.
+- **Vượt trội baseline tốt nhất:** F-OAL (`results/dtd/` trung bình 3 seeds) vượt qua baseline Exemplar-Free tốt nhất (**EASE**, `76.0%`) tới **$+9.85\text{ điểm phần trăm}$** trên DTD (`+9.08 pp` ở Seed 42).
+- **Tốc độ:** Pha cập nhật RLS + đánh giá chạy dưới 1 giây (`0.79–1.00s` trên Tesla T4; `40.4–43.6s` tổng nếu tính trích xuất ViT từ đầu), nhanh hơn đáng kể so với phương pháp fine-tuning lặp lại của EASE (`139 giây`).
 
 ---
 
-# PHẦN X — KIỂM ĐỊNH TÍNH ỔN ĐỊNH TOÁN HỌC ĐA SEED
+# PHẦN X — KIỂM ĐỊNH ĐA HẠT GIỐNG TÁCH BIẾN ĐỘC LẬP (`results/dtd/`)
 
-## 14. Phân Tích Phương Sai và Khoảng Tin Cậy Qua 3 Hạt Giống Ngẫu Nhiên
+## 14. Phân Tích Phương Sai và Khoảng Tin Cậy Qua 3 Bộ Seeds Độc Lập (`42, 123, 2026`)
 
-| Seed | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | $F_{\text{code}}$ (%) |
-|:---:|---:|---:|---:|---:|
-| **Seed 42** | 85.26% | 77.25% | 7.43% | 6.69% |
-| **Seed 123** | 85.09% | 77.56% | 7.71% | 7.06% |
-| **Seed 2026** | 85.05% | 77.81% | 6.81% | 6.12% |
-| **Tổng hợp ($N=3$)** | **85.13 ± 0.11%** | **77.54 ± 0.28%** | **7.31 ± 0.46%** | **6.62 ± 0.47%** |
+| Điều kiện / Seed | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | $F_{\text{code}}$ (%) |
+|:---|---:|---:|---:|---:|
+| **A0 — Seed 42** (`dtd_a0_full`) | 85.08% | 76.06% | 8.61% | 7.75% |
+| **A0 — Seed 123** (`a0_seed123`) | 86.87% | 78.38% | 7.92% | 7.31% |
+| **A0 — Seed 2026** (`a0_seed2026`) | 85.60% | 77.50% | 8.12% | 7.31% |
+| **A0 — Tổng hợp ($N=3$)** | **85.85 ± 0.92%** | **77.31 ± 1.17%** | **8.22 ± 0.36%** | **7.46 ± 0.25%** |
+| **A1 / A2 / A3 — Tổng hợp ($N=3$)** | `82.93 / 79.32 / 75.24%` | `75.56 / 74.48 / 72.88%` | `7.69 / 5.88 / 4.54%` | `6.98 / 5.37 / 4.65%` |
 
-Độ lệch chuẩn cực nhỏ ($\sigma = 0.11\text{ pp}$) khẳng định tính tất định và sự miễn nhiễm của F-OAL trước các biến động ngẫu nhiên của luồng dữ liệu trực tuyến.
+- **Khoảng tin cậy 95% của A0** ($t_{2, 0.025} = 4.3027$): $[83.57\%, 88.14\%]$, kiểm định một mẫu vượt mốc `82.8%` cho $t_2 = 5.75, p = 0.0290 < 0.05$.
+- *(Đối chiếu minh bạch: Bộ suite CPU cache lịch sử ở `results/dtd_multiseed_1600_summary.json` chỉ thay đổi `projection`/`stream` trên cùng `class_order=42` nên có độ lệch chuẩn thấp hơn giả định: `85.13 ± 0.11%`.)*
 
 ---
 
@@ -309,7 +319,7 @@ E_{\text{SP}|\neg\text{FF}} &= A1 - A3 = 82.55\% - 72.97\% = \mathbf{+9.58\text{
 ├──────────────────────────────────┴─────────────────────────────────────┤
 │ Panel 7: Multi-Seed Stability (N=3 Error Bars)                         │
 │ - Chart Type: Scatter / Bar with Error Margin                          │
-│ - X: Seed (42, 123, 2026), Line: Mean = 85.13% (Std = 0.11%)           │
+│ - X: Seed (42, 123, 2026), Line: Mean = 85.85% (Std = 0.92%)           │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -327,18 +337,18 @@ wandb sync wandb/offline-run-*
 
 # PHẦN XII — GIẢI ĐÁP 10 CÂU HỎI HỌC THUẬT CHUYÊN SÂU
 
-1. **Tại sao Feature Fusion lại đóng vai trò sống còn trên DTD (+5.67 pp khi không có SP)?**  
-   *Trả lời:* Các lớp vân bề mặt DTD đòi hỏi các biểu diễn cục bộ ở tầng thấp và giữa (biên cạnh, tần số lặp lại, sọc, vân). Layer 12 của ViT có xu hướng trừu tượng hóa quá mức khiến mất đi các chi tiết này. Feature Fusion trung bình hóa 12 layers giúp phục hồi toàn vẹn các tín hiệu texture đó.
-2. **Tại sao Smooth Projection lại có tác động lớn hơn cả Feature Fusion trên DTD (+9.58 pp khi không có FF)?**  
-   *Trả lời:* Không gian 768 chiều chưa đủ phân tách tuyến tính đối với các lớp texture phức tạp. Chiếu phi tuyến qua Sigmoid mở rộng không gian lên 1000 chiều và nén các giá trị cực trị, tạo ra biên phân cách trơn tru giúp bộ phân loại Ridge RLS tìm được siêu phẳng tối ưu.
-3. **Cú sụt giảm 12.29 pp khi tắt cả hai thành phần có ý nghĩa lý thuyết gì?**  
-   *Trả lời:* Đây là minh chứng thực nghiệm cho tương tác âm ($I = -2.96\text{ pp}$). FF và SP hoạt động như hai cơ chế phòng vệ bù trừ. Khi cả hai cùng biến mất, bộ phân loại rơi vào vùng chết biểu diễn.
-4. **Tại sao ViT tiền huấn luyện trên ImageNet-21K lại vượt trội ImageNet-1K tới +5.81 pp trên DTD?**  
-   *Trả lời:* ImageNet-21K bao gồm 14.2 triệu ảnh thuộc 21,841 lớp, bao quát hàng ngàn loại vật liệu và kết cấu tự nhiên. Kho tri thức phong phú này cho phép ViT trích xuất được các biểu diễn giàu tính phân biệt ngay cả khi đóng băng toàn bộ mạng.
+1. **Tại sao Feature Fusion lại đóng vai trò nhất quán trên DTD ($+3.50 \pm 0.38\text{ pp}$)?**  
+   *Trả lời:* Các lớp vân bề mặt DTD đòi hỏi các biểu diễn cục bộ ở tầng thấp và giữa (biên cạnh, tần số lặp lại, sọc, vân). Layer 12 của ViT có xu hướng trừu tượng hóa quá mức khiến mất đi các chi tiết này. Feature Fusion trung bình hóa 12 layers giúp phục hồi các tín hiệu texture đó ($+2.93\text{ pp}$ khi có SP; $+4.07\text{ pp}$ khi không có SP).
+2. **Tại sao Smooth Projection lại có tác động lớn nhất trên DTD ($+7.11 \pm 0.72\text{ pp}$)?**  
+   *Trả lời:* Không gian 768 chiều chưa đủ phân tách tuyến tính đối với các lớp texture phức tạp. Chiếu phi tuyến qua Sigmoid mở rộng không gian lên 1000 chiều và nén các giá trị cực trị, tạo ra biên phân cách trơn tru giúp bộ phân loại Ridge RLS tìm được siêu phẳng tối ưu ($+6.53\text{ pp}$ khi có FF; $+7.68\text{ pp}$ khi không có FF).
+3. **Cú sụt giảm $-10.61\text{ pp}$ khi tắt cả hai thành phần có ý nghĩa lý thuyết gì?**  
+   *Trả lời:* Cả FF và SP đều cần thiết để tách biệt các kết cấu ngoài phân phối (out-of-distribution): khi loại bỏ đồng thời, độ chính xác sụt từ `85.85%` về `75.24%` (`-10.61 ± 0.50 pp`, tái hiện sát mốc `-11.60 pp` của paper), với tương tác DiD âm nhẹ không đáng kể (`-1.15 ± 0.86 pp`, $p = 0.146$).
+4. **Tại sao ViT tiền huấn luyện trên ImageNet-21K lại vượt trội ImageNet-1K tới $+7.15\text{ pp}$ trên DTD?**  
+   *Trả lời:* ImageNet-21K bao gồm 14.2 triệu ảnh thuộc 21,841 lớp, bao quát hàng ngàn loại vật liệu và kết cấu tự nhiên. Trong kiểm chứng C2 (`results/dtd_c2_full/`), `augreg2_in21k_ft_in1k` đạt `85.12%` so với `77.97%` của `augreg_in1k` (`+7.15 pp`).
 5. **Hiện tượng bão hòa Sigmoid ở khởi tạo Gaussian $\sigma=1.0$ (C1-P0) diễn ra như thế nào?**  
-   *Trả lời:* Chuẩn độ lớn của vector đặc trưng khiến tích vô hướng $h P$ có phương sai rất lớn. Khi đưa qua hàm Sigmoid $\sigma(x)$, các giá trị bị đẩy về sát 0 hoặc 1, làm mất tính liên tục của không gian biểu diễn và khiến độ chính xác giảm $14.44\text{ pp}$.
-6. **Vì sao thời gian huấn luyện F-OAL trên DTD nhanh gấp 34 lần EASE?**  
-   *Trả lời:* EASE phải liên tục xây dựng các không gian con (subspaces) và tối ưu lặp bằng gradient descent qua nhiều epoch. F-OAL chuyển hoàn toàn việc học sang cập nhật giải tích Woodbury không cần gradient, mỗi mini-batch chỉ giải nghịch đảo ma trận $10 \times 10$ trong vài micro-giây.
+   *Trả lời:* Chuẩn độ lớn của vector đặc trưng khiến tích vô hướng $h P$ có phương sai quá lớn. Khi đưa qua hàm Sigmoid $\sigma(x)$, các giá trị bị đẩy vào vùng bão hòa, làm mất độ phân tách và khiến độ chính xác giảm `16.48 pp` trong kiểm chứng C1 trên `torchvision` (`61.45%` vs `77.93%`).
+6. **Vì sao pha RLS của F-OAL chạy dưới 1 giây trên GPU?**  
+   *Trả lời:* EASE phải liên tục xây dựng các không gian con (subspaces) và tối ưu lặp bằng gradient descent qua nhiều epoch (`139s`). F-OAL chuyển hoàn toàn việc học sang cập nhật giải tích Woodbury không cần gradient, mỗi mini-batch chỉ giải nghịch đảo ma trận $10 \times 10$, giúp pha `rls_and_eval_seconds` chỉ mất `0.79–1.00 giây` trên Tesla T4 sau `39–42 giây` trích xuất đặc trưng ViT.
 7. **Bộ nhớ RAM/VRAM của F-OAL trên DTD bị chi phối bởi thành phần nào?**  
    *Trả lời:* Bộ nhớ chủ yếu dành cho tham số ViT-B/16 (~330 MB) và activation của batch 10 ảnh (~1.5 GB). Ma trận hiệp phương sai RLS $R \in \mathbb{R}^{1000 \times 1000}$ kiểu `float64` chỉ chiếm đúng 8 MB, hoàn toàn miễn nhiễm với bộ nhớ lưu trữ replay buffer khổng lồ của ER hay iCaRL.
 8. **Hiện tượng Quên Lãng (Catastrophic Forgetting) được kiểm soát như thế nào trong F-OAL?**  
@@ -355,36 +365,71 @@ wandb sync wandb/offline-run-*
 | Yêu Cầu Học Thuật HCMUS | Tiêu Chuẩn Giám Định Pháp Y | Hiện Vật Chứng Thực Trong Repo | Kết Quả Thẩm Định |
 |:---|:---|:---|:---:|
 | **Tái hiện Độc lập (Clean-room)** | Tự xây dựng mã nguồn dựa trên toán học bài báo | `src/foal/` (backbone, projection, rls, dtd_datasets) | **PASS (100% Độc lập)** |
-| **Headline Benchmark (Table 2)** | Đối sánh toàn diện với các baseline hàng đầu | Table 2 đối sánh 7 phương pháp (EWC, LwF, ER, EASE, v.v.) | **PASS (Vượt EASE +9.26 pp)** |
-| **Ablation Study (Table 4)** | Phân rã đầy đủ ma trận giai thừa 2x2 (FF x SP) | `results/dtd_table4_analysis/` (A0, A1, A2, A3) | **PASS (Xác nhận sụt giảm 12.29 pp)** |
-| **Nghiên cứu Kiểm soát (C0–C3)** | Khảo sát mọi giả thuyết độ lệch kỹ thuật | `dtd_c1_analysis`, `dtd_c2_analysis`, `dtd_c3_analysis` | **PASS (100% Số liệu đo đạc thực tế)** |
-| **Độ Ổn Định Đa Seed** | Kiểm định tính tái lặp trên ít nhất 3 seeds | `foal_multiseed_dtd_seed123`, `seed2026` ($N=3$) | **PASS ($85.13 \pm 0.11\%$)** |
-| **Tính Khả Lặp Pháp Y** | Lưu vết Git SHA, seed, metadata và checkpoint | `metadata.json`, `metrics.json`, `task_accuracy.csv` | **PASS (Truy vết 100%)** |
-| **Báo Cáo Ấn Phẩm PDF** | Báo cáo chuyên sâu chuẩn mực A4 tiếng Việt | `docs/DTD_COMPLETE_WORK_REPORT.pdf` (13 trang) | **PASS (Chuẩn ấn phẩm HCMUS)** |
+| **Headline Benchmark (Table 2)** | Đối sánh toàn diện với các baseline hàng đầu | Table 2 đối sánh 7 phương pháp (EWC, LwF, ER, EASE, v.v.) | **PASS (Vượt EASE +9.85 pp)** |
+| **Ablation Study (Table 4)** | Phân rã đầy đủ ma trận giai thừa 2x2 (FF x SP) | `results/dtd/` & `results/dtd_table4_analysis/` (12 runs) | **PASS (Sụt -10.61 ± 0.50 pp)** |
+| **Nghiên cứu Kiểm soát (C0–C3)** | Khảo sát mọi giả thuyết độ lệch kỹ thuật | `results/dtd_c1_full/`, `dtd_c2_full/`, `dtd_c3_full/` | **PASS (100% Số liệu đo đạc thực tế)** |
+| **Độ Ổn Định Đa Seed** | Kiểm định tính tái lặp trên 3 bộ seed độc lập | `results/dtd/` (`42, 123, 2026`, $N=3$) | **PASS ($85.85 \pm 0.92\%$)** |
+| **Tính Khả Lặp Pháp Y** | Lưu vết Git SHA, seed, fingerprint và metadata | `metadata.json`, `metrics.json`, `matrix.json`, `task_accuracy.csv` | **PASS (Truy vết & đối chiếu <1e-12)** |
+| **Báo Cáo Ấn Phẩm PDF & Markdown** | Báo cáo tổng hợp + chuyên khảo A4 tiếng Việt | `docs/DTD_COMPLETE_WORK_REPORT.pdf` & `docs/dtd_ablation_report.md` | **PASS (Đồng bộ 100%)** |
 
 **KÝ DUYỆT ĐÓNG HỒ SƠ THỰC NGHIỆM DTD:**  
 *Trạng thái chính thức: `DTD_REPORT_READY_VERIFIED_SIGN_OFF`*  
-*Toàn bộ mục tiêu nghiên cứu và tái hiện trên tập dữ liệu DTD đã hoàn tất xuất sắc theo chuẩn mực cao nhất của HCMUS.*
+*Toàn bộ mục tiêu nghiên cứu và tái hiện trên tập dữ liệu DTD đã đồng bộ 100% với bộ dữ liệu chính thức `results/dtd/`.*
 
 ---
 
 # PHẦN XIV — CÁC PHỤ LỤC TOÁN HỌC VÀ CHỈ MỤC BẰNG CHỨNG
 
-## Phụ lục A: Ma trận Độ chính xác Kiểm thử $10 \times 10$ của Full F-OAL (`foal_full_dtd_seed42`)
+## Phụ lục A: Ma trận Độ chính xác Kiểm thử $10 \times 10$ của Full F-OAL Seed 42 (`results/dtd/dtd_a0_full/matrix.json`)
 
 | Giai đoạn ($k$) | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 | Task 6 | Task 7 | Task 8 | Task 9 | Task 10 | $A_k$ (%) |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-| **Stage 1** | **98.75%** | — | — | — | — | — | — | — | — | — | **98.75%** |
-| **Stage 2** | 95.62% | **90.00%** | — | — | — | — | — | — | — | — | **92.81%** |
-| **Stage 3** | 96.25% | 87.50% | **94.38%** | — | — | — | — | — | — | — | **92.71%** |
-| **Stage 4** | 96.88% | 81.88% | 90.00% | **86.25%** | — | — | — | — | — | — | **88.75%** |
-| **Stage 5** | 91.88% | 83.75% | 87.50% | 86.25% | **75.62%** | — | — | — | — | — | **85.00%** |
-| **Stage 6** | 89.38% | 80.62% | 88.12% | 81.88% | 74.38% | **74.38%** | — | — | — | — | **81.46%** |
-| **Stage 7** | 86.88% | 78.75% | 81.25% | 83.75% | 71.88% | 71.25% | **80.62%** | — | — | — | **79.20%** |
-| **Stage 8** | 81.88% | 78.12% | 82.50% | 82.50% | 69.38% | 70.00% | 79.38% | **83.75%** | — | — | **78.44%** |
-| **Stage 9** | 80.00% | 78.12% | 81.88% | 79.38% | 71.88% | 70.00% | 81.88% | 83.12% | **77.50%** | — | **78.19%** |
-| **Stage 10** | 82.50% | 77.50% | 78.75% | 78.12% | 69.38% | 70.00% | 79.38% | 82.50% | 77.50% | **76.88%** | **77.25%** ($A_{10}$) |
-| **Độ quên $f_j^{10}$** | 16.25% | 12.50% | 15.62% | 8.12% | 6.25% | 4.38% | 2.50% | 1.25% | 0.00% | 0.00% | **$F_{\text{past}} = 7.43\%$ / $F_{\text{code}} = 6.69\%$** |
+| **Stage 1** | **98.12%** | — | — | — | — | — | — | — | — | — | **98.12%** |
+| **Stage 2** | 93.75% | **88.75%** | — | — | — | — | — | — | — | — | **91.25%** |
+| **Stage 3** | 93.75% | 87.50% | **95.62%** | — | — | — | — | — | — | — | **92.29%** |
+| **Stage 4** | 94.38% | 82.50% | 90.00% | **88.12%** | — | — | — | — | — | — | **88.75%** |
+| **Stage 5** | 93.12% | 82.50% | 88.12% | 85.62% | **75.00%** | — | — | — | — | — | **84.88%** |
+| **Stage 6** | 91.88% | 82.50% | 88.75% | 83.12% | 77.50% | **73.75%** | — | — | — | — | **82.92%** |
+| **Stage 7** | 88.75% | 80.00% | 80.62% | 83.75% | 75.00% | 72.50% | **80.62%** | — | — | — | **80.18%** |
+| **Stage 8** | 80.62% | 80.00% | 81.88% | 81.25% | 70.00% | 71.88% | 80.00% | **84.38%** | — | — | **78.75%** |
+| **Stage 9** | 80.62% | 78.75% | 80.00% | 80.00% | 69.38% | 70.00% | 78.75% | 83.12% | **78.12%** | — | **77.64%** |
+| **Stage 10** | 79.38% | 77.50% | 75.00% | 76.88% | 68.12% | 68.75% | 80.00% | 84.38% | 77.50% | **73.12%** | **76.06%** ($A_{10}$) |
+| **Độ quên $f_j^{10}$** | 18.75% | 11.25% | 20.62% | 11.25% | 9.38% | 5.00% | 0.62% | 0.00% | 0.62% | 0.00% | **$F_{\text{past}} = 8.61\%$ / $F_{\text{code}} = 7.75\%$** |
+
+## Phụ lục B: Phân định Minh bạch Nhóm W&B Chính thức (`caoban170106...`) vs Legacy CPU (`747b828`)
+
+- **Bộ kết quả chính thức 12 lượt chạy (`results/dtd/`, Colab Tesla T4, commit `ca42e672`):** ghi cấu hình `logging.entity = caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm`, `project = hcmus-foal-reproduction`, `group = table4_ablation_dtd` (lưu ý `metadata.json` không lưu riêng `wandb_run_id`).
+- **Bộ chạy CPU feature cache lịch sử (commit `747b828`, W&B `phongphanthe70-afsb`):** thu được `A0–A3 = 85.26 / 82.55 / 78.64 / 72.97%` (Seed 42) và `85.13 ± 0.11%` (chỉ thay đổi `projection`/`stream` trên cache Seed 42 trong `results/dtd_multiseed_1600_summary.json`). Được lưu giữ nguyên trạng làm chứng từ phát triển cục bộ; các số liệu chính thức toàn dự án sử dụng `results/dtd/`.
+
+## Phụ lục C: Tổng hợp Kiểm toán Pháp y (Plasticity–Forgetting, Tách Biến Đa Seed & Provenance)
+
+### C.1. Nghịch lý Plasticity–Forgetting khi bỏ Smooth Projection (Seed 42: `dtd_a0_full` vs `dtd_a2_without_sp`)
+
+Khi loại bỏ SP (`A0 -> A2`), $\bar{A}$ giảm từ `85.08%` xuống `77.81%` (`-7.28 pp`) nhưng $F_{\text{past}}$ lại giảm từ `8.61%` xuống `6.32%` (`-2.29 pp`). Phân rã từng tác vụ quá khứ (Tasks 1–9) chứng minh đỉnh học ban đầu của A2 tụt mạnh hơn điểm cuối (**"Underlearning Masks Forgetting"**):
+
+| Tác vụ $j$ | Đỉnh A0 ($\text{Peak}_j^{\text{A0}}$) | Cuối A0 ($\text{Final}_j^{\text{A0}}$) | Quên A0 ($f_j^{\text{A0}}$) | Đỉnh A2 ($\text{Peak}_j^{\text{A2}}$) | Cuối A2 ($\text{Final}_j^{\text{A2}}$) | Quên A2 ($f_j^{\text{A2}}$) | $\Delta\text{Peak}_j$ | $\Delta\text{Final}_j$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Task 1 | 98.12% | 79.38% | 18.75% | 97.50% | 75.00% | 22.50% | +0.62 pp | +4.38 pp |
+| Task 2 | 88.75% | 77.50% | 11.25% | 86.25% | 69.38% | 16.88% | +2.50 pp | +8.12 pp |
+| Task 3 | 95.62% | 75.00% | 20.62% | 88.75% | 77.50% | 11.25% | +6.88 pp | -2.50 pp |
+| Task 4 | 88.12% | 76.88% | 11.25% | 76.25% | 75.00% | 1.25% | +11.88 pp | +1.88 pp |
+| Task 5 | 77.50% | 68.12% | 9.38% | 64.38% | 61.25% | 3.12% | +13.12 pp | +6.88 pp |
+| Task 6 | 73.75% | 68.75% | 5.00% | 68.75% | 68.12% | 0.62% | +5.00 pp | +0.62 pp |
+| Task 7 | 80.62% | 80.00% | 0.62% | 76.88% | 76.88% | 0.00% | +3.75 pp | +3.12 pp |
+| Task 8 | 84.38% | 84.38% | 0.00% | 80.00% | 80.00% | 0.00% | +4.38 pp | +4.38 pp |
+| Task 9 | 78.12% | 77.50% | 0.62% | 75.62% | 74.38% | 1.25% | +2.50 pp | +3.12 pp |
+| **Mean (1–9)** | **85.00%** | **76.39%** | **8.61%** | **79.38%** | **73.06%** | **6.32%** | **+5.62 pp** | **+3.33 pp** |
+
+- **Đẳng thức sai biệt độ quên:** $\Delta F_{\text{past}} = \Delta\overline{\text{Peak}} - \Delta\overline{\text{Final}} = (85.0000\% - 79.3750\%) - (76.3889\% - 73.0556\%) = +5.6250 - 3.3333 = \mathbf{+2.2917\text{ pp}}$.
+- **Tỷ lệ duy trì kiến thức tương đối ($\text{RKR} = \overline{\text{Final}}/\overline{\text{Peak}}$ trên Seed 42):** `A0 = 89.87%` (`76.39 / 85.00`), `A1 = 90.52%` (`74.24 / 82.01`), `A2 = 92.04%` (`73.06 / 79.38`), `A3 = 92.28%` (`71.39 / 77.36`). Trên trung bình 3 seeds, đúng thứ bậc nghịch đảo lặp lại đơn điệu (`A0..A3`: $\bar{A}$ `85.85 > 82.93 > 79.32 > 75.24%`; $F_{\text{past}}$ `8.22 > 7.69 > 5.88 > 4.54%`).
+
+### C.2. Giải quyết Khớp nối Đa Seed (`class_order`, `dataset`, `projection`, `stream`)
+- Ở giai đoạn trước `ca42e672`, file cấu hình YAML đặt cứng các seed con bằng `42` nên `--seed 123/2026` chỉ đổi nhãn `base` mà không đổi ma trận chiếu hay thứ tự lớp.
+- Sau khi chuyển các hạt giống con trong `configs/dtd/dtd_a*.yaml` về `null` và truyền tách biến đồng bộ qua `resolve_seed()` + `make_dtd_task_specs(seed=class_order_seed)` (đã bổ sung tương ứng vào `scripts/train_dtd.py`), cả 12 lượt chạy tại `results/dtd/` xác nhận `base = dataset = class_order = projection = stream` trong từng seed `{42, 123, 2026}`, hash `task_split_fingerprint.sha256` trùng khít trong cùng một seed và khác biệt hoàn toàn giữa 3 seeds (`42b13803...`, `45da4afe...`, `29e80afd...`).
+
+### C.3. Kiểm toán `git.dirty = true` ở `ca42e672` & Phân tách Thời gian Tesla T4
+- **Nguyên nhân `git.dirty = true` trên 11/12 runs:** Lượt chạy đầu tiên (`dtd_a0_full`) chạy trên worktree sạch (`dirty = false`). Khi kết quả `dtd_a0_full` được ghi vào thư mục `results/dtd/` chưa track, hàm `get_git_info()` ở thời điểm `ca42e672` chạy `git status --porcelain` (không có `--untracked-files=no`), khiến 11 lượt chạy kế tiếp ghi `git.dirty = true` (đã vá cho các lần chạy sau tại `9f955ca`). Diff tại thời điểm chạy không được lưu riêng; các file thô trong `results/dtd/` được giữ nguyên không sửa đổi.
+- **Vi mô thời gian thực thi (Tesla T4):** 6 lượt chạy lạnh `A0/A1` mất `38.99–42.17s` trích xuất đặc trưng ViT (`40.40–43.60s` tổng); 6 lượt chạy dùng cache `A2/A3` ghi `feature_extraction_seconds` kế thừa từ cache nguồn nhưng wall-clock thực tế chỉ `0.97–1.27s`; pha giải tích `rls_and_eval_seconds` trên toàn bộ 12 lượt chạy chỉ mất `0.79–1.00s`.
 """
 
 p = Path("docs/DTD_COMPLETE_WORK_REPORT.md")

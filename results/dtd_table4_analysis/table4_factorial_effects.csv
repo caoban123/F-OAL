@@ -1,10 +1,11 @@
-Effect Description,Symbol,Value (pp)
-Feature Fusion Benefit (SP ON),E_FF|SP,+2.7029
-Feature Fusion Benefit (SP OFF),E_FF|~SP,+5.6719
-Smooth Projection Benefit (FF ON),E_SP|FF,+6.6127
-Smooth Projection Benefit (FF OFF),E_SP|~FF,+9.5817
-Average Feature Fusion Main Effect,E_FF,+4.1874
-Average Smooth Projection Main Effect,E_SP,+8.0972
-Difference-in-Differences Interaction Contrast,I_FFxSP,-2.9690
-Interaction Regression Coefficient (+-1 coding),beta_FFxSP,-0.7423
-Joint Benefit (Full F-OAL vs Without Both),Delta_full_none,+12.2846
+Effect Description,Symbol,Seed 42 (pp),Seed 123 (pp),Seed 2026 (pp),Mean (pp),Std (pp)
+Feature Fusion Benefit (SP ON),E_FF|SP,+3.0009,+2.9222,+2.8532,+2.9255,0.0739
+Feature Fusion Benefit (SP OFF),E_FF|~SP,+3.2270,+4.8409,+4.1571,+4.0750,0.8101
+Smooth Projection Benefit (FF ON),E_SP|FF,+7.2780,+5.3280,+6.9935,+6.5332,1.0534
+Smooth Projection Benefit (FF OFF),E_SP|~FF,+7.5040,+7.2467,+8.2974,+7.6827,0.5476
+Average Feature Fusion Main Effect,E_FF,+3.1140,+3.8816,+3.5051,+3.5002,0.3838
+Average Smooth Projection Main Effect,E_SP,+7.3910,+6.2874,+7.6454,+7.1079,0.7219
+Difference-in-Differences Interaction Contrast,I_FFxSP_DiD,-0.2260,-1.9187,-1.3038,-1.1495,0.8568
+Half-Interaction Contrast (0.5 * I_DiD),I_FFxSP_half,-0.1130,-0.9594,-0.6519,-0.5748,0.4284
+Interaction Regression Coefficient (+-1 coding),beta_FFxSP,-0.0565,-0.4797,-0.3260,-0.2874,0.2142
+Joint Benefit (Full F-OAL vs Without Both),Delta_full_none,+10.5050,+10.1689,+11.1506,+10.6082,0.4989

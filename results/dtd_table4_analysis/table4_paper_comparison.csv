@@ -1,5 +1,5 @@
-Condition,Paper Table 4 DTD (%),Our Reproduction DTD (%),Delta (pp)
-A0,82.8%,85.26%,+2.46 pp
-A1,80.5%,82.55%,+2.05 pp
-A2,79.3%,78.64%,-0.66 pp
-A3,71.2%,72.97%,+1.77 pp
+Condition,Paper Table 4 DTD (%),Seed 42 DTD (%),Seed 42 Delta (pp),Multi-Seed Mean DTD (%),Multi-Seed Std (%),Multi-Seed Delta (pp)
+A0,82.8%,85.08%,+2.28 pp,85.85%,0.92%,+3.05 pp
+A1,80.5%,82.08%,+1.58 pp,82.93%,0.95%,+2.43 pp
+A2,79.3%,77.81%,-1.49 pp,79.32%,1.97%,+0.02 pp
+A3,71.2%,74.58%,+3.38 pp,75.24%,1.26%,+4.04 pp

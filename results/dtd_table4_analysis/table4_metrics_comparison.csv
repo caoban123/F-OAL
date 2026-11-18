@@ -1,5 +1,5 @@
-Condition,Name,Feature Fusion,Smooth Projection,Dimension,Avg Incr Acc (%),Last Acc (%),Forgetting Past (%),Forgetting Code (%),Runtime (s)
-A0,Full F-OAL,True,True,1000,85.26%,77.25%,7.43%,6.69%,1.37s
-A1,w/o Feature Fusion,False,True,1000,82.55%,74.69%,6.67%,6.00%,1.25s
-A2,w/o Smooth Projection,True,False,768,78.64%,73.62%,6.87%,6.50%,0.77s
-A3,w/o Both,False,False,768,72.97%,71.69%,4.93%,5.06%,0.86s
+Condition,Name,Feature Fusion,Smooth Projection,Dimension,Seed 42 A_bar (%),Seed 123 A_bar (%),Seed 2026 A_bar (%),Multi-Seed Mean A_bar (%),Multi-Seed Std (%),Multi-Seed Mean A_10 (%),Multi-Seed Std A_10 (%),Multi-Seed Mean F_past (%),Multi-Seed Std F_past (%),Multi-Seed Mean F_code (%),Multi-Seed Std F_code (%)
+A0,Full F-OAL,True,True,1000,85.08%,86.87%,85.60%,85.85%,0.92%,77.31%,1.17%,8.22%,0.36%,7.46%,0.25%
+A1,w/o Feature Fusion,False,True,1000,82.08%,83.95%,82.75%,82.93%,0.95%,75.56%,1.30%,7.69%,0.11%,6.98%,0.19%
+A2,w/o Smooth Projection,True,False,768,77.81%,81.54%,78.60%,79.32%,1.97%,74.48%,1.29%,5.88%,1.81%,5.37%,1.74%
+A3,w/o Both,False,False,768,74.58%,76.70%,74.45%,75.24%,1.26%,72.88%,1.69%,4.54%,1.25%,4.65%,0.75%
