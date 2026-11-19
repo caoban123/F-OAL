@@ -200,7 +200,7 @@ Mã SHA-256 của mọi file kết quả và bằng chứng: `docs/aircraft_prov
 - Code tác giả chạy seed 0, code nhóm seed 42: khác thứ tự lớp, không so được từng mẫu.
 - Môi trường khác lượt CIFAR-100 (torch 2.7.1 so với 2.11) vì bản torch có sẵn trên Kaggle lỗi trên T4.
 - Run A2, A3 mang tag W&B `proj_gaussian_std1` do `train.py` tự gắn; hai cấu hình này không có phép chiếu nên tag không đúng.
-- Run bổ sung `aircraft_a0_full_bilinear_seed42` (`mb7h3mz9`) hiện vẫn nằm trong group W&B `aircraft_table4_ablation`, tag `table4`. Đây là run C3-D, không thuộc 12 run Table 4; **cần chuyển sang group `c3_preprocessing_alignment_aircraft`** (chưa làm).
+- Run bổ sung `aircraft_a0_full_bilinear_seed42` (`mb7h3mz9`) là run C3-D, không thuộc 12 run Table 4. Run này chạy cùng đợt Table 4 nên ban đầu nằm trong group W&B `aircraft_table4_ablation`, tag `table4`; ngày 19/11 đã chuyển sang group `c3_preprocessing_alignment_aircraft` và bỏ tag `table4`. Config của run vẫn ghi `logging.group = aircraft_table4_ablation` vì đó là cấu hình lúc chạy.
 
 ## 8. Cách chạy lại
 
@@ -255,7 +255,7 @@ Project `hcmus-foal-reproduction`. Link: `https://forge.coreweave.com/wandb/caob
 | C3 | `aircraft_c3_c_bicubic_raw_seed42` | `z64dog21` | False | b0f3223 | augreg2_in21k_ft_in1k | bicubic, thô | FF, official_uniform | 42 | 64.67 | `ac0a1575f299` |
 | Code tác giả | `official_foal_aircraft_seed0` | `9ko84fxj` | không áp dụng | repo tác giả `73e4ac1`, không sửa | mặc định timm 0.9.7 | LANCZOS, thô | FF, SP | 0 | 61.91 | `0a53079e00dd` |
 
-Group W&B: `aircraft_table4_ablation` (12 run Table 4 + run C3-D chưa chuyển), `c1_projection_initialization_aircraft`, `c2_backbone_alignment_aircraft`, `c3_preprocessing_alignment_aircraft`, `official_reproduction_aircraft`.
+Group W&B: `aircraft_table4_ablation` (12 run Table 4), `c1_projection_initialization_aircraft`, `c2_backbone_alignment_aircraft`, `c3_preprocessing_alignment_aircraft`, `official_reproduction_aircraft`.
 
 ## 10. File thay đổi trên nhánh
 
