@@ -1,0 +1,36 @@
+# Headline Benchmark Comparison: LwF Baseline (CIFAR-100)
+# Reference: Li & Hoiem (TPAMI 2018), NeurIPS 2024 Table 2
+# Official author command: python general_main.py --data cifar100 --cl_type nc --agent LWF --learning_rate 0.001
+dataset: cifar100
+data_dir: ./data
+num_classes: 100
+classes_per_task: 10
+seed: 42
+class_order_seed: 42
+
+agent: lwf
+learning_rate: 0.001
+weight_decay: 0.0001
+temperature: 2.0
+distill_lambda: 1.0
+batch_size: 10
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+device: auto
+output_dir: runs/headline/lwf
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 (Page 7)"
+    method: "LwF (TPAMI 2018)"
+    buffer_size: 0
+    a_avg_pct: 69.3
+    a_last_pct: 64.8
+    forgetting_pct: 1.3
