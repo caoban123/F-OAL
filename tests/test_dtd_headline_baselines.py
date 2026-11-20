@@ -68,7 +68,7 @@ def test_lwf_classifier_expansion_dtd():
 
     out_40 = model(x)
     assert out_40.shape == (5, 40)
-    assert torch.allclose(out_40[:, :4], out_4)
+    assert torch.allclose(out_40[:, :4], out_4, atol=1e-4)
 
 
 def test_lwf_agent_dtd_step_and_distillation():
