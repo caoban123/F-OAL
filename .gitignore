@@ -24,6 +24,7 @@ results/foal_full_cifar100_seed42/*.pt
 !results/aircraft_c1_full/
 !results/aircraft_c2_full/
 !results/aircraft_c3_full/
+!results/aircraft_c1_diagnostics/
 !results/official_foal_aircraft_seed0/
 *.zip
 data/

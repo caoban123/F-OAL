@@ -78,6 +78,16 @@ Giống báo cáo DTD: mỗi phép kiểm chỉ đổi một yếu tố, chạy 
 
 **C1 – khởi tạo phép chiếu** (ViT `augreg_in1k`, bicubic, chuẩn hoá [-1, 1], giống DTD). P1 − P0 = +18.78; P2 − P0 = +18.91; P2 − P1 = +0.13. P2 có cùng phương sai lý thuyết với P1 và cho accuracy gần như bằng, nên điều quyết định là độ lớn phương sai (N(0,1) đẩy đầu vào sigmoid ra vùng bão hoà), không phải dạng phân phối uniform hay Gaussian.
 
+Đo trực tiếp bão hoà (20/11, `scripts/run_c1_aircraft_diagnostics.py`, giống CIFAR và DTD): lấy đặc trưng ViT `augreg_in1k` (FF bật, bicubic, chuẩn hoá) của 200 ảnh train (20 ảnh × 10 lớp đầu theo thứ tự lớp seed 42, không dùng ảnh test), nhân với P (seed 42), không train gì. Bão hoà = tỉ lệ đầu ra sigmoid < 0.01 hoặc > 0.99.
+
+| Khởi tạo | Std của P | Std trước sigmoid | Std sau sigmoid | Bão hoà (%) |
+|---|---|---|---|---|
+| P0 N(0,1) | 1.0007 | 19.66 | 0.479 | 81.25 |
+| P1 `official_uniform` | 0.0208 | 0.41 | 0.099 | 0.00 |
+| P2 Gaussian cùng phương sai | 0.0208 | 0.41 | 0.098 | 0.00 |
+
+Gần như trùng CIFAR-100 (P0: std 19.28, bão hoà 81.03%) và DTD (20.68, 82.32%), vì đặc trưng sau LayerNorm có cùng độ lớn ở cả ba bộ. Kết quả: `results/aircraft_c1_diagnostics/`. Chạy trên CPU, torch 2.15 / timm 1.0.31, từ commit `5a3cc23` + script mới chưa commit.
+
 **C2 – checkpoint ViT** (official_uniform, bicubic, chuẩn hoá). B1 − B0 = **+14.64** $\bar A$, +13.90 $A_{last}$. Mức này lớn gần gấp đôi DTD (+7.15). Paper chỉ ghi "ViT-B pre-trained on ImageNet-1K", nên phải ghi chính xác tag checkpoint mới tái lập được. Không quy toàn bộ mức tăng cho riêng ImageNet-21K, vì hai checkpoint còn khác cách huấn luyện và augmentation.
 
 **C3 – tiền xử lý** (ViT `augreg2_in21k_ft_in1k`, official_uniform). Năm cách nằm trong khoảng 64.46–64.97, biên độ **0.51**, nhỏ hơn nhiều so với dao động giữa các seed (SD 3.70). Cách cao nhất là B (bilinear, chuẩn hoá). Nhóm vẫn chọn **E (LANCZOS thô)** vì đó là cách code tác giả làm, không chọn theo accuracy. Đây là kết quả một seed, chưa đủ để xếp hạng năm cách.
@@ -215,6 +225,8 @@ python scripts/train.py --config configs/aircraft/aircraft_a0_full.yaml --seed 4
 # Một run A0 đầy đủ (đổi a0_full thành a1_without_ff / a2_without_sp / a3_without_both, đổi seed thành 123 / 2026)
 python scripts/train.py --config configs/aircraft/aircraft_a0_full.yaml --seed 42 --class-order-seed 42 --projection-seed 42 --stream-seed 42 --feature-cache-dir .cache/aircraft --output-dir results/aircraft_ablation/aircraft_a0_full_seed42
 # C1-C3: cùng lệnh, đổi config sang configs/aircraft/c1_*.yaml, c2_*.yaml, c3_*.yaml
+# Đo bão hoà C1 (200 ảnh, CPU vài phút)
+python -m scripts.run_c1_aircraft_diagnostics --output-dir results/aircraft_c1_diagnostics
 ```
 
 Mỗi run ghi `metrics.json`, `metadata.json`, `task_accuracy.csv`. Thêm `--wandb --wandb-offline` để ghi W&B offline.
@@ -263,6 +275,7 @@ Group W&B: `aircraft_table4_ablation` (12 run Table 4), `c1_projection_initializ
 |---|---|
 | `configs/aircraft/c1_*.yaml`, `c2_*.yaml`, `c3_*.yaml` | Config C1–C3 |
 | `results/aircraft_c1_full/`, `aircraft_c2_full/`, `aircraft_c3_full/` | Kết quả C1–C3 |
+| `scripts/run_c1_aircraft_diagnostics.py`, `results/aircraft_c1_diagnostics/` | Đo std và % bão hoà của phép chiếu C1 (20/11) |
 | `results/official_foal_aircraft_seed0/` | Kết quả code tác giả (log gốc, csv tác giả, ma trận) |
 | `docs/aircraft_provenance/` | Mã hai kernel Kaggle, patch, log, `SHA256SUMS` |
 | `tests/test_aircraft_ablation_results.py` | Kiểm kết quả Aircraft, chạy CPU |
