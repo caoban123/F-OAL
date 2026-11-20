@@ -43,6 +43,9 @@ results/foal_full_dtd_seed42/*.pt
 results/foal_multiseed_dtd_seed123/*.pt
 !results/foal_multiseed_dtd_seed2026/
 results/foal_multiseed_dtd_seed2026/*.pt
+!results/foal_dtd_headline_baselines_results/
+results/foal_dtd_headline_baselines_results/**/*.pt
+!results/headline_dtd_analysis/
 *.zip
 data/
 *.ckpt
