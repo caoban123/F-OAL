@@ -403,19 +403,18 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 
 Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [docs/c2_backbone_alignment_plan.md](c2_backbone_alignment_plan.md).
 
-- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (it_base_patch16_224.augreg2_in21k_ft_in1k trong mã nguồn tác giả vs it_base_patch16_224.augreg_in1k ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
+- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (`vit_base_patch16_224.augreg2_in21k_ft_in1k` trong mã nguồn tác giả vs `vit_base_patch16_224.augreg_in1k` ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
 - **Trạng thái hiện tại:** **FULL_GPU_COMPLETED_AND_VERIFIED** (Nghiệm thu thực nghiệm thành công ngày 02/11/2026).
-  - Tệp nén kết quả: oal_c2_backbone_results.zip (SHA256: d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429, 0 lỗi CRC).
-  - Thư mục trích xuất & kiểm chứng: [
-esults/c2_full_gpu_verified/](../results/c2_full_gpu_verified/).
+  - Tệp nén kết quả: `foal_c2_backbone_results.zip` (SHA256: d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429, 0 lỗi CRC).
+  - Thư mục trích xuất & kiểm chứng: `results/c2_full_gpu_verified/` (thư mục cục bộ, không đưa lên repo; bảng tổng hợp ở [`results/c2_analysis/`](../results/c2_analysis/)).
   - Bảng tổng hợp & hình vẽ phân tích: [
 esults/c2_analysis/](../results/c2_analysis/).
-  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, 	imm 1.0.30).
+  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, timm 1.0.30).
   - Bộ kiểm thử hồi quy: 56/56 tests PASSED (100%).
 
 ### 7.1. Bảng Kết quả Toàn diện Thí nghiệm Kiểm soát C2
 
-| Chỉ số Thực nghiệm (CIFAR-100, 10 Tasks, Seed 42) | C2-B0 (Control: ugreg_in1k) | C2-B1 (Treatment: ugreg2_in21k_ft_in1k) | Tác động Đơn yếu tố $\Delta(B1 - B0)$ | C1-P1 Ref (ugreg_in1k) | Official Run (seed=0, 73e4ac1) | Paper (NeurIPS 2024 Table 1) |
+| Chỉ số Thực nghiệm (CIFAR-100, 10 Tasks, Seed 42) | C2-B0 (Control: `augreg_in1k`) | C2-B1 (Treatment: `augreg2_in21k_ft_in1k`) | Tác động Đơn yếu tố $\Delta(B1 - B0)$ | C1-P1 Ref (`augreg_in1k`) | Official Run (seed=0, 73e4ac1) | Paper (NeurIPS 2024 Table 1) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **$\bar{A}$ (Avg Incremental Acc, $\uparrow$)** | **.2814\%$** | **.7742\%$** | **$+8.4929\text{ pp}$** | .2814\%$ | .9828\%$ | .10\%$ |
 | **{10}$ (Last Task Acc, $\uparrow$)** | **.8400\%$** | **.4300\%$** | **$+12.5900\text{ pp}$** | .8400\%$ | .8400\%$ | — |
@@ -429,7 +428,7 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 
 ### 7.2. Quỹ đạo Độ chính xác Qua Từng Giai đoạn (Stage-by-Stage Trajectory)
 
-| Giai đoạn ($) | B0 (ugreg_in1k) | B1 (ugreg2_in21k_ft_in1k) | Ưu thế của B1 ($\Delta_{B1 - B0}$) | C1-P1 Ref | Official Run (seed 0) |
+| Giai đoạn ($) | B0 (`augreg_in1k`) | B1 (`augreg2_in21k_ft_in1k`) | Ưu thế của B1 ($\Delta_{B1 - B0}$) | C1-P1 Ref | Official Run (seed 0) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | **Stage 1** | .70\%$ | **.30\%$** | $+4.60\text{ pp}$ | .70\%$ | .60\%$ |
 | **Stage 2** | .60\%$ | **.10\%$** | $+4.50\text{ pp}$ | .60\%$ | .75\%$ |
@@ -445,7 +444,7 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 
 ### 7.3. Kết luận Khoa học & Hiệu chỉnh Học thuật Then chốt (Scientific Corrections)
 1. **Khẳng định Giả thuyết H1 trong Phạm vi Cấu hình Thử nghiệm (H1_SUPPORTED_BY_C2):**
-   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (ugreg2_in21k_ft_in1k) tạo ra bước nhảy vọt hiệu năng:
+   - Trọng số Pretrained ViT Checkpoint từ ImageNet-21K (`augreg2_in21k_ft_in1k`) tạo ra bước nhảy vọt hiệu năng:
      - Tăng $\bar{A}$ thêm **$+8.4929\text{ pp}$** (.28\% \to 91.77\%$).
      - Tăng {10}$ thêm **$+12.5900\text{ pp}$** (.84\% \to 87.43\%$).
      - Giảm tỷ lệ quên {10}^{\text{past}}$ từ .97\%$ xuống .02\%$ (giảm $-3.9444\text{ pp}$).

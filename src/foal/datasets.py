@@ -100,6 +100,7 @@ def load_cifar100(root: str = './data'):
         tv_test = CIFAR100(root=root, train=False, download=True)
         
         class TorchvisionCIFAR100Adapter:
+            """Fallback wrapper exposing torchvision CIFAR-100 as {'img', 'fine_label'} samples."""
             def __init__(self, tv_dataset):
                 self.dataset = tv_dataset
                 self.fine_label = list(tv_dataset.targets)
@@ -158,6 +159,16 @@ class IndexedImageDataset:
 
 
 def limit_indices_per_task(indices: Sequence[int], limit: int | None, seed: int) -> list[int]:
+    """Randomly keep at most ``limit`` sample indices of one task (used for pilot runs).
+
+    Args:
+        indices: Sample indices belonging to the task.
+        limit: Maximum number of indices to keep, or None to keep all.
+        seed: Seed of the sampling generator.
+
+    Returns:
+        List of selected indices.
+    """
     if limit is None:
         return list(indices)
     if limit < 1:
@@ -184,14 +195,18 @@ class CIFAR100OnlineDataset:
         )
 
     def get_train_source(self):
+        """Return the raw CIFAR-100 training split."""
         return self.train_source
 
     def get_test_source(self):
+        """Return the raw CIFAR-100 test split."""
         return self.test_source
 
     def get_label_mapping(self) -> dict[int, int]:
+        """Return the mapping from original CIFAR-100 label to incremental class index."""
         return self.label_mapping
 
     def get_transforms(self):
+        """Return the image preprocessing transform used by this dataset."""
         return self.transforms
 
