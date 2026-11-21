@@ -11,7 +11,7 @@
 **Trạng thái đóng hồ sơ:** **`DTD_REPORT_READY_VERIFIED_SIGN_OFF`**  
 **Tập tin đính kèm:**  
 - Báo cáo Phân tích Chính thức (`results/dtd/`): [`docs/dtd_ablation_report.md`](dtd_ablation_report.md)  
-- Báo cáo PDF Chuyên khảo A4: [`docs/DTD_COMPLETE_WORK_REPORT.pdf`](DTD_COMPLETE_WORK_REPORT.pdf)  
+- Báo cáo PDF Chuyên khảo A4: `docs/DTD_COMPLETE_WORK_REPORT.pdf` (bản PDF cục bộ, không đưa lên repo)  
 - Notebook Tái hiện GPU Độc lập: [`notebooks/foal_dtd_ablation_colab.ipynb`](../notebooks/foal_dtd_ablation_colab.ipynb)  
 - Thư mục Kết quả & Biểu đồ: [`results/dtd/`](../results/dtd/), [`results/dtd_table4_analysis/`](../results/dtd_table4_analysis/), [`results/dtd_c1_analysis/`](../results/dtd_c1_analysis/), [`results/dtd_c2_analysis/`](../results/dtd_c2_analysis/), [`results/dtd_c3_analysis/`](../results/dtd_c3_analysis/)  
 

@@ -172,7 +172,7 @@ Trong file `metadata.json` của cấu hình A2 (`dtd_a2_without_sp`) và A3 (`d
 * `model_config.smooth_projection`: **`false`**
 * `model_config.projection_dim`: **`768`** (đúng bằng chiều đặc trưng gốc $D=768$, không hề nâng lên 1.000)
 * `projection_metadata`: **`null`** *(chứng minh không có bất kỳ ma trận chiếu nào được tạo ra hay sử dụng)*
-* **Giải thích kỹ thuật:** Sự xuất hiện của khóa chuỗi `"projection_init": "gaussian_std1"` trong `model_config` chỉ đơn thuần là giá trị mặc định còn sót lại từ dictionary của file cấu hình mẫu YAML. Trong code khởi tạo mô hình [`src/foal/models.py`](../src/foal/models.py):
+* **Giải thích kỹ thuật:** Sự xuất hiện của khóa chuỗi `"projection_init": "gaussian_std1"` trong `model_config` chỉ đơn thuần là giá trị mặc định còn sót lại từ dictionary của file cấu hình mẫu YAML. Trong code khởi tạo mô hình [`src/foal/model.py`](../src/foal/model.py):
   ```python
   if self.smooth_projection:
       self.projection = SmoothProjection(...)

@@ -403,14 +403,13 @@ Toàn bộ 3 thí nghiệm C1 đầy đủ (10 tasks $\times$ 10 classes, 50.000
 
 Chi tiết kế hoạch nghiên cứu được tài liệu hóa đầy đủ tại [docs/c2_backbone_alignment_plan.md](c2_backbone_alignment_plan.md).
 
-- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (it_base_patch16_224.augreg2_in21k_ft_in1k trong mã nguồn tác giả vs it_base_patch16_224.augreg_in1k ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
+- **Mục tiêu nghiên cứu:** Định lượng mức độ đóng góp độc lập của trọng số Pretrained ViT Checkpoint (`vit_base_patch16_224.augreg2_in21k_ft_in1k` trong mã nguồn tác giả vs `vit_base_patch16_224.augreg_in1k` ban đầu của nhóm) đối với khoảng cách $\approx 7.7\text{ pp}$ còn lại sau C1.
 - **Trạng thái hiện tại:** **FULL_GPU_COMPLETED_AND_VERIFIED** (Nghiệm thu thực nghiệm thành công ngày 02/11/2026).
   - Tệp nén kết quả: `foal_c2_backbone_results.zip` (SHA256: d11e4a98fc6c4a40018427521bf365468f2d5a3ceeceeb941c27050f33a94429, 0 lỗi CRC).
-  - Thư mục trích xuất & kiểm chứng: [
-esults/c2_full_gpu_verified/](../results/c2_full_gpu_verified/).
+  - Thư mục trích xuất & kiểm chứng: `results/c2_full_gpu_verified/` (thư mục cục bộ, không đưa lên repo; bảng tổng hợp ở [`results/c2_analysis/`](../results/c2_analysis/)).
   - Bảng tổng hợp & hình vẽ phân tích: [
 esults/c2_analysis/](../results/c2_analysis/).
-  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, 	imm 1.0.30).
+  - Phần cứng thực thi: Google Colab GPU — NVIDIA A100-SXM4-40GB (CUDA 13.0, PyTorch 2.11.0+cu130, timm 1.0.30).
   - Bộ kiểm thử hồi quy: 56/56 tests PASSED (100%).
 
 ### 7.1. Bảng Kết quả Toàn diện Thí nghiệm Kiểm soát C2

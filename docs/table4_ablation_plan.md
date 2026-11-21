@@ -113,18 +113,18 @@ This indicates that Feature Fusion and Smooth Projection serve as critical induc
 - **A0 Raw Metrics**:
   - $\bar{A} = 90.4016\%$
   - $A_{10} = 85.7300\%$
-  - $F_{	ext{past}} = 5.1556\%$
-  - $F_{	ext{code}} = 4.6400\%$
+  - $F_{\text{past}} = 5.1556\%$
+  - $F_{\text{code}} = 4.6400\%$
 - **Matrix SHA256**: `68684dfb3d348c5838815a63fa45dd874bd84b3a427cd29d06f4c320fa5de1d7` (100% bitwise parity across all 55 matrix entries).
 
 ### 6.3 Table 4 Verification Matrix (CIFAR-100, 10 Tasks, Seed 42)
 
-| Condition | FF | SP | Dim ($D$) | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{	ext{past}}$ (%) | $F_{	ext{code}}$ (%) | T_RLS/Eval (s) | GPU Hardware | W&B Run ID | W&B Run Link |
+| Condition | FF | SP | Dim ($D$) | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | $F_{\text{code}}$ (%) | T_RLS/Eval (s) | GPU Hardware | W&B Run ID | W&B Run Link |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---| :---: | :---: |
 | **A0 (Full F-OAL)** | $\checkmark$ | $\checkmark$ | 1000 | **90.4016%** | **85.7300%** | **5.1556%** | **4.6400%** | 8.50 | A100-SXM4-40GB | [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Reused C3-D |
-| **A1 (w/o FF)** | $	imes$ | $\checkmark$ | 1000 | **90.1004%** | **85.4800%** | **5.4444%** | **4.9000%** | 15.52 | Tesla T4 (14.56 GB) | [`shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | [A1 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) |
-| **A2 (w/o SP)** | $\checkmark$ | $	imes$ | 768 | **90.3823%** | **85.7200%** | **5.2444%** | **4.7200%** | 11.59 | Tesla T4 (14.56 GB) | [`rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | [A2 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) |
-| **A3 (w/o Both)** | $	imes$ | $	imes$ | 768 | **89.9224%** | **85.4800%** | **5.3222%** | **4.7900%** | 11.97 | Tesla T4 (14.56 GB) | [`k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | [A3 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) |
+| **A1 (w/o FF)** | $\times$ | $\checkmark$ | 1000 | **90.1004%** | **85.4800%** | **5.4444%** | **4.9000%** | 15.52 | Tesla T4 (14.56 GB) | [`shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | [A1 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) |
+| **A2 (w/o SP)** | $\checkmark$ | $\times$ | 768 | **90.3823%** | **85.7200%** | **5.2444%** | **4.7200%** | 11.59 | Tesla T4 (14.56 GB) | [`rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | [A2 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) |
+| **A3 (w/o Both)** | $\times$ | $\times$ | 768 | **89.9224%** | **85.4800%** | **5.3222%** | **4.7900%** | 11.97 | Tesla T4 (14.56 GB) | [`k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | [A3 Run](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) |
 
 *Note on Runtime Fairness:* A0 was executed on an NVIDIA A100 GPU (8.50s RLS & Eval); conditions A1, A2, and A3 were executed on the same Tesla T4 GPU. A1 vs A2/A3 is a controlled hardware comparison showing ~25% speedup when reducing dimension $D$ from 1000 to 768.
 
@@ -160,43 +160,41 @@ This indicates that Feature Fusion and Smooth Projection serve as critical induc
 | **Task 8** | 70 – 79 | 1.10% | 0.80% | 1.50% | 1.10% |
 | **Task 9** | 80 – 89 | 0.70% | 0.00% | 0.60% | 0.50% |
 | **Task 10** | 90 – 99 | 0.00% | 0.00% | 0.00% | 0.00% |
-| **$F_{	ext{past}}$ (9 past tasks)** | — | **5.1556%** | **5.4444%** | **5.2444%** | **5.3222%** |
-| **$F_{	ext{code}}$ (10 tasks)** | — | **4.6400%** | **4.9000%** | **4.7200%** | **4.7900%** |
+| **$F_{\text{past}}$ (9 past tasks)** | — | **5.1556%** | **5.4444%** | **5.2444%** | **5.3222%** |
+| **$F_{\text{code}}$ (10 tasks)** | — | **4.6400%** | **4.9000%** | **4.7200%** | **4.7900%** |
 
 ### 6.6 2x2 Factorial Effects Decomposition
 
 - **Simple Effects**:
-  - $E_{	ext{FF}|	ext{SP}} = A0 - A1 = \mathbf{+0.3013	ext{ pp}}$
-  - $E_{	ext{FF}|
-eg	ext{SP}} = A2 - A3 = \mathbf{+0.4599	ext{ pp}}$
-  - $E_{	ext{SP}|	ext{FF}} = A0 - A2 = \mathbf{+0.0193	ext{ pp}}$
-  - $E_{	ext{SP}|
-eg	ext{FF}} = A1 - A3 = \mathbf{+0.1780	ext{ pp}}$
+  - $E_{\text{FF}|\text{SP}} = A0 - A1 = \mathbf{+0.3013\text{ pp}}$
+  - $E_{\text{FF}|\neg\text{SP}} = A2 - A3 = \mathbf{+0.4599\text{ pp}}$
+  - $E_{\text{SP}|\text{FF}} = A0 - A2 = \mathbf{+0.0193\text{ pp}}$
+  - $E_{\text{SP}|\neg\text{FF}} = A1 - A3 = \mathbf{+0.1780\text{ pp}}$
 - **Main Effects**:
-  - $	ext{Main Effect of Feature Fusion } (E_{	ext{FF}}) = \frac{0.3013 + 0.4599}{2} = \mathbf{+0.3806	ext{ pp}}$
-  - $	ext{Main Effect of Smooth Projection } (E_{	ext{SP}}) = \frac{0.0193 + 0.1780}{2} = \mathbf{+0.0987	ext{ pp}}$
+  - $\text{Main Effect of Feature Fusion } (E_{\text{FF}}) = \frac{0.3013 + 0.4599}{2} = \mathbf{+0.3806\text{ pp}}$
+  - $\text{Main Effect of Smooth Projection } (E_{\text{SP}}) = \frac{0.0193 + 0.1780}{2} = \mathbf{+0.0987\text{ pp}}$
 - **Interaction Contrast**:
-  - $I_{	ext{FF} 	imes 	ext{SP}} = A0 - A1 - A2 + A3 = \mathbf{-0.1587	ext{ pp}}$
-  - Regression coefficient $\beta_{	ext{int}} = \frac{I}{4} = \mathbf{-0.0397	ext{ pp}}$
+  - $I_{\text{FF} \times \text{SP}} = A0 - A1 - A2 + A3 = \mathbf{-0.1587\text{ pp}}$
+  - Regression coefficient $\beta_{\text{int}} = \frac{I}{4} = \mathbf{-0.0397\text{ pp}}$
 - **Joint Component Benefit**:
-  - $\Delta_{	ext{Full - Both}} = A0 - A3 = \mathbf{+0.4793	ext{ pp}}$ (Exact identity verified: $E_{	ext{FF}} + E_{	ext{SP}} = 0.4793	ext{ pp}$).
+  - $\Delta_{\text{Full - Both}} = A0 - A3 = \mathbf{+0.4793\text{ pp}}$ (Exact identity verified: $E_{\text{FF}} + E_{\text{SP}} = 0.4793\text{ pp}$).
 
 ### 6.7 Comparison with Official Published Table 4 (NeurIPS 2024, Page 10)
 
-| Benchmark Condition | Official Paper $\bar{A}$ | Our Reproduced $\bar{A}$ (Seed 42) | Paper Delta ($\Delta_{	ext{paper}}$) | Our Delta ($\Delta_{	ext{our}}$) | Directional Alignment |
+| Benchmark Condition | Official Paper $\bar{A}$ | Our Reproduced $\bar{A}$ (Seed 42) | Paper Delta ($\Delta_{\text{paper}}$) | Our Delta ($\Delta_{\text{our}}$) | Directional Alignment |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **A0: Full F-OAL** | **91.1%** | **90.4016%** | Baseline | Baseline | Baseline |
-| **A1: w/o Feature Fusion** | **90.6%** | **90.1004%** | $-0.5	ext{ pp}$ | $-0.3013	ext{ pp}$ | $\checkmark$ Drop confirmed |
-| **A2: w/o Smooth Projection** | **90.7%** | **90.3823%** | $-0.4	ext{ pp}$ | $-0.0193	ext{ pp}$ | $\checkmark$ Drop confirmed |
-| **A3: w/o Both** | **90.6%** | **89.9224%** | $-0.5	ext{ pp}$ | $-0.4793	ext{ pp}$ | $\checkmark$ Lowest accuracy confirmed |
+| **A1: w/o Feature Fusion** | **90.6%** | **90.1004%** | $-0.5\text{ pp}$ | $-0.3013\text{ pp}$ | $\checkmark$ Drop confirmed |
+| **A2: w/o Smooth Projection** | **90.7%** | **90.3823%** | $-0.4\text{ pp}$ | $-0.0193\text{ pp}$ | $\checkmark$ Drop confirmed |
+| **A3: w/o Both** | **90.6%** | **89.9224%** | $-0.5\text{ pp}$ | $-0.4793\text{ pp}$ | $\checkmark$ Lowest accuracy confirmed |
 
 **Key Takeaways**:
 1. **Trend Reproduction vs Numerical Reproduction**:
    - The paper's qualitative findings are corroborated: removing Feature Fusion and/or Smooth Projection degrades performance, and removing both results in the lowest accuracy ($89.92\%$).
-   - On CIFAR-100 Seed 42, Feature Fusion provides the primary architectural benefit ($+0.38	ext{ pp}$ main effect), while Smooth Projection provides a modest boost ($+0.10	ext{ pp}$ main effect).
-   - The $-0.1587	ext{ pp}$ interaction contrast reveals slight negative sub-additivity on CIFAR-100: when Feature Fusion is present, high ViT representation quality renders the smooth projection largely redundant for separating natural image classes.
+   - On CIFAR-100 Seed 42, Feature Fusion provides the primary architectural benefit ($+0.38\text{ pp}$ main effect), while Smooth Projection provides a modest boost ($+0.10\text{ pp}$ main effect).
+   - The $-0.1587\text{ pp}$ interaction contrast reveals slight negative sub-additivity on CIFAR-100: when Feature Fusion is present, high ViT representation quality renders the smooth projection largely redundant for separating natural image classes.
 2. **Computational Footprint**:
-   - Reducing dimension from $D=1000$ to $D=768$ (conditions A2 and A3 on Tesla T4) cuts evaluation and RLS inversion duration from $15.52	ext{s}$ to $11.59	ext{s}$–$11.97	ext{s}$ ($\approx 25\%$ speedup), consistent with $O(D^2)$ complexity.
+   - Reducing dimension from $D=1000$ to $D=768$ (conditions A2 and A3 on Tesla T4) cuts evaluation and RLS inversion duration from $15.52\text{s}$ to $11.59\text{s}$–$11.97\text{s}$ ($\approx 25\%$ speedup), consistent with $O(D^2)$ complexity.
 
 ### 6.8 Weights & Biases Verification
 All online runs are registered on CoreWeave Forge W&B:
@@ -213,5 +211,5 @@ All online runs are registered on CoreWeave Forge W&B:
 - **Scientific Verdict**: `TABLE4_SIGNED_OFF_WITH_LIMITATIONS`.
 - **Known Limitations**:
   - Evaluation conducted on single seed (`seed=42`). Multi-seed variance assessment ($\ge 3$ seeds) is recommended for publication-grade error bounds.
-  - On CIFAR-100, the absolute magnitude of ablation drops ($-0.02	ext{ to } -0.48	ext{ pp}$) is modest due to the high quality of pretrained ViT representations. Cross-dataset validation on DTD or Aircraft is recommended for large domain shift.
+  - On CIFAR-100, the absolute magnitude of ablation drops ($-0.02\text{ to } -0.48\text{ pp}$) is modest due to the high quality of pretrained ViT representations. Cross-dataset validation on DTD or Aircraft is recommended for large domain shift.
   - A0 was executed on an NVIDIA A100 GPU whereas A1, A2, A3 were executed on Tesla T4; runtime comparisons across A0 and A1-A3 are hardware-confounded.

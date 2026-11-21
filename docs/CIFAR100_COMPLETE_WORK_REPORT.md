@@ -881,9 +881,9 @@ Toàn bộ các thực nghiệm được quản lý theo chuỗi bằng chứng 
 $$\text{Source Code (Git SHA)} \longrightarrow \text{Config YAML} \longrightarrow \text{Colab Execution} \longrightarrow \text{Raw CSV/JSON} \longrightarrow \text{ZIP Archive} \longrightarrow \text{Audit Scripts} \longrightarrow \text{W\&B Logs} \longrightarrow \text{Report}$$
 
 ### Danh Mục Các Run W&B Trực Tuyến Đã Xác Minh (Dự án `hcmus-foal-reproduction`):
-- **C1 P0 (Gaussian $\sigma=1$):** `6352y217`
+- **C1 P0 (Gaussian $\sigma=1$):** `qw78us1k`
 - **C1 P1 (Uniform Official):** `6whrot4z`
-- **C1 P2 (Gaussian Matched):** `zdfj1791`
+- **C1 P2 (Gaussian Matched):** `hsgsvb6p`
 - **C2 B0 (Control IN-1k):** `3oiftwg6`
 - **C2 B1 (Treatment IN-21k FT):** `ne1p16b5`
 - **C3-A (Bicubic, Norm):** `ne1p16b5`
@@ -988,9 +988,9 @@ Với việc pha nghiên cứu CIFAR-100 đã chính thức khép lại trọn v
 
 | Mã Run | Tên Thực Nghiệm | Cấu Hình / Can Thiệp | Seed | Phần Cứng | Thời Gian (s) | $\bar{A}$ (%) | $A_{10}$ (%) | $F_{\text{past}}$ (%) | File Dữ Liệu Gốc | W&B Run ID |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: |
-| **C1-P0** | Projection Init | Gaussian $\mathcal{N}(0, 1.0)$ | 42 | A100 | $298.90$ | $79.33\%$ | $70.95\%$ | $9.17\%$ | `results/c1_cifar100_full/p0` | `6352y217` |
+| **C1-P0** | Projection Init | Gaussian $\mathcal{N}(0, 1.0)$ | 42 | A100 | $298.90$ | $79.33\%$ | $70.95\%$ | $9.17\%$ | `results/c1_cifar100_full/p0` | `qw78us1k` |
 | **C1-P1** | Projection Init | Uniform $\mathcal{U}(-1/\sqrt{d}, 1/\sqrt{d})$ | 42 | A100 | $52.01$ | $83.28\%$ | $74.84\%$ | $8.97\%$ | `results/c1_cifar100_full/p1` | `6whrot4z` |
-| **C1-P2** | Projection Init | Gaussian $\mathcal{N}(0, 1/(3d))$ | 42 | A100 | $51.60$ | $83.37\%$ | $74.99\%$ | $8.81\%$ | `results/c1_cifar100_full/p2` | `zdfj1791` |
+| **C1-P2** | Projection Init | Gaussian $\mathcal{N}(0, 1/(3d))$ | 42 | A100 | $51.60$ | $83.37\%$ | $74.99\%$ | $8.81\%$ | `results/c1_cifar100_full/p2` | `hsgsvb6p` |
 | **C2-B0** | Backbone Control | `augreg_in1k` (ImageNet-1k) | 42 | A100 | $302.13$ | $83.28\%$ | $74.84\%$ | $8.97\%$ | `results/c2_cifar100_full/b0` | `3oiftwg6` |
 | **C2-B1** | Backbone Treatment | `augreg2_in21k_ft_in1k` | 42 | A100 | $301.32$ | $91.77\%$ | $87.43\%$ | $5.02\%$ | `results/c2_cifar100_full/b1` | `ne1p16b5` |
 | **C3-A** | Preproc Factorial | Bicubic + Normalized $[-1, 1]$ | 42 | A100 | $301.32$ | $91.77\%$ | $87.43\%$ | $5.02\%$ | `results/c3_full_gpu/c3_a` | `ne1p16b5` |
