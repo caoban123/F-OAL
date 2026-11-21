@@ -46,6 +46,15 @@ from scripts.train import compute_task_split_fingerprint
 
 
 def resolve_device(requested_device: str | None, config_device: str) -> str:
+    """Resolve the torch device, failing clearly when CUDA is requested but missing.
+
+    Args:
+        requested_device: Device from the command line, or None.
+        config_device: Device from the YAML config.
+
+    Returns:
+        Device string to use (e.g. 'cpu' or 'cuda').
+    """
     target = (requested_device or config_device).lower()
     if target == 'cuda' or target.startswith('cuda:'):
         if not torch.cuda.is_available():
@@ -61,6 +70,16 @@ def resolve_device(requested_device: str | None, config_device: str) -> str:
 
 
 def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
+    """Compute top-1 accuracy of the model on one evaluation loader.
+
+    Args:
+        model: Trained F-OAL model (frozen ViT + projection + RLS head).
+        loader: DataLoader yielding (image, label) batches of one task.
+        device: Torch device string used for inference.
+
+    Returns:
+        Accuracy in [0, 1], or NaN if the loader is empty.
+    """
     correct = total = 0
     with torch.no_grad():
         for x, y in loader:
@@ -72,6 +91,18 @@ def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
 
 def evaluate_task_cached_features(model: FOALModel, features: torch.Tensor, labels: torch.Tensor,
                                   batch_size: int, device: str) -> float:
+    """Compute top-1 accuracy from pre-extracted backbone features.
+
+    Args:
+        model: Trained F-OAL model; only the projection and RLS head are used.
+        features: Cached backbone features, shape (N, D).
+        labels: Integer labels, shape (N,).
+        batch_size: Number of samples scored per forward pass.
+        device: Torch device string used for inference.
+
+    Returns:
+        Accuracy in [0, 1], or NaN if there are no samples.
+    """
     correct = total = 0
     with torch.no_grad():
         for start in range(0, len(labels), batch_size):
@@ -85,6 +116,16 @@ def evaluate_task_cached_features(model: FOALModel, features: torch.Tensor, labe
 
 
 def resolve_seed(cli_value: Any, config_value: Any, default_seed: int) -> int:
+    """Pick the seed with precedence CLI value > config value > default.
+
+    Args:
+        cli_value: Seed passed on the command line, or None.
+        config_value: Seed read from the YAML config, or None.
+        default_seed: Fallback seed.
+
+    Returns:
+        The resolved integer seed.
+    """
     if cli_value is not None:
         return int(cli_value)
     if config_value is not None:
@@ -93,6 +134,16 @@ def resolve_seed(cli_value: Any, config_value: Any, default_seed: int) -> int:
 
 
 def resolve_projection_settings(cfg: dict[str, Any], args: argparse.Namespace, base_seed: int) -> dict[str, Any]:
+    """Resolve Smooth Projection settings from config and CLI overrides.
+
+    Args:
+        cfg: Parsed YAML config.
+        args: Parsed CLI arguments that may override projection init/seed.
+        base_seed: Experiment seed used when no projection seed is given.
+
+    Returns:
+        Dict with projection dimension, initialization scheme and seed.
+    """
     model_cfg = cfg.get('model', {}) or {}
     proj_cfg = cfg.get('projection', {}) or {}
     dimension = int(proj_cfg.get('dimension', model_cfg.get('projection_dim', 1000)))
@@ -182,6 +233,15 @@ def extract_or_load_task_features(
 
 
 def get_resolved_pretrained_cfg(model: FOALModel) -> dict[str, Any]:
+    """Read the timm pretrained config of the model's frozen backbone.
+
+    Args:
+        model: F-OAL model whose encoder wraps a timm network.
+
+    Returns:
+        Dict of checkpoint fields (hub id, tag, input size, interpolation,
+        mean/std); empty if unavailable.
+    """
     info: dict[str, Any] = {}
     try:
         pcfg = getattr(model.encoder.network, 'pretrained_cfg', None) or {}
@@ -195,6 +255,18 @@ def get_resolved_pretrained_cfg(model: FOALModel) -> dict[str, Any]:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    """Run one complete one-pass F-OAL experiment on DTD from a YAML config.
+
+    Resolves seeds, selects the DTD classes and samples, extracts frozen ViT features,
+    updates the RLS classifier task by task, evaluates after each stage and writes
+    matrix, metadata and metrics (optionally logging to W&B).
+
+    Args:
+        args: Parsed CLI arguments (config path, seeds, device, output dir, limits).
+
+    Returns:
+        Metrics dict for the run.
+    """
     cfg = yaml.safe_load(Path(args.config).read_text(encoding='utf-8'))
 
     # Seed management
@@ -701,6 +773,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main():
+    """Command-line entry point: parse arguments and run one DTD F-OAL job via ``run``.
+    """
     parser = argparse.ArgumentParser(description='Train one-pass F-OAL on DTD.')
     parser.add_argument('--config', default='configs/dtd.yaml')
     parser.add_argument('--max-tasks', type=int, default=None)

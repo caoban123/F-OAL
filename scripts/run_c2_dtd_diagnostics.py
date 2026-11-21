@@ -30,6 +30,11 @@ from src.foal.environment import get_environment_info
 
 
 def parse_args():
+    """Parse command-line arguments for the DTD C2 diagnostics.
+
+    Returns:
+        Parsed ``argparse.Namespace``.
+    """
     parser = argparse.ArgumentParser(description="Run C2 Matched-Input Backbone Diagnostics on DTD")
     parser.add_argument("--output-dir", default="results/dtd_c2_diagnostics", help="Directory to save diagnostics JSON")
     parser.add_argument("--device", default="auto", help="Device (cpu, cuda, or auto)")
@@ -42,6 +47,14 @@ def parse_args():
 
 
 def main():
+    """Run matched-input backbone diagnostics (C2) on DTD.
+
+    Extracts B0 and B1 features for the same DTD images, compares their geometry and
+    projected activations under one projection matrix, and writes the report JSON.
+
+    Returns:
+        The diagnostics report dict.
+    """
     args = parse_args()
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

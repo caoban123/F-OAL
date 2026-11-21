@@ -18,6 +18,16 @@ from src.foal.model import FOALModel
 
 def evaluate_checkpoint(checkpoint_path: str, device: str = 'cpu',
                         limit_per_task: int | None = None) -> dict:
+    """Evaluate a saved F-OAL checkpoint on the test split of every task.
+
+    Args:
+        checkpoint_path: Path to the saved checkpoint.
+        device: Torch device string ('cpu' or 'cuda').
+        limit_per_task: Optional cap on test samples per task (for quick checks).
+
+    Returns:
+        Dict with per-task and overall accuracy.
+    """
     target_device = device.lower()
     if target_device == 'cuda' or target_device.startswith('cuda:'):
         if not torch.cuda.is_available():
@@ -147,6 +157,8 @@ def evaluate_checkpoint(checkpoint_path: str, device: str = 'cpu',
 
 
 def main():
+    """Command-line entry point: parse arguments and evaluate a checkpoint, printing the result as JSON.
+    """
     p = argparse.ArgumentParser()
     p.add_argument('--checkpoint', required=True)
     p.add_argument('--device', default='cpu')

@@ -165,6 +165,15 @@ def run_experiment_on_cached_features(
 
 
 def save_run_artifacts(out_dir: Path, run_id: str, metadata: dict, metrics: dict, matrix: list[list[float]]):
+    """Write metadata, metrics and the task accuracy matrix of one run to disk.
+
+    Args:
+        out_dir: Root output directory.
+        run_id: Sub-directory name for this run.
+        metadata: Run metadata (seeds, config, environment).
+        metrics: Summary metrics of the run.
+        matrix: Task accuracy matrix (stage x task).
+    """
     run_dir = out_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -181,6 +190,11 @@ def save_run_artifacts(out_dir: Path, run_id: str, metadata: dict, metrics: dict
 
 
 def main():
+    """Run the DTD experiment suite on cached features (Table 4 ablation and C1-C3).
+
+    Parses CLI arguments, runs each configuration, and saves per-run artifacts and a
+    JSON summary to the output directory.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--cache-dir', default='results/dtd_feature_cache')
     parser.add_argument('--out-dir', default='results/dtd_experiments')

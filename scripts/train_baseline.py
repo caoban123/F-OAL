@@ -76,6 +76,16 @@ def resolve_device(requested_device: str | None, config_device: str) -> str:
 
 
 def resolve_seed(cli_value: Any, config_value: Any, default_seed: int) -> int:
+    """Pick the seed with precedence CLI value > config value > default.
+
+    Args:
+        cli_value: Seed passed on the command line, or None.
+        config_value: Seed read from the YAML config, or None.
+        default_seed: Fallback seed.
+
+    Returns:
+        The resolved integer seed.
+    """
     if cli_value is not None:
         return int(cli_value)
     if config_value is not None:
@@ -269,6 +279,18 @@ def _aggregate_batch_metrics(batch_metrics_list: Sequence[dict[str, float]]) -> 
 
 
 def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
+    """Train and evaluate one continual-learning baseline (ER, LwF or official-protocol LwF).
+
+    Uses the same frozen ViT feature pipeline and task stream as F-OAL, trains the
+    baseline head online, evaluates after each task and writes matrix, metadata and
+    metrics (optionally logging to W&B).
+
+    Args:
+        args: Parsed CLI arguments (config, agent type, seeds, device, output dir).
+
+    Returns:
+        Result payload dict with metrics and the task accuracy matrix.
+    """
     cfg = yaml.safe_load(Path(args.config).read_text(encoding="utf-8"))
 
     # Configuration & seed resolution
@@ -853,6 +875,11 @@ def run_baseline(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser for the baseline runner.
+
+    Returns:
+        Configured ``argparse.ArgumentParser``.
+    """
     p = argparse.ArgumentParser(description="Run Continual Learning Baseline (LwF, Official LwF, ER)")
     p.add_argument("--config", type=str, required=True, help="Path to YAML config")
     p.add_argument(

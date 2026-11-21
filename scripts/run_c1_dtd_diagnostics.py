@@ -73,6 +73,20 @@ def select_deterministic_multiclass_subset(
 
 
 def run_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
+    """Run matched-input Smooth Projection diagnostics (C1) on DTD.
+
+    Extracts frozen ViT features for a fixed sample of training images, projects them
+    with each projection initialization (P0 Gaussian std 1, P1 official uniform,
+    P2 Gaussian matched variance) and measures pre-sigmoid spread and sigmoid
+    saturation. No training is done.
+
+    Args:
+        args: Parsed CLI arguments (backbone, projection settings, sample count,
+            device, output dir).
+
+    Returns:
+        Diagnostics report dict, also written to ``args.output_dir``.
+    """
     outdir = Path(args.output_dir)
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -228,6 +242,8 @@ def run_diagnostics(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main():
+    """Command-line entry point: parse arguments and run the DTD C1 diagnostics.
+    """
     p = argparse.ArgumentParser(description='Run matched-input Smooth Projection diagnostics on DTD.')
     p.add_argument('--backbone', default='vit_base_patch16_224.augreg_in1k')
     p.add_argument('--projection-dim', type=int, default=1000)

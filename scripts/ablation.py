@@ -25,6 +25,8 @@ from scripts.summarize_runs import summarize_results
 
 
 def main():
+    """Command-line entry point: parse arguments and launch the four 2x2 FF/SP ablation variants as ``scripts.train`` subprocesses.
+    """
     p = argparse.ArgumentParser(description='Run 2x2 F-OAL ablation experiments.')
     p.add_argument('--config', default='configs/cifar100.yaml')
     p.add_argument('--seed', type=int, default=None)

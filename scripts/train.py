@@ -60,6 +60,16 @@ def resolve_device(requested_device: str | None, config_device: str) -> str:
 
 
 def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
+    """Compute top-1 accuracy of the model on one evaluation loader.
+
+    Args:
+        model: Trained F-OAL model (frozen ViT + projection + RLS head).
+        loader: DataLoader yielding (image, label) batches of one task.
+        device: Torch device string used for inference.
+
+    Returns:
+        Accuracy in [0, 1], or NaN if the loader is empty.
+    """
     correct = total = 0
     with torch.no_grad():
         for x, y in loader:
@@ -71,6 +81,18 @@ def evaluate_task(model: FOALModel, loader: DataLoader, device: str) -> float:
 
 def evaluate_task_cached_features(model: FOALModel, features: torch.Tensor, labels: torch.Tensor,
                                   batch_size: int, device: str) -> float:
+    """Compute top-1 accuracy from pre-extracted backbone features.
+
+    Args:
+        model: Trained F-OAL model; only the projection and RLS head are used.
+        features: Cached backbone features, shape (N, D).
+        labels: Integer labels, shape (N,).
+        batch_size: Number of samples scored per forward pass.
+        device: Torch device string used for inference.
+
+    Returns:
+        Accuracy in [0, 1], or NaN if there are no samples.
+    """
     correct = total = 0
     with torch.no_grad():
         for start in range(0, len(labels), batch_size):
@@ -245,6 +267,19 @@ def get_resolved_pretrained_cfg(model: FOALModel) -> dict[str, Any]:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    """Run one complete one-pass F-OAL experiment described by a YAML config.
+
+    Resolves seeds, builds the class-incremental task stream, extracts frozen ViT
+    features, updates the RLS classifier task by task, evaluates on all seen tasks
+    after each stage, writes results to the output directory and optionally logs to W&B.
+
+    Args:
+        args: Parsed CLI arguments (config path, seeds, device, output dir, overrides).
+
+    Returns:
+        Metrics dict (average incremental accuracy, last accuracy, forgetting,
+        task accuracy matrix).
+    """
     cfg = yaml.safe_load(Path(args.config).read_text(encoding='utf-8'))
 
     # Granular seed management with strict RNG isolation (A12 / C1 Section 7.1)
@@ -699,6 +734,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main():
+    """Command-line entry point: parse arguments and run one F-OAL training/evaluation job via ``run``.
+    """
     parser = argparse.ArgumentParser(description='Train one-pass F-OAL on CIFAR-100.')
     parser.add_argument('--config', default='configs/cifar100.yaml')
     parser.add_argument('--max-tasks', type=int, default=None,

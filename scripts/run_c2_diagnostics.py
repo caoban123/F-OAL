@@ -23,6 +23,11 @@ from src.foal.diagnostics import compare_c2_backbone_conditions
 
 
 def parse_args():
+    """Parse command-line arguments for the CIFAR-100 C2 diagnostics.
+
+    Returns:
+        Parsed ``argparse.Namespace``.
+    """
     parser = argparse.ArgumentParser(description="Run C2 Matched-Input Backbone Diagnostics")
     parser.add_argument("--output-dir", default="results/c2_diagnostics", help="Directory to save diagnostics JSON")
     parser.add_argument("--device", default="auto", help="Device (cpu, cuda, or auto)")
@@ -32,6 +37,12 @@ def parse_args():
 
 
 def main():
+    """Run matched-input backbone diagnostics (C2) on CIFAR-100.
+
+    Extracts B0 (augreg_in1k) and B1 (augreg2_in21k_ft_in1k) features for the same
+    images, compares their geometry and projected activations under one projection
+    matrix, and writes the report JSON to the output directory.
+    """
     args = parse_args()
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

@@ -392,6 +392,11 @@ def run_single_experiment(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the CIFAR-100 multi-seed Table 4 ablation.
+
+    Returns:
+        Parsed ``argparse.Namespace``.
+    """
     parser = argparse.ArgumentParser(description="Run CIFAR-100 Multi-Seed Table 4 Ablation Study.")
     parser.add_argument("--seeds", type=int, nargs="+", default=TARGET_NEW_SEEDS,
                         help="Seeds to execute (default: 123 2026; seed 42 is reused and protected)")
@@ -418,6 +423,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """Run the CIFAR-100 Table 4 ablation (A0-A3) for the requested seeds.
+
+    Launches each configuration/seed, keeps the existing seed-42 results untouched,
+    and writes a manifest and status file to the output root.
+    """
     args = parse_args()
     output_root = Path(args.output_root)
     if args.pilot:
