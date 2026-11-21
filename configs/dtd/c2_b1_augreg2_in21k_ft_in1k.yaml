@@ -1,0 +1,58 @@
+# C2 Controlled Experiment (DTD) — B1: Official Author Backbone (ImageNet-21k -> IN-1k FT)
+# Single controlled factor vs B0: model.backbone
+# Identity guarantee: C2-B1 == C3-A (identical hyperparameters and seeds)
+
+seed: 42
+dataset_seed: 42
+class_order_seed: 42
+projection_seed: 42
+stream_seed: 42
+
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  root: ./data
+  total_classes: 47
+  num_classes: 40
+  classes_per_task: 4
+  samples_per_class: 40
+  image_size: 224
+  interpolation: bicubic
+  normalize: true
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  gaussian_std: 1.0
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  device: auto
+  num_workers: 0
+  pin_memory: false
+  one_pass: true
+  feature_cache_dir: null
+
+logging:
+  output_dir: results/dtd_c2_full/b1_augreg2_in21k_ft_in1k
+  run_name: dtd_c2_b1_augreg2_in21k_ft_in1k_seed42
+  experiment_type: controlled_ablation
+  wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: c2_backbone_alignment_dtd
+  tags:
+    - c2
+    - dtd
+    - backbone-alignment
+    - augreg2-in21k-ft-in1k
+    - controlled-experiment

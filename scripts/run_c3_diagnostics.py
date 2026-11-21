@@ -51,6 +51,20 @@ def get_official_author_transform():
 
 
 def run_diagnostics(num_samples: int = 200, seed: int = 42, device: str = 'cpu', output_path: str | None = None) -> dict:
+    """Run matched-input preprocessing diagnostics (C3) on CIFAR-100.
+
+    Feeds the same test images through the preprocessing variants
+    (bicubic/bilinear x normalized/raw) and compares the resulting ViT features.
+
+    Args:
+        num_samples: Number of test images to sample (< 50 is a smoke test).
+        seed: Sampling seed.
+        device: Torch device string.
+        output_path: Optional JSON path for the report.
+
+    Returns:
+        Dict with per-variant feature statistics and pairwise cosine similarities.
+    """
     diag_type = "SMOKE_TEST_ONLY" if num_samples < 50 else "FULL_MATCHED_DIAGNOSTICS"
     
     # 1. Load CIFAR-100 test data
@@ -141,6 +155,15 @@ def run_diagnostics(num_samples: int = 200, seed: int = 42, device: str = 'cpu',
     
     # 6. Pairwise cosine similarity across conditions
     def pairwise_cosine(f1, f2):
+        """Compute mean, std and min cosine similarity between paired feature rows.
+
+        Args:
+            f1: Feature tensor, shape (N, D).
+            f2: Feature tensor of the same shape, row-aligned with f1.
+
+        Returns:
+            Tuple (mean, std, min) of the N row-wise cosine similarities.
+        """
         f1_norm = f1 / (torch.norm(f1, dim=-1, keepdim=True) + 1e-9)
         f2_norm = f2 / (torch.norm(f2, dim=-1, keepdim=True) + 1e-9)
         sims = (f1_norm * f2_norm).sum(dim=-1)

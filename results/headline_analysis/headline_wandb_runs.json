@@ -1,0 +1,29 @@
+[
+  {
+    "key": "er",
+    "name": "headline_er_replay_buffer5000_seed42",
+    "run_id": "xlcme1c3",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3",
+    "a_avg_pct": 86.67026984126984,
+    "a_last_pct": 79.79,
+    "f_past_pct": 16.744444444444444
+  },
+  {
+    "key": "official_lwf",
+    "name": "headline_lwf_official_protocol_seed42",
+    "run_id": "c5pjewk4",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4",
+    "a_avg_pct": 46.29349206349207,
+    "a_last_pct": 23.34,
+    "f_past_pct": 1.2528558437610272e-16
+  },
+  {
+    "key": "adapted_lwf",
+    "name": "headline_lwf_adapted_adamw_seed42",
+    "run_id": "ifl3rz2u",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u",
+    "a_avg_pct": 29.629496031746033,
+    "a_last_pct": 11.21,
+    "f_past_pct": 94.98888888888888
+  }
+]

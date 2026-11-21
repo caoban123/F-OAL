@@ -1,0 +1,71 @@
+# ==============================================================================
+# F-OAL (NeurIPS 2024) Configuration for DTD Online Class-Incremental Learning
+#
+# Pretrained Backbone Specification:
+#   - Model ID: vit_base_patch16_224.augreg2_in21k_ft_in1k (timm)
+#   - Architecture: ViT-Base, patch size 16x16, 12 transformer blocks, embedding dim 768
+#   - Number of parameters: 85,798,656 (100% frozen, requires_grad=False)
+#   - Preprocessing: Resize to 224x224 (bilinear), raw [0, 1] tensor (official author transform)
+#
+# Dataset: DTD (Describable Textures Dataset)
+#   - Source: tanganke/dtd (Hugging Face)
+#   - Total classes: 47 (using 40 classes per paper protocol)
+#   - Classes per task: 4 (10 tasks x 4 classes)
+#   - Samples per class: 40 train, 40 test (160 per task; 1,600 train / 1,600 test total)
+#
+# Methodology Alignment with Paper (NeurIPS 2024):
+#   - Feature Fusion: Arithmetic mean over all 12 block CLS tokens + final LayerNorm (Section 4.2)
+#   - Smooth Projection: Random Uniform projection into D=1000 with Sigmoid activation (Section 4.3, Eq. 1)
+#   - Classifier: Analytic Classifier via Recursive Least Squares (RLS) with gamma=1.0 (Section 4.4, 5.2)
+#   - Protocol: 10 tasks, 4 classes per task, one-pass streaming without replay buffer (Zero-Replay)
+#
+# Paper Reference Benchmark (DTD, Table 2 & Table 4):
+#   - Average Incremental Accuracy (A_avg): 82.8%
+#   - Training time: ~8 seconds on GPU
+# ==============================================================================
+
+seed: 42
+class_order_seed: null   # Seed for class order permutation (defaults to seed if null)
+projection_seed: null    # Seed for projection matrix (defaults to seed if null)
+stream_seed: null        # Seed for batch stream shuffling (defaults to seed if null)
+
+dataset:
+  name: tanganke/dtd
+  type: dtd
+  root: ./data
+  total_classes: 47
+  num_classes: 40          # Use 40 out of 47 classes (per paper protocol)
+  classes_per_task: 4      # 40 / 10 = 4 classes per task
+  samples_per_class: 40    # 40 train and 40 test samples per class
+  class_order: null
+  image_size: 224
+  interpolation: bilinear
+  normalize: false
+  mean: null
+  std: null
+
+model:
+  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+  pretrained: true
+  feature_fusion: true
+  smooth_projection: true
+  projection_dim: 1000
+  projection_init: official_uniform
+  gaussian_std: 1.0
+  gamma: 1.0
+  rls_dtype: float64
+
+training:
+  batch_size: 10
+  num_workers: 0
+  device: auto
+  one_pass: true
+  feature_cache_dir: null
+
+logging:
+  use_wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: dtd_full_reproduction
+  results_dir: results

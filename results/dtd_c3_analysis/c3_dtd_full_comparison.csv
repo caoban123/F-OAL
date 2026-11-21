@@ -1,0 +1,5 @@
+condition,name,backbone,interpolation,normalization,avg_incremental_acc_pct,last_acc_pct,forgetting_past_pct,forgetting_code_pct
+C3-A,c3_a_bicubic_normalized,vit_base_patch16_224.augreg2_in21k_ft_in1k,bicubic,"normalized [-1, 1]",85.115,77.1875,8.2639,7.5
+C3-B,c3_b_bilinear_normalized,vit_base_patch16_224.augreg2_in21k_ft_in1k,bilinear,"normalized [-1, 1]",85.128,76.875,8.4722,7.6875
+C3-C,c3_c_bicubic_raw,vit_base_patch16_224.augreg2_in21k_ft_in1k,bicubic,"raw [0, 1]",85.134,76.625,8.5417,7.6875
+C3-D,c3_d_bilinear_raw,vit_base_patch16_224.augreg2_in21k_ft_in1k,bilinear,"raw [0, 1]",85.0838,76.0625,8.6111,7.75

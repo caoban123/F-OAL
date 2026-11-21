@@ -33,6 +33,8 @@ VALID_PROJECTION_INITIALIZATIONS = (
 
 
 class SmoothProjection(nn.Module):
+    """Fixed random linear projection followed by sigmoid nonlinearity (F-OAL Eq. 1)."""
+
     def __init__(
         self,
         input_dim: int,

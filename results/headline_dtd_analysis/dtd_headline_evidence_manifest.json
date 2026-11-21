@@ -1,0 +1,123 @@
+{
+  "project": "F-OAL DTD Section IX Headline Comparison",
+  "dataset": "DTD (tanganke/dtd, 40/47 classes, 10 tasks x 4 classes, 40 train / 40 test per class)",
+  "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+  "feature_dim": 768,
+  "feature_fusion": "12-block CLS average + LayerNorm (D=768)",
+  "preprocessing": "Bilinear interpolation, unnormalized [0, 1]",
+  "missing_runs": [],
+  "runs": [
+    {
+      "key": "foal",
+      "method": "F-OAL (Full, A0)",
+      "classification": "OUR_INDEPENDENT_FOAL",
+      "run_dir": "results/dtd/dtd_a0_full",
+      "evidence_file": "results/dtd/dtd_a0_full/task_accuracy.csv",
+      "evidence_sha256": "d24083ef08008529d5c2fc052227b58e3fe5b9b0060252f19eca0e2cdecd15e6",
+      "split_sha256": "42b13803af83abc522b7f814a6b9e450f884a4a7b675d77a0067491a72e79590",
+      "git_sha": "ca42e67265e3c6be485113216e51b488bb3775a9",
+      "metrics": {
+        "a_avg_pct": 85.08382936507937,
+        "a_last_pct": 76.0625,
+        "f_past_pct": 8.611111111111109,
+        "f_code_pct": 7.749999999999998
+      },
+      "diagonal_new_task_accuracies_pct": [
+        98.125,
+        88.75,
+        95.625,
+        88.125,
+        75.0,
+        73.75,
+        80.625,
+        84.375,
+        78.125,
+        73.125
+      ]
+    },
+    {
+      "key": "er",
+      "method": "ER (Buffer=5000)",
+      "classification": "OUR_ADAPTED_ER",
+      "run_dir": "runs/headline_dtd/er",
+      "evidence_file": "runs/headline_dtd/er/task_matrix.csv",
+      "evidence_sha256": "3c4d549154184b063216f27132836033be8f5dd4577249d7067d2d1bba57a7af",
+      "split_sha256": "f077b2e947bfd5c3151d0be1a387b10fbf78c165d02c189eb34030fda759fa41",
+      "git_sha": "8da300a211099c50364a7438a83dfcc907b4885e",
+      "metrics": {
+        "a_avg_pct": 52.99570932539683,
+        "a_last_pct": 35.1875,
+        "f_past_pct": 56.18055555555556,
+        "f_code_pct": 50.5625
+      },
+      "diagonal_new_task_accuracies_pct": [
+        90.0,
+        73.75,
+        93.75,
+        93.75,
+        81.25,
+        83.125,
+        96.25,
+        87.5,
+        80.625,
+        77.5
+      ]
+    },
+    {
+      "key": "official_lwf",
+      "method": "LwF (Official Protocol)",
+      "classification": "OUR_OFFICIAL_PROTOCOL_LWF",
+      "run_dir": "runs/headline_dtd/lwf_official_dtd",
+      "evidence_file": "runs/headline_dtd/lwf_official_dtd/task_matrix.csv",
+      "evidence_sha256": "773db2b69f018c78640044a1e3fbb7d1348e0a9f6d43cadcf85437d0309ad08c",
+      "split_sha256": "f077b2e947bfd5c3151d0be1a387b10fbf78c165d02c189eb34030fda759fa41",
+      "git_sha": "8da300a211099c50364a7438a83dfcc907b4885e",
+      "metrics": {
+        "a_avg_pct": 15.403521825396826,
+        "a_last_pct": 5.3125,
+        "f_past_pct": 1.736111111111111,
+        "f_code_pct": 1.6874999999999993
+      },
+      "diagonal_new_task_accuracies_pct": [
+        48.75,
+        6.25,
+        5.625,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.5
+      ]
+    },
+    {
+      "key": "adapted_lwf",
+      "method": "LwF (Adapted AdamW)",
+      "classification": "OUR_ADAPTED_LWF",
+      "run_dir": "runs/headline_dtd/lwf",
+      "evidence_file": "runs/headline_dtd/lwf/task_matrix.csv",
+      "evidence_sha256": "6b1e612af6a44bb06e71ae3187c3b8af2b2796ec80caf52745c81aa3b53843d3",
+      "split_sha256": "f077b2e947bfd5c3151d0be1a387b10fbf78c165d02c189eb34030fda759fa41",
+      "git_sha": "8da300a211099c50364a7438a83dfcc907b4885e",
+      "metrics": {
+        "a_avg_pct": 24.99623015873016,
+        "a_last_pct": 7.9375,
+        "f_past_pct": 85.625,
+        "f_code_pct": 77.0625
+      },
+      "diagonal_new_task_accuracies_pct": [
+        88.75,
+        71.875,
+        93.75,
+        91.25,
+        78.75,
+        86.875,
+        93.75,
+        90.0,
+        75.625,
+        79.375
+      ]
+    }
+  ]
+}

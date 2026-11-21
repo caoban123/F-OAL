@@ -1116,3 +1116,67 @@ Dưới đây là bảng chuẩn hóa theo đúng yêu cầu của giảng viên
   - Toàn bộ 6/6 tests trong `tests/test_table4_ablation.py` và 69/69 regression tests trong toàn bộ repository vượt qua 100%.
   - Đã xuất bản 7 đồ thị phân tích và các bảng manifest đối chiếu tại [`results/table4_analysis/`](../results/table4_analysis/).
   - Xác nhận tái hiện thành công xu hướng khoa học của Table 4 bài báo gốc: $A0 > A2 > A1 > A3$.
+
+
+---
+
+## 28. Chốt Pha CIFAR-100, Headline Comparison & Phân công Nhóm Song song
+
+- **Merge Table 4 vào `main`:** Commit `747b828` (`Merge branch 'experiment/table4-ablation' into main`).
+- **Nhánh phát triển mới:** `experiment/headline-comparison` (tracked tại `origin/experiment/headline-comparison`).
+- **Tiêu chuẩn Khép lại Pha CIFAR-100:**
+  - Thiết lập cổng kiểm toán 15 tiêu chí khách quan tại [`docs/cifar100_completion_checklist.md`](cifar100_completion_checklist.md).
+  - Trạng thái: **`CIFAR100_PENDING_BASELINES`** (C0–C3 và Table 4 đã hoàn tất 100%; chờ chạy GPU Colab cho LwF và ER).
+- **Hiện thực Baseline Headline (Table 2 Parity):**
+  - **LwF (Learning without Forgetting):** [`src/foal/baselines/lwf.py`](../src/foal/baselines/lwf.py), [`configs/headline/lwf_cifar100.yaml`](../configs/headline/lwf_cifar100.yaml).
+  - **ER (Experience Replay, buffer=5000):** [`src/foal/baselines/er.py`](../src/foal/baselines/er.py), [`configs/headline/er_cifar100.yaml`](../configs/headline/er_cifar100.yaml).
+  - **Runner kiểm thử hợp nhất:** [`scripts/train_baseline.py`](../scripts/train_baseline.py).
+  - **Notebook Google Colab GPU hoàn chỉnh:** [`notebooks/foal_cifar100_headline_final.ipynb`](../notebooks/foal_cifar100_headline_final.ipynb).
+- **Khung Dataset Adapter Dùng chung & Phân công Nhóm Đa Tập Dữ liệu:**
+  - Khung adapter kế thừa an toàn: [`src/foal/dataset_adapters/base.py`](../src/foal/dataset_adapters/base.py) (không xâm lấn `src/foal/datasets.py`).
+  - **Track DTD (Thành viên A):** [`src/foal/dataset_adapters/dtd.py`](../src/foal/dataset_adapters/dtd.py), 40 lớp texture, 10 tasks $\times$ 4 lớp, kiểm chứng mức suy giảm 11.6 pp.
+  - **Track FGVC-Aircraft (Thành viên B):** [`src/foal/dataset_adapters/fgvc_aircraft.py`](../src/foal/dataset_adapters/fgvc_aircraft.py), 100 lớp aircraft variants, 10 tasks $\times$ 10 lớp, điều tra đối chiếu bất đồng Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
+  - Kế hoạch phân công và quản trị nhóm: [`docs/team_parallel_dataset_plan.md`](team_parallel_dataset_plan.md).
+  - Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).
+- **Kiểm thử tự động:** Đã bổ sung 10 unit tests trong [`tests/test_headline_comparison.py`](../tests/test_headline_comparison.py) và [`tests/test_dataset_adapters.py`](../tests/test_dataset_adapters.py); toàn bộ 83/83 tests toàn repository đều vượt qua 100%.
+
+---
+
+## 29. Kiểm toán Pháp y Headline Comparison (LwF & ER), Đối chiếu Table 2 NeurIPS 2024 & Đóng Pha CIFAR-100
+
+- **Archive GPU Thực tế:** `foal_cifar100_headline_results.zip` (191,587 bytes, SHA256 `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`).
+- **Phục hồi & Xác thực Môi trường Thực thi:**
+  - Phần cứng: Google Colab Tesla T4 GPU (15,360 MiB VRAM), PyTorch 2.5.1+cu124, Python 3.11.11.
+  - Git Commit SHA ghi nhận trong run metadata: `b0658c8837563d845253880da8efb1f0f11387fc`.
+  - Thời gian huấn luyện (10 tasks): LwF = 629.52s, ER (Buffer 5000) = 626.85s trên Tesla T4 GPU (bao gồm vòng lặp stream trực tuyến).
+  - Đối chiếu Thời gian F-OAL: Tổng thời gian F-OAL C3-D là 229.11s trên NVIDIA A100 GPU (175.28s trích xuất đặc trưng + 8.50s giải tích RLS & eval). Tuyên bố gia tốc "11.7 lần" trước đây chính thức bị **rút lại** do không tương đương về phần cứng (A100 vs T4) và phạm vi đo lường (cached/offline vs online stream).
+- **Kết quả Tái hiện Thực nghiệm & Đối chiếu Bài báo Gốc (Đã Hiệu chỉnh Chuẩn xác):**
+  - **F-OAL Full (Tái sử dụng C3-D `3v53tmq5`):** $\bar{A} = 90.4016\%$, $A_{10} = 85.7300\%$, $F_{\text{past}} = 5.1556\%$, $F_{\text{code}} = 4.6400\%$, $M = 0$. (Paper Table 2: $\bar{A} = 91.1\%$, $A_{10} = 86.5\%$, $F = 5.5\%$).
+  - **LwF (Distillation, $M=0$):** $\bar{A} = 29.6295\%$, $A_{10} = 11.2100\%$, $F_{\text{past}} = 94.9889\%$, $F_{\text{code}} = 85.4900\%$. (Paper Table 2: $\bar{A} = 69.3\%$, $A_{10} = 64.8\%$, $F = 1.3\%$).
+    - *Giải thích suy thoái:* Trong stream trực tuyến đơn lượt nghiêm ngặt (1 pass, batch size 10), gradient update đầu ra chỉ bảo toàn phân phối mềm qua 500 bước mỗi task. Không có replay buffer hay huấn luyện đa epoch (multi-epoch offline), distillation suy thoái thảm khốc; đến task 10 độ chính xác trên 8 task đầu tiên tụt về 0.00%.
+  - **ER (Experience Replay, $M=5000$):** $\bar{A} = 86.6703\%$, $A_{10} = 79.7900\%$, $F_{\text{past}} = 16.7444\%$, $F_{\text{code}} = 15.0700\%$. (Paper Table 2: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F = 20.7\%$).
+    - *Kết luận:* Buffer 5000 ảnh bảo toàn độ chính xác task cũ ở mức $70\text{--}83\%$, nhưng đòi hỏi bộ nhớ lưu trữ lớn ($M=5000$), tốn thời gian tính toán gấp gần 12 lần F-OAL, và tỷ lệ quên lãng $F_{\text{past}}$ vẫn cao gấp 3.2 lần F-OAL.
+- **Hiện vật Kiểm toán:** Xuất bản toàn bộ tại [`results/headline_analysis/`](../results/headline_analysis/) (4 đồ thị chất lượng báo cáo khoa học, 2 manifest JSON, 4 bảng so sánh CSV/JSON).
+- **Quyết định Quản trị & Đóng Pha:** 
+  - Toàn bộ 18/18 tests kiểm định pháp y trong `tests/test_headline_comparison.py` và 96/96 tests toàn bộ kho lưu trữ vượt qua 100%.
+  - Phê duyệt chính thức trạng thái: **`CIFAR100_PENDING_BASELINE_VALIDATION`**.
+  - **Kế hoạch tiếp theo:** Chuẩn bị bộ chuyển đổi dữ liệu (adapters) và giao thức cho Track DTD và FGVC-Aircraft mà không chạy lại GPU lặp trên CIFAR-100.
+
+---
+
+## 30. Kiểm toán Nghiệm thu GPU Official Protocol LwF & Đóng Pha CIFAR-100 (`CIFAR100_COMPLETED_WITH_LIMITATIONS`)
+
+- **Archive GPU Thực tế:** `foal_cifar100_official_lwf_results.zip` (184,113 bytes, SHA256 `2f5e67ea86b22d36e8223d8a68494dc0de0f285e015b97b9fcc29df9ccd8f0ce`).
+- **Phục hồi & Xác thực Môi trường Thực thi:**
+  - Phần cứng: Google Colab Tesla T4 GPU (14.56 GB VRAM), CUDA 13.0, PyTorch 2.11.0+cu130, Python 3.13.16.
+  - Git Commit SHA ghi nhận trong metadata: `c3dd3f23fbf2d8d94d481ec75daceb860190118e`.
+  - Thời gian huấn luyện (10 tasks): 646.35s trên Tesla T4 GPU.
+- **Kết quả Tái hiện Thực nghiệm:**
+  - $\bar{A} = 46.2935\%$, $A_{10} = 23.3400\%$, $F_{\text{past}} = 0.4111\%$, $F_{\text{code}} = 0.3700\%$.
+  - Mức cải thiện so với bản Adapted LwF: $+16.66\text{ pp}$ độ chính xác trung bình, $+12.13\text{ pp}$ Last Accuracy, và tỷ lệ quên giảm từ $94.99\%$ xuống $0.41\%$.
+  - Khớp với chỉ số độ quên của bài báo gốc ($F = 1.3\%$).
+- **Hiện vật Kiểm toán:** Xuất bản trọn bộ tại `results/headline_analysis/` gồm 6 đồ thị khoa học mới (`fig1_headline_final_...` đến `fig6_headline_final_...`), 6 tệp dữ liệu CSV/JSON (`headline_final_...`), và báo cáo toàn diện [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](CIFAR100_FINAL_REPRODUCTION_REPORT.md).
+- **Quyết định Quản trị & Đóng Pha:**
+  - 31/31 unit tests vượt qua 100%.
+  - Trạng thái chính thức: **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
+  - Toàn bộ thực nghiệm trên CIFAR-100 chính thức khép lại. Nhóm chuyển giao 100% tài nguyên sang DTD và FGVC-Aircraft.

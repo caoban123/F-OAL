@@ -14,6 +14,8 @@ from .feature_fusion import fuse_cls_features
 
 
 class FrozenViT(nn.Module):
+    """Frozen Vision Transformer encoder with optional 12-block CLS feature fusion."""
+
     def __init__(self, name: str = 'vit_base_patch16_224.augreg_in1k',
                  pretrained: bool = True, feature_fusion: bool = True):
         super().__init__()
@@ -66,6 +68,7 @@ class FrozenViT(nn.Module):
 
     @property
     def feature_dim(self) -> int:
+        """Return the output embedding dimensionality of the ViT encoder."""
         return int(self.network.num_features)
 
     @property
@@ -75,6 +78,7 @@ class FrozenViT(nn.Module):
         return timm.data.resolve_model_data_config(self.network)
 
     def train(self, mode: bool = True):
+        """Keep the frozen ViT backbone permanently in evaluation mode."""
         # A frozen model must remain in eval mode even if its parent is trained.
         super().train(False)
         self.network.eval()
@@ -82,12 +86,21 @@ class FrozenViT(nn.Module):
 
     @torch.no_grad()
     def forward(self, images: torch.Tensor) -> torch.Tensor:
+        """Extract frozen ViT features (all-block fusion or last-block CLS).
+
+        Args:
+            images: Input image tensor of shape (batch, channels, height, width).
+
+        Returns:
+            Normalized feature tensor of shape (batch, feature_dim).
+        """
         if images.ndim != 4:
             raise ValueError(f'Expected images tensor of shape [batch, channels, height, width], got {images.shape}')
         self.network.eval()
         collected: list[torch.Tensor] = []
         hooks = []
         def save_block(_module, _inputs, output):
+            """Forward hook capturing each transformer block's output tensor."""
             collected.append(output if isinstance(output, torch.Tensor) else output[0])
         try:
             for block in self.network.blocks:

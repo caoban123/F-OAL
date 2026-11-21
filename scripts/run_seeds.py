@@ -108,6 +108,14 @@ def is_run_completed(run_dir: Path, expected_protocol: dict[str, Any] | None = N
 
 
 def run_multi_seed(args: argparse.Namespace) -> dict[str, Any]:
+    """Run the same F-OAL config over several seeds and summarize the results.
+
+    Args:
+        args: Parsed CLI arguments (seed list, config, results dir, device).
+
+    Returns:
+        Summary dict with per-seed metrics and mean/std, also written as JSON.
+    """
     cfg = yaml.safe_load(Path(args.config).read_text(encoding='utf-8'))
     results_base = Path(args.results_dir or cfg.get('logging', {}).get('results_dir', 'results'))
     results_base.mkdir(parents=True, exist_ok=True)
@@ -258,6 +266,8 @@ def run_multi_seed(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main():
+    """Command-line entry point: parse arguments and run ``run_multi_seed``.
+    """
     p = argparse.ArgumentParser(description='Multi-seed F-OAL experiment runner.')
     p.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 2026],
                    help='List of random seeds to evaluate sequentially')

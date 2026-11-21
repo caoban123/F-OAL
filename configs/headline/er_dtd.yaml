@@ -1,0 +1,50 @@
+# Headline Benchmark Comparison: Experience Replay (ER) Baseline (DTD)
+# Methodology: Section IX.14 of CIFAR100_COMPLETE_WORK_REPORT.pdf (Adapted ER)
+# Reference: Chaudhry et al. (ICRA 2019), NeurIPS 2024 Table 2 & 3 (DTD)
+dataset: dtd
+dataset_source: tanganke/dtd
+data_dir: ./data
+total_classes: 47
+num_classes: 40
+classes_per_task: 4
+samples_per_class: 40
+seed: 42
+class_order_seed: 42
+stream_seed: 42
+
+agent: er
+buffer_capacity: 5000
+retrieve_policy: random
+update_policy: random
+optimizer: adamw
+learning_rate: 0.001
+weight_decay: 0.0001
+batch_size: 10
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+device: auto
+output_dir: runs/headline_dtd/er
+
+logging:
+  use_wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: headline_comparison_dtd
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 & 3 (Page 7)"
+    method: "ER (ICRA 2019)"
+    buffer_size: 5000
+    a_avg_pct: 73.2
+    a_last_pct: 68.1
+    forgetting_pct: 18.5
+    training_time_seconds: 21

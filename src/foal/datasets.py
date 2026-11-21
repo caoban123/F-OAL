@@ -13,6 +13,8 @@ import torch
 
 @dataclass(frozen=True)
 class TaskSpec:
+    """Specification of one incremental task's train/test indices and class count."""
+
     task_id: int
     new_original_labels: tuple[int, ...]
     train_indices: tuple[int, ...]
@@ -22,6 +24,16 @@ class TaskSpec:
 
 def make_class_order(num_classes: int, seed: int = 42,
                      explicit: Sequence[int] | None = None) -> list[int]:
+    """Generate or validate a deterministic permutation of class indices.
+
+    Args:
+        num_classes: Total number of classes in the dataset.
+        seed: Random seed used when `explicit` is None.
+        explicit: Optional explicit permutation of `0..num_classes-1`.
+
+    Returns:
+        List of permuted class indices.
+    """
     if num_classes < 1:
         raise ValueError('num_classes must be positive')
     if explicit is not None:
@@ -34,6 +46,17 @@ def make_class_order(num_classes: int, seed: int = 42,
 
 def make_task_specs(train_labels: Sequence[int], test_labels: Sequence[int],
                     order: Sequence[int], classes_per_task: int = 10) -> list[TaskSpec]:
+    """Partition train/test indices into disjoint incremental tasks without replay.
+
+    Args:
+        train_labels: 1D sequence of training labels.
+        test_labels: 1D sequence of test labels.
+        order: Class permutation of `0..C-1`.
+        classes_per_task: Number of new classes introduced per task.
+
+    Returns:
+        Ordered list of `TaskSpec` objects covering all tasks.
+    """
     if classes_per_task < 1 or len(order) % classes_per_task:
         raise ValueError('classes_per_task must divide number of classes')
     if sorted(order) != list(range(len(order))):
@@ -102,7 +125,8 @@ def cifar100_transforms(size: int = 224,
     from torchvision import transforms
     from torchvision.transforms import InterpolationMode
     
-    interp_mode = InterpolationMode.BICUBIC if str(interpolation).lower() == 'bicubic' else InterpolationMode.BILINEAR
+    interp_modes = {'bicubic': InterpolationMode.BICUBIC, 'lanczos': InterpolationMode.LANCZOS}
+    interp_mode = interp_modes.get(str(interpolation).lower(), InterpolationMode.BILINEAR)
     transform_list = [
         transforms.Resize((size, size), interpolation=interp_mode),
         transforms.ToTensor(),

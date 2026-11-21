@@ -1,0 +1,50 @@
+# Headline Benchmark Comparison: Official-Protocol LwF Baseline (DTD)
+# Methodology: Section IX.15 of CIFAR100_COMPLETE_WORK_REPORT.pdf (Official-Protocol LwF)
+# Reference: Li & Hoiem (TPAMI 2018), NeurIPS 2024 Table 2 (DTD), liuyuchen-cz/F-OAL @ 73e4ac1
+dataset: dtd
+dataset_source: tanganke/dtd
+data_dir: ./data
+total_classes: 47
+num_classes: 40
+classes_per_task: 4
+samples_per_class: 40
+seed: 42
+class_order_seed: 42
+stream_seed: 42
+
+agent: official_lwf
+optimizer: sgd
+learning_rate: 0.001
+momentum: 0.0
+weight_decay: 0.0
+temperature: 2.0
+batch_size: 10
+dynamic_loss_weighting: true
+full_output_head: 40
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+device: auto
+output_dir: runs/headline_dtd/lwf_official_dtd
+
+logging:
+  use_wandb: true
+  project: hcmus-foal-reproduction
+  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
+  base_url: https://api.forge.coreweave.com
+  group: headline_comparison_dtd
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 (Page 7)"
+    method: "LwF (TPAMI 2018)"
+    buffer_size: 0
+    a_avg_pct: 55.8
+    a_last_pct: 48.2
+    forgetting_pct: 12.6
