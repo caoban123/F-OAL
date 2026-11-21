@@ -1,0 +1,95 @@
+Setting up data stream
+data setup time: 0.123456
+Task: 0, Labels:[np.int64(0), np.int64(1), np.int64(2), np.int64(3)]
+Task: 1, Labels:[np.int64(4), np.int64(5), np.int64(6), np.int64(7)]
+Task: 2, Labels:[np.int64(8), np.int64(9), np.int64(10), np.int64(11)]
+Task: 3, Labels:[np.int64(12), np.int64(13), np.int64(14), np.int64(15)]
+Task: 4, Labels:[np.int64(16), np.int64(17), np.int64(18), np.int64(19)]
+Task: 5, Labels:[np.int64(20), np.int64(21), np.int64(22), np.int64(23)]
+Task: 6, Labels:[np.int64(24), np.int64(25), np.int64(26), np.int64(27)]
+Task: 7, Labels:[np.int64(28), np.int64(29), np.int64(30), np.int64(31)]
+Task: 8, Labels:[np.int64(32), np.int64(33), np.int64(34), np.int64(35)]
+Task: 9, Labels:[np.int64(36), np.int64(37), np.int64(38), np.int64(39)]
+-----------run 0 training batch 0-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 09, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 13, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 16, avg. loss: 0.000000, running train acc: 1.000
+[0.950 0.    0.    0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 1-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 09, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 13, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 16, avg. loss: 0.000000, running train acc: 1.000
+[0.925 0.931 0.    0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 2-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 09, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 13, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 16, avg. loss: 0.000000, running train acc: 1.000
+[0.869 0.894 0.912 0.    0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 3-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 09, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 13, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 16, avg. loss: 0.000000, running train acc: 1.000
+[0.856 0.863 0.906 0.887 0.    0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 4-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 0.900
+==>>> it: 05, avg. loss: 0.000000, running train acc: 0.980
+==>>> it: 09, avg. loss: 0.000000, running train acc: 0.989
+==>>> it: 13, avg. loss: 0.000000, running train acc: 0.985
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.988
+[0.863 0.869 0.912 0.875 0.894 0.    0.    0.    0.    0.   ]
+-----------run 0 training batch 5-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 0.900
+==>>> it: 05, avg. loss: 0.000000, running train acc: 0.960
+==>>> it: 09, avg. loss: 0.000000, running train acc: 0.978
+==>>> it: 13, avg. loss: 0.000000, running train acc: 0.985
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.988
+[0.831 0.856 0.856 0.850 0.887 0.744 0.    0.    0.    0.   ]
+-----------run 0 training batch 6-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 0.960
+==>>> it: 09, avg. loss: 0.000000, running train acc: 0.967
+==>>> it: 13, avg. loss: 0.000000, running train acc: 0.946
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.944
+[0.812 0.844 0.800 0.844 0.881 0.744 0.738 0.    0.    0.   ]
+-----------run 0 training batch 7-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 0.980
+==>>> it: 09, avg. loss: 0.000000, running train acc: 0.989
+==>>> it: 13, avg. loss: 0.000000, running train acc: 0.992
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.975
+[0.800 0.838 0.800 0.838 0.869 0.744 0.719 0.750 0.    0.   ]
+-----------run 0 training batch 8-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 05, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 09, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 13, avg. loss: 0.000000, running train acc: 1.000
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.994
+[0.775 0.825 0.800 0.844 0.856 0.719 0.713 0.738 0.688 0.   ]
+-----------run 0 training batch 9-------------
+size: (160, 224, 224, 3), (160,)
+==>>> it: 01, avg. loss: 0.000000, running train acc: 0.900
+==>>> it: 05, avg. loss: 0.000000, running train acc: 0.920
+==>>> it: 09, avg. loss: 0.000000, running train acc: 0.944
+==>>> it: 13, avg. loss: 0.000000, running train acc: 0.954
+==>>> it: 16, avg. loss: 0.000000, running train acc: 0.963
+[0.731 0.812 0.787 0.819 0.869 0.706 0.688 0.744 0.681 0.756]
+-----------run 0-----------avg_end_acc 0.7594-----------train time 142.07
+----------- Total 1 run: 142.07s -----------
+Records have been written

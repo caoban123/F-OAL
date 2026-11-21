@@ -19,19 +19,11 @@ import torch
 from PIL import Image
 
 from src.foal.dataset_adapters.base import BaseDatasetAdapter
+from src.foal.dtd_datasets import DTD_CLASS_NAMES, select_dtd_classes
 
 
-# Official 47 texture classes in torchvision / DTD
-DTD_ALL_CLASSES = [
-    "banded", "blotchy", "braided", "bubbly", "bumpy", "chequered", "cluttered",
-    "cracked", "crosshatched", "crystalline", "damask", "delicate", "dotted",
-    "fibrous", "flecked", "freckled", "frilly", "gauzy", "grid", "grooved",
-    "honeycombed", "interlaced", "knitted", "lacelike", "liney", "marbled",
-    "matted", "meshed", "paisley", "perforated", "pitted", "pleated",
-    "polka-dotted", "porous", "potholed", "scaly", "smeared", "smudgy",
-    "speckled", "spotted", "sprinkled", "striped", "studded", "swirly",
-    "veined", "waffled", "woven",
-]
+# Official 47 texture classes aligned identically with src/foal/dtd_datasets.py (tanganke/dtd & torchvision DTD)
+DTD_ALL_CLASSES = list(DTD_CLASS_NAMES)
 
 
 class MockImageSource:
@@ -92,6 +84,7 @@ class DTDAdapter(BaseDatasetAdapter):
         seed: int = 42,
         num_classes: int = 40,
         classes_per_task: int = 4,
+        samples_per_class: int | None = 40,
         data_root: str | Path = "./data",
         use_mock: bool = False,
     ):
@@ -105,8 +98,14 @@ class DTDAdapter(BaseDatasetAdapter):
             data_root=data_root,
         )
         self.use_mock = use_mock
-        # First 40 classes selected deterministically
-        self.selected_classes = DTD_ALL_CLASSES[:self.num_classes]
+        self.samples_per_class = samples_per_class
+        # Select classes using the exact same seeded selector as src/foal/dtd_datasets.py
+        self.selected_class_indices = select_dtd_classes(
+            num_classes_to_use=self.num_classes,
+            total_classes=len(DTD_ALL_CLASSES),
+            seed=self.seed,
+        )
+        self.selected_classes = [DTD_ALL_CLASSES[i] for i in self.selected_class_indices]
 
     def load_raw_dataset(self) -> Tuple[Any, Any, Sequence[int], Sequence[int]]:
         """Load DTD dataset or generate mock source if offline/mock requested."""
@@ -118,8 +117,11 @@ class DTDAdapter(BaseDatasetAdapter):
             tv_train = DTD(root=str(self.data_root), split="train", download=True)
             tv_test = DTD(root=str(self.data_root), split="test", download=True)
 
-            # Map raw DTD class index to [0, num_classes-1]
-            raw_to_mapped = {i: i for i in range(self.num_classes)}
+            # Map selected raw DTD class indices to [0, num_classes-1]
+            raw_to_mapped = {
+                orig_cls: mapped_idx
+                for mapped_idx, orig_cls in enumerate(self.selected_class_indices)
+            }
             train_src = TorchvisionDTDWrapper(tv_train, raw_to_mapped)
             test_src = TorchvisionDTDWrapper(tv_test, raw_to_mapped)
             return train_src, test_src, train_src.fine_label, test_src.fine_label
@@ -129,13 +131,14 @@ class DTDAdapter(BaseDatasetAdapter):
             return self._create_mock_dataset()
 
     def _create_mock_dataset(self) -> Tuple[Any, Any, Sequence[int], Sequence[int]]:
-        """Create deterministic mock dataset: 40 train & 40 test samples per selected class."""
-        samples_per_class = 40
+        """Create deterministic mock dataset: samples_per_class (default 40) train & 40 test samples."""
+        train_spc = self.samples_per_class if self.samples_per_class is not None else 40
+        test_spc = 40
         train_labels = []
         test_labels = []
         for c in range(self.num_classes):
-            train_labels.extend([c] * samples_per_class)
-            test_labels.extend([c] * samples_per_class)
+            train_labels.extend([c] * train_spc)
+            test_labels.extend([c] * test_spc)
 
         train_src = MockImageSource(len(train_labels), train_labels)
         test_src = MockImageSource(len(test_labels), test_labels)

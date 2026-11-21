@@ -4,23 +4,27 @@ Directly mirrors the official F-OAL implementation:
   Repository: https://github.com/liuyuchen-cz/F-OAL @ 73e4ac1
   Files: agents/lwf.py, utils/kd_manager.py, agents/base.py, general_main.py
 
-Key Protocol Attributes (NeurIPS 2024 Table 2 Parity):
-  1. Static 100-class output space (nn.Linear(feature_dim, num_classes)).
-  2. Optimizer: Pure SGD (lr=0.001, momentum=0.0, weight_decay=0.0).
+Section IX.15 Key Protocol Attributes (NeurIPS 2024 Table 2 Parity):
+  1. Static full-class output head (nn.Linear(feature_dim, total_classes) — 40 for DTD, 100 for CIFAR-100).
+  2. Pure SGD optimizer (lr=0.001, momentum=0.0, weight_decay=0.0).
   3. Dynamic task-weighted loss formulation:
        L_total = (1 / (t + 1)) * L_new + (1 - 1 / (t + 1)) * L_old
-  4. Full-spectrum Knowledge Distillation over all 100 output logits with T=2.0.
+  4. Full-spectrum Knowledge Distillation over all output logits with T=2.0.
 """
 from __future__ import annotations
+
 import copy
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
 
-def official_loss_fn_kd(scores: torch.Tensor, target_scores: torch.Tensor, temperature: float = 2.0) -> torch.Tensor:
+def official_loss_fn_kd(
+    scores: torch.Tensor, target_scores: torch.Tensor, temperature: float = 2.0
+) -> torch.Tensor:
     """Official distillation loss matching utils/kd_manager.py:loss_fn_kd."""
     log_scores_norm = F.log_softmax(scores / temperature, dim=1)
     targets_norm = F.softmax(target_scores / temperature, dim=1)
@@ -29,7 +33,7 @@ def official_loss_fn_kd(scores: torch.Tensor, target_scores: torch.Tensor, tempe
 
 
 class OfficialLwFClassifier(nn.Module):
-    """Linear classifier head with full output dimensionality (100 classes for CIFAR-100)."""
+    """Linear classifier head with full output dimensionality (e.g., 40 for DTD, 100 for CIFAR-100)."""
 
     def __init__(self, in_features: int = 768, num_classes: int = 100):
         super().__init__()
@@ -38,7 +42,7 @@ class OfficialLwFClassifier(nn.Module):
         self.fc = nn.Linear(in_features, num_classes, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Compute linear classification logits across all 100 output classes.
+        """Compute linear classification logits across all output classes.
 
         Args:
             x: Feature tensor of shape (batch, in_features).
@@ -103,10 +107,8 @@ class OfficialLwFAgent:
         labels = labels.to(self.device)
         logits = self.model(features)
 
-        # 1. New task classification loss
         loss_new = F.cross_entropy(logits, labels)
 
-        # 2. Distillation loss from teacher snapshot
         if self.teacher_model is not None and self.task_seen > 0:
             with torch.no_grad():
                 prev_logits = self.teacher_model(features)
@@ -114,7 +116,6 @@ class OfficialLwFAgent:
         else:
             loss_old = torch.tensor(0.0, device=self.device)
 
-        # 3. Dynamic loss weighting: 1 / (t + 1) * loss_new + (1 - 1 / (t + 1)) * loss_old
         w_new = 1.0 / (self.task_seen + 1)
         w_old = 1.0 - w_new
         total_loss = w_new * loss_new + w_old * loss_old
@@ -171,8 +172,8 @@ class OfficialLwFAgent:
 
         with torch.no_grad():
             for i in range(0, total, batch_size):
-                feat_b = features[i:i + batch_size].to(self.device)
-                lbl_b = labels[i:i + batch_size].to(self.device)
+                feat_b = features[i : i + batch_size].to(self.device)
+                lbl_b = labels[i : i + batch_size].to(self.device)
                 preds = self.model(feat_b).argmax(dim=1)
                 correct += int((preds == lbl_b).sum().item())
         return correct / total

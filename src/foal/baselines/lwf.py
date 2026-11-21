@@ -1,15 +1,20 @@
-"""Learning without Forgetting (LwF) Baseline for Continual Learning.
+"""Adapted Learning without Forgetting (LwF) Baseline for Continual Learning.
 
 Reference:
   Li & Hoiem, "Learning without Forgetting", TPAMI 2018.
-  NeurIPS 2024 F-OAL Table 2 Reference on CIFAR-100:
-    A_avg = 69.3%, A_last = 64.8%, F = 1.3% (Exemplar-free, Buffer = 0)
-  Official Author Command:
-    python general_main.py --data cifar100 --cl_type nc --agent LWF --learning_rate 0.001
+  NeurIPS 2024 F-OAL Table 2 References:
+    - CIFAR-100: A_avg = 69.3%, A_last = 64.8%, F = 1.3% (Exemplar-free, Buffer = 0)
+    - DTD:       A_avg = 55.8%, A_last = 48.2%, F = 12.6% (Exemplar-free, Buffer = 0)
+  Section IX.13 Methodology (Adapted LwF):
+    - Dynamic Classifier Head: nn.Linear(768, num_classes) expanded per task
+    - Static loss weighting: L = L_CE(active classes) + 1.0 * L_KD(old classes, T = 2.0)
+    - Optimizer: AdamW (lr = 0.001, weight_decay = 1e-4)
 """
 from __future__ import annotations
+
 import copy
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -45,17 +50,16 @@ class LwFClassifier(nn.Module):
         old_bias = self.fc.bias.data
         new_fc = nn.Linear(self.in_features, new_total_classes, bias=True).to(device)
 
-        # Copy over weights for previously seen classes
         with torch.no_grad():
-            new_fc.weight.data[:self.num_classes] = old_weight
-            new_fc.bias.data[:self.num_classes] = old_bias
+            new_fc.weight.data[: self.num_classes] = old_weight
+            new_fc.bias.data[: self.num_classes] = old_bias
 
         self.fc = new_fc
         self.num_classes = new_total_classes
 
 
 class LwFAgent:
-    """Learning without Forgetting agent operating on extracted representations."""
+    """Adapted Learning without Forgetting agent operating on extracted representations."""
 
     def __init__(
         self,
@@ -90,14 +94,12 @@ class LwFAgent:
     def before_task(self, task_id: int, total_seen_classes: int) -> None:
         """Prepare agent for the next task: freeze previous snapshot and expand output head."""
         if task_id > 0:
-            # Snapshot the model right before expanding
             self.prev_model = copy.deepcopy(self.model)
             self.prev_model.eval()
             for p in self.prev_model.parameters():
                 p.requires_grad = False
             self.prev_num_classes = self.num_classes
 
-            # Expand output dimension
             self.model.expand_classes(total_seen_classes, device=self.device)
             self.num_classes = total_seen_classes
             self._init_optimizer()
@@ -113,23 +115,21 @@ class LwFAgent:
         labels = labels.to(self.device)
         logits = self.model(features)
 
-        # 1. Standard Cross-Entropy on active labels
         ce_loss = F.cross_entropy(logits, labels)
         total_loss = ce_loss
         distill_loss_val = 0.0
 
-        # 2. Knowledge Distillation on previously seen classes
         if self.prev_model is not None and self.prev_num_classes > 0:
             with torch.no_grad():
-                prev_logits = self.prev_model(features)[:, :self.prev_num_classes]
+                prev_logits = self.prev_model(features)[:, : self.prev_num_classes]
                 prev_soft_targets = F.softmax(prev_logits / self.temperature, dim=1)
 
-            curr_old_logits = logits[:, :self.prev_num_classes]
+            curr_old_logits = logits[:, : self.prev_num_classes]
             curr_log_soft = F.log_softmax(curr_old_logits / self.temperature, dim=1)
 
-            # KL divergence loss scaled by T^2
-            distill_loss = F.kl_div(curr_log_soft, prev_soft_targets, reduction="batchmean") * (self.temperature ** 2)
-            # Guard against tiny floating point inaccuracies near zero
+            distill_loss = F.kl_div(curr_log_soft, prev_soft_targets, reduction="batchmean") * (
+                self.temperature ** 2
+            )
             distill_loss = torch.clamp(distill_loss, min=0.0)
             total_loss = ce_loss + self.distill_lambda * distill_loss
             distill_loss_val = float(distill_loss.item())
@@ -167,8 +167,8 @@ class LwFAgent:
 
         with torch.no_grad():
             for i in range(0, total, batch_size):
-                feat_b = features[i:i + batch_size].to(self.device)
-                lbl_b = labels[i:i + batch_size]
+                feat_b = features[i : i + batch_size].to(self.device)
+                lbl_b = labels[i : i + batch_size]
                 preds = self.model(feat_b).argmax(dim=1).cpu()
                 correct += int((preds == lbl_b).sum())
         return correct / total

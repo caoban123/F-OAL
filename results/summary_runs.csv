@@ -1,9 +1,7 @@
 run_name,method,experiment_type,projection_init,status,seed,num_tasks,limit_train,limit_test,avg_inc_acc,last_acc,forgetting,forgetting_past_tasks,forgetting_official_code,duration_s,git_commit,device
-c1_pilot_p0_gaussian_std1,foal,PILOT,gaussian_std1,COMPLETE,42,2,100,100,0.7750,0.7700,0.0900,0.0900,0.0450,94.95,9299dc3,cpu
-c1_pilot_p1_official_uniform,foal,PILOT,official_uniform,COMPLETE,42,2,100,100,0.7900,0.7800,0.1100,0.1100,0.0550,1.36,9299dc3,cpu
-c1_pilot_p2_gaussian_matched_variance,foal,PILOT,gaussian_matched_variance,COMPLETE,42,2,100,100,0.7725,0.7750,0.0800,0.0800,0.0400,1.39,9299dc3,cpu
-foal_full_cifar100_seed42,foal,REPRODUCTION,gaussian_std1,COMPLETE,42,10,full,full,0.7933,0.7092,0.0921,0.0921,0.0829,1735.3,aad7500,cuda
+foal_full_cifar100_seed42,foal,REPRODUCTION,gaussian_std1,INCOMPLETE,42,10,full,full,N/A,N/A,N/A,N/A,N/A,1735.3,aad7500,cuda
+foal_full_dtd_seed42,foal,REPRODUCTION,official_uniform,INCOMPLETE,42,10,full,full,N/A,N/A,N/A,N/A,N/A,169.02,d1b4701,cuda
+foal_multiseed_dtd_seed123,foal,MULTI_SEED,gaussian_std1,INCOMPLETE,,10,full,full,N/A,N/A,N/A,N/A,N/A,,747b828,unknown
+foal_multiseed_dtd_seed2026,foal,MULTI_SEED,gaussian_std1,INCOMPLETE,,10,full,full,N/A,N/A,N/A,N/A,N/A,,747b828,unknown
 official_foal_cifar100_seed0,official_foal,OFFICIAL_REPRODUCTION,gaussian_std1,COMPLETE,0,10,full,full,0.9098,0.8584,0.0517,0.0517,0.0469,3056.24,73e4ac1,cuda
-smoke_test_p0,foal,PILOT,gaussian_std1,COMPLETE,42,2,100,full,0.7037,0.6865,0.0900,0.0900,0.0450,,93a95dd,cpu
-smoke_test_post_fix,foal,PILOT,gaussian_std1,COMPLETE,42,2,100,100,0.7750,0.7700,0.0900,0.0900,0.0450,,15c5147,cpu
-smoke_test_post_fix_seed42,foal,PILOT,gaussian_std1,COMPLETE,42,2,100,100,0.7750,0.7700,0.0900,0.0900,0.0450,162.31,8325faa,cpu
+official_foal_dtd_seed0,official_foal,OFFICIAL_REPRODUCTION,gaussian_std1,COMPLETE,0,10,full,full,0.8504,0.7594,0.0729,0.0729,0.0656,142.07,73e4ac1,cuda

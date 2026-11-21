@@ -1,0 +1,35 @@
+{
+  "experiment_type": "multi_seed",
+  "run_id": "MultiSeed_seed2026",
+  "seed": 2026,
+  "environment": {
+    "os": {
+      "system": "Windows",
+      "release": "11",
+      "version": "10.0.26300",
+      "machine": "AMD64",
+      "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+    },
+    "python": {
+      "version": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+      "implementation": "CPython"
+    },
+    "libraries": {
+      "torch": "2.15.0+cpu",
+      "torchvision": "0.29.2+cpu",
+      "timm": "1.0.31",
+      "datasets": "5.1.0",
+      "wandb": "0.31.0"
+    },
+    "hardware": {
+      "cuda_available": false,
+      "gpu": null,
+      "cpu_count": 12
+    },
+    "git": {
+      "commit": "747b8283536376cbaf4f180de38555fc821bd67a",
+      "branch": "main",
+      "dirty": true
+    }
+  }
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "Effect Description": "Feature Fusion Benefit (SP ON)",
+    "Symbol": "E_FF|SP",
+    "Seed 42 (pp)": "+3.0009",
+    "Seed 123 (pp)": "+2.9222",
+    "Seed 2026 (pp)": "+2.8532",
+    "Mean (pp)": "+2.9255",
+    "Std (pp)": "0.0739"
+  },
+  {
+    "Effect Description": "Feature Fusion Benefit (SP OFF)",
+    "Symbol": "E_FF|~SP",
+    "Seed 42 (pp)": "+3.2270",
+    "Seed 123 (pp)": "+4.8409",
+    "Seed 2026 (pp)": "+4.1571",
+    "Mean (pp)": "+4.0750",
+    "Std (pp)": "0.8101"
+  },
+  {
+    "Effect Description": "Smooth Projection Benefit (FF ON)",
+    "Symbol": "E_SP|FF",
+    "Seed 42 (pp)": "+7.2780",
+    "Seed 123 (pp)": "+5.3280",
+    "Seed 2026 (pp)": "+6.9935",
+    "Mean (pp)": "+6.5332",
+    "Std (pp)": "1.0534"
+  },
+  {
+    "Effect Description": "Smooth Projection Benefit (FF OFF)",
+    "Symbol": "E_SP|~FF",
+    "Seed 42 (pp)": "+7.5040",
+    "Seed 123 (pp)": "+7.2467",
+    "Seed 2026 (pp)": "+8.2974",
+    "Mean (pp)": "+7.6827",
+    "Std (pp)": "0.5476"
+  },
+  {
+    "Effect Description": "Average Feature Fusion Main Effect",
+    "Symbol": "E_FF",
+    "Seed 42 (pp)": "+3.1140",
+    "Seed 123 (pp)": "+3.8816",
+    "Seed 2026 (pp)": "+3.5051",
+    "Mean (pp)": "+3.5002",
+    "Std (pp)": "0.3838"
+  },
+  {
+    "Effect Description": "Average Smooth Projection Main Effect",
+    "Symbol": "E_SP",
+    "Seed 42 (pp)": "+7.3910",
+    "Seed 123 (pp)": "+6.2874",
+    "Seed 2026 (pp)": "+7.6454",
+    "Mean (pp)": "+7.1079",
+    "Std (pp)": "0.7219"
+  },
+  {
+    "Effect Description": "Difference-in-Differences Interaction Contrast",
+    "Symbol": "I_FFxSP_DiD",
+    "Seed 42 (pp)": "-0.2260",
+    "Seed 123 (pp)": "-1.9187",
+    "Seed 2026 (pp)": "-1.3038",
+    "Mean (pp)": "-1.1495",
+    "Std (pp)": "0.8568"
+  },
+  {
+    "Effect Description": "Half-Interaction Contrast (0.5 * I_DiD)",
+    "Symbol": "I_FFxSP_half",
+    "Seed 42 (pp)": "-0.1130",
+    "Seed 123 (pp)": "-0.9594",
+    "Seed 2026 (pp)": "-0.6519",
+    "Mean (pp)": "-0.5748",
+    "Std (pp)": "0.4284"
+  },
+  {
+    "Effect Description": "Interaction Regression Coefficient (+-1 coding)",
+    "Symbol": "beta_FFxSP",
+    "Seed 42 (pp)": "-0.0565",
+    "Seed 123 (pp)": "-0.4797",
+    "Seed 2026 (pp)": "-0.3260",
+    "Mean (pp)": "-0.2874",
+    "Std (pp)": "0.2142"
+  },
+  {
+    "Effect Description": "Joint Benefit (Full F-OAL vs Without Both)",
+    "Symbol": "Delta_full_none",
+    "Seed 42 (pp)": "+10.5050",
+    "Seed 123 (pp)": "+10.1689",
+    "Seed 2026 (pp)": "+11.1506",
+    "Mean (pp)": "+10.6082",
+    "Std (pp)": "0.4989"
+  }
+]

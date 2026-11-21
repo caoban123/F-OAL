@@ -27,6 +27,10 @@ def evaluate_checkpoint(checkpoint_path: str, device: str = 'cpu',
             )
     ckpt = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
     m = ckpt['model_config'].copy()
+    if 'backbone' in m and 'backbone_name' not in m:
+        m['backbone_name'] = m.pop('backbone')
+    m.pop('pretrained', None)
+    m.pop('pretrained_cfg', None)
     m['device'] = device
     model = FOALModel(**m, pretrained=True)
     if model.projection is not None and ckpt.get('projection_state') is not None:
@@ -34,16 +38,51 @@ def evaluate_checkpoint(checkpoint_path: str, device: str = 'cpu',
     model.classifier.load_state_dict(ckpt['classifier_state'])
     model.eval()
     
-    train, test = load_cifar100()
-    order = ckpt['class_order']
-    specs = make_task_specs(train['fine_label'], test['fine_label'], order,
-                            ckpt['config']['dataset']['classes_per_task'])
+    dataset_cfg = ckpt.get('config', {}).get('dataset', {})
+    dataset_type = dataset_cfg.get('type')
+    dataset_name = dataset_cfg.get('name', 'cifar100')
+    is_dtd = dataset_type == 'dtd' or 'dtd' in str(dataset_name).lower()
+
+    if is_dtd:
+        from src.foal.dtd_datasets import load_dtd, make_dtd_task_specs
+        train, test = load_dtd(root=dataset_cfg.get('root', './data'))
+        order = ckpt['class_order']
+        classes_per_task = dataset_cfg.get('classes_per_task', 4)
+        samples_per_class = dataset_cfg.get('samples_per_class', 40)
+        seed = int(ckpt.get('config', {}).get('seed', 42))
+        specs = make_dtd_task_specs(
+            train['fine_label'],
+            test['fine_label'],
+            order,
+            classes_per_task=classes_per_task,
+            samples_per_class=samples_per_class,
+            seed=seed,
+        )
+    else:
+        train, test = load_cifar100()
+        order = ckpt['class_order']
+        specs = make_task_specs(train['fine_label'], test['fine_label'], order,
+                                ckpt['config']['dataset']['classes_per_task'])
+
     task_number = ckpt['task_number']
     seen_specs = specs[:task_number]
     mapping = {old: new for new, old in enumerate(order)}
-    transformed = cifar100_transforms(size=ckpt['config']['dataset']['image_size'],
-                                     mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5),
-                                     interpolation='bicubic')
+    interp = dataset_cfg.get('interpolation', 'bicubic')
+    norm = dataset_cfg.get('normalize', True)
+    mean = dataset_cfg.get('mean')
+    if mean is None:
+        mean = (0.5, 0.5, 0.5)
+    std = dataset_cfg.get('std')
+    if std is None:
+        std = (0.5, 0.5, 0.5)
+
+    transformed = cifar100_transforms(
+        size=dataset_cfg.get('image_size', 224),
+        mean=tuple(mean),
+        std=tuple(std),
+        interpolation=interp,
+        normalize=norm,
+    )
     
     per_task_accuracies = []
     task_details = {}

@@ -66,6 +66,12 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         git_commit = git_commit[:7]
 
     protocol = meta.get('training_protocol', {})
+    dataset_name = (
+        protocol.get('dataset')
+        or meta.get('config', {}).get('dataset', {}).get('name')
+        or meta.get('dataset')
+        or 'cifar100'
+    )
     model_cfg = meta.get('model_config', meta.get('config', {}).get('model', {}))
     proj_meta = meta.get('projection_metadata') or {}
     proj_cfg = meta.get('config', {}).get('projection', {}) or {}
@@ -119,11 +125,11 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
     final_ckpt = run_dir / f'task_{expected_tasks:02d}.pt'
     has_final_ckpt = final_ckpt.exists() and final_ckpt.stat().st_size > 0
     if not has_final_ckpt and (method == 'official_foal' or exp_type == 'OFFICIAL_REPRODUCTION'):
-        official_csv = run_dir / 'cifar100_FOAL.csv'
+        official_csvs = list(run_dir.glob('*_FOAL.csv'))
         official_log = run_dir / 'official_stdout.log'
         has_final_ckpt = (
-            official_csv.exists()
-            and official_csv.stat().st_size > 0
+            len(official_csvs) > 0
+            and any(c.stat().st_size > 0 for c in official_csvs)
             and official_log.exists()
             and 'Records have been written' in official_log.read_text(encoding='utf-8', errors='ignore')
         )
@@ -159,6 +165,7 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         str(seed_coupling),
         str(class_order_mode),
         str(projection_init),
+        str(dataset_name),
     )
 
     return {
@@ -166,6 +173,7 @@ def load_run(run_dir: Path) -> dict[str, Any] | None:
         'run_dir': str(run_dir),
         'method': method,
         'experiment_type': exp_type,
+        'dataset': str(dataset_name),
         'status': status,
         'is_complete': is_complete,
         'seed': seed,
@@ -222,7 +230,10 @@ def compute_group_stats(runs: list[dict[str, Any]]) -> dict[str, Any]:
 
 def format_protocol_description(sig: tuple) -> str:
     """Format protocol signature into human-readable label."""
-    if len(sig) == 14:
+    dataset = 'cifar100'
+    if len(sig) >= 15:
+        method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode, p_init, dataset = sig[:15]
+    elif len(sig) == 14:
         method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode, p_init = sig
     else:
         method, exp_type, ff, sp, tasks, lim_train, lim_test, backbone, p_dim, gamma, dtype, seed_coup, order_mode = sig
@@ -231,6 +242,8 @@ def format_protocol_description(sig: tuple) -> str:
     if lim_train or lim_test:
         data_desc = f"train<={lim_train or 'all'}, test<={lim_test or 'all'}"
     desc = f"{method} | {exp_type} | {tasks} tasks ({data_desc}, D={p_dim}, gamma={gamma}, {dtype})"
+    if dataset not in ('cifar100', 'uoft-cs/cifar100'):
+        desc = f"[{dataset}] " + desc
     if not ff:
         desc += " [no_fusion]"
     if not sp:

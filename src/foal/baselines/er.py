@@ -2,17 +2,21 @@
 
 Reference:
   Chaudhry et al., "Continual Learning with Tiny Episodic Memories", ICRA 2019.
-  NeurIPS 2024 F-OAL Table 2 Reference on CIFAR-100:
-    A_avg = 90.1%, A_last = 84.6%, F = 20.7% (Replay-based, Buffer = 5000)
-  Official Author Command:
-    python general_main.py --data cifar100 --cl_type nc --agent ER --retrieve random --update random --mem_size 5000 --learning_rate 0.001
+  NeurIPS 2024 F-OAL Table 2 References:
+    - CIFAR-100: A_avg = 90.1%, A_last = 84.6%, F = 20.7% (Replay-based, Buffer = 5000)
+    - DTD:       A_avg = 73.2%, A_last = 68.1%, F = 18.5% (Replay-based, Buffer = 5000)
+  Section IX.14 Methodology (Adapted ER):
+    - Dynamic Classifier Head on frozen ViT-B/16 Feature Fusion representations (D = 768)
+    - Reservoir sampling replay buffer (capacity = 5000)
+    - Retrieves min(batch_size, len(buffer)) exemplars and concatenates with stream mini-batch
+    - Optimizer: AdamW (lr = 0.001, weight_decay = 1e-4)
 """
 from __future__ import annotations
+
 import random
-from typing import Any, Dict, List, Optional, Tuple
-import numpy as np
+from typing import Sequence, Tuple
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
@@ -41,14 +45,13 @@ class ReplayBuffer:
             self.features.append(feat_cpu)
             self.labels.append(lbl_int)
         else:
-            # Reservoir replacement probability = capacity / total_seen
             idx = self.rng.randint(0, self.total_seen)
             if idx < self.capacity:
                 self.features[idx] = feat_cpu
                 self.labels[idx] = lbl_int
         self.total_seen += 1
 
-    def add_batch(self, features: torch.Tensor, labels: torch.Tensor) -> None:
+    def add_batch(self, features: torch.Tensor, labels: torch.Tensor | Sequence[int]) -> None:
         """Add a batch of samples into the replay memory."""
         for feat, lbl in zip(features, labels):
             self.add(feat, int(lbl))
@@ -112,7 +115,6 @@ class ERAgent:
         stream_features = features.to(self.device)
         stream_labels = labels.to(self.device)
 
-        # Retrieve random exemplars from memory buffer
         if len(self.buffer) > 0:
             mem_feats, mem_labels = self.buffer.sample(len(stream_labels))
             comb_features = torch.cat([stream_features, mem_feats.to(self.device)], dim=0)
@@ -126,7 +128,6 @@ class ERAgent:
         loss.backward()
         self.optimizer.step()
 
-        # Update replay buffer with newly seen stream samples
         self.buffer.add_batch(features, labels)
 
         return {
@@ -167,8 +168,8 @@ class ERAgent:
 
         with torch.no_grad():
             for i in range(0, total, batch_size):
-                feat_b = features[i:i + batch_size].to(self.device)
-                lbl_b = labels[i:i + batch_size]
+                feat_b = features[i : i + batch_size].to(self.device)
+                lbl_b = labels[i : i + batch_size]
                 preds = self.model(feat_b).argmax(dim=1).cpu()
                 correct += int((preds == lbl_b).sum())
         return correct / total

@@ -1,0 +1,32 @@
+[
+  {
+    "key": "er",
+    "name": "headline_dtd_er_replay_buffer5000_seed42",
+    "run_id": "q6pm84ej",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q6pm84ej",
+    "a_avg_pct": 52.99570932539683,
+    "a_last_pct": 35.1875,
+    "f_past_pct": 56.18055555555556,
+    "f_code_pct": 50.5625
+  },
+  {
+    "key": "official_lwf",
+    "name": "headline_dtd_lwf_official_protocol_seed42",
+    "run_id": "0068ne1c",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0068ne1c",
+    "a_avg_pct": 15.403521825396826,
+    "a_last_pct": 5.3125,
+    "f_past_pct": 1.736111111111111,
+    "f_code_pct": 1.6874999999999993
+  },
+  {
+    "key": "adapted_lwf",
+    "name": "headline_dtd_lwf_adapted_adamw_seed42",
+    "run_id": "uga0pme6",
+    "run_url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/uga0pme6",
+    "a_avg_pct": 24.99623015873016,
+    "a_last_pct": 7.9375,
+    "f_past_pct": 85.625,
+    "f_code_pct": 77.0625
+  }
+]

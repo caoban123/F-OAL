@@ -1,0 +1,5 @@
+Method,Buffer,Paper_A_avg,Ours_A_avg,Delta_A_avg,Paper_A_last,Ours_A_last,Delta_A_last,Paper_F,Ours_F_past,Ours_F_code,Delta_F_past
+"F-OAL (Full, A0)",0,82.8,85.0838,2.2838,,76.0625,,,8.6111,7.75,
+ER (Buffer=5000),5000,73.2,52.9957,-20.2043,68.1,35.1875,-32.9125,18.5,56.1806,50.5625,37.6806
+LwF (Official Protocol),0,55.8,15.4035,-40.3965,48.2,5.3125,-42.8875,12.6,1.7361,1.6875,-10.8639
+LwF (Adapted AdamW),0,55.8,24.9962,-30.8038,48.2,7.9375,-40.2625,12.6,85.625,77.0625,73.025
