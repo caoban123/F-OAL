@@ -149,24 +149,24 @@ Under the HCMUS evaluation rubric, the team selected the **Core Scope** option:
 
 ## 7. Artifact & Evidence Manifest
 
-All final numerical artifacts and figures are versioned in [`results/headline_analysis/`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/):
+All final numerical artifacts and figures are versioned in [`results/headline_analysis/`](../results/headline_analysis/):
 
 | File | Type | Description |
 | :--- | :---: | :--- |
-| [`headline_final_metrics.csv`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_metrics.csv) | CSV | Master metrics table with feature dimension and architecture metadata. |
-| [`headline_final_metrics.json`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_metrics.json) | JSON | Machine-readable metrics with full precision float64 values. |
-| [`headline_final_paper_comparison.csv`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_paper_comparison.csv) | CSV | Comparison against NeurIPS 2024 Table 2 reference numbers with status annotations. |
-| [`headline_final_stage_accuracies.csv`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_stage_accuracies.csv) | CSV | Incremental accuracy across all 10 stages for all 4 evaluated methods. |
-| [`headline_final_task_forgetting.csv`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_task_forgetting.csv) | CSV | Catastrophic forgetting progression for Tasks 1 through 9. |
-| [`headline_final_protocol_matrix.csv`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_protocol_matrix.csv) | CSV | Matrix mapping controlled protocol dimensions across methods. |
-| [`headline_final_archive_manifest.json`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_archive_manifest.json) | JSON | SHA256 hashes of results archives. |
-| [`headline_final_evidence_manifest.json`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/headline_final_evidence_manifest.json) | JSON | Traceability manifest linking raw files to reported metrics. |
-| [`fig1_headline_final_average_accuracy.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig1_headline_final_average_accuracy.png) | Plot | Bar chart of paper vs. reproduced Average Accuracy. |
-| [`fig2_headline_final_foal_vs_baselines.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig2_headline_final_foal_vs_baselines.png) | Plot | Comparative margin of F-OAL over baselines. |
-| [`fig3_headline_final_adapted_vs_official_lwf.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig3_headline_final_adapted_vs_official_lwf.png) | Plot | Stage progression: Adapted vs. Official-Protocol LwF. |
-| [`fig4_headline_final_stage_trajectories.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig4_headline_final_stage_trajectories.png) | Plot | Complete 10-stage trajectory curves for all 4 methods. |
-| [`fig5_headline_final_last_accuracy.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig5_headline_final_last_accuracy.png) | Plot | Final Stage 10 Accuracy ($A_{\text{last}}$) comparison. |
-| [`fig6_headline_final_forgetting_comparison.png`](file:///d:/Nhập môn ML/Paper/results/headline_analysis/fig6_headline_final_forgetting_comparison.png) | Plot | Catastrophic forgetting comparison ($F_{\text{past}}$). |
+| [`headline_final_metrics.csv`](../results/headline_analysis/headline_final_metrics.csv) | CSV | Master metrics table with feature dimension and architecture metadata. |
+| [`headline_final_metrics.json`](../results/headline_analysis/headline_final_metrics.json) | JSON | Machine-readable metrics with full precision float64 values. |
+| [`headline_final_paper_comparison.csv`](../results/headline_analysis/headline_final_paper_comparison.csv) | CSV | Comparison against NeurIPS 2024 Table 2 reference numbers with status annotations. |
+| [`headline_final_stage_accuracies.csv`](../results/headline_analysis/headline_final_stage_accuracies.csv) | CSV | Incremental accuracy across all 10 stages for all 4 evaluated methods. |
+| [`headline_final_task_forgetting.csv`](../results/headline_analysis/headline_final_task_forgetting.csv) | CSV | Catastrophic forgetting progression for Tasks 1 through 9. |
+| [`headline_final_protocol_matrix.csv`](../results/headline_analysis/headline_final_protocol_matrix.csv) | CSV | Matrix mapping controlled protocol dimensions across methods. |
+| [`headline_final_archive_manifest.json`](../results/headline_analysis/headline_final_archive_manifest.json) | JSON | SHA256 hashes of results archives. |
+| [`headline_final_evidence_manifest.json`](../results/headline_analysis/headline_final_evidence_manifest.json) | JSON | Traceability manifest linking raw files to reported metrics. |
+| [`fig1_headline_final_average_accuracy.png`](../results/headline_analysis/fig1_headline_final_average_accuracy.png) | Plot | Bar chart of paper vs. reproduced Average Accuracy. |
+| [`fig2_headline_final_foal_vs_baselines.png`](../results/headline_analysis/fig2_headline_final_foal_vs_baselines.png) | Plot | Comparative margin of F-OAL over baselines. |
+| [`fig3_headline_final_adapted_vs_official_lwf.png`](../results/headline_analysis/fig3_headline_final_adapted_vs_official_lwf.png) | Plot | Stage progression: Adapted vs. Official-Protocol LwF. |
+| [`fig4_headline_final_stage_trajectories.png`](../results/headline_analysis/fig4_headline_final_stage_trajectories.png) | Plot | Complete 10-stage trajectory curves for all 4 methods. |
+| [`fig5_headline_final_last_accuracy.png`](../results/headline_analysis/fig5_headline_final_last_accuracy.png) | Plot | Final Stage 10 Accuracy ($A_{\text{last}}$) comparison. |
+| [`fig6_headline_final_forgetting_comparison.png`](../results/headline_analysis/fig6_headline_final_forgetting_comparison.png) | Plot | Catastrophic forgetting comparison ($F_{\text{past}}$). |
 
 ---
 
@@ -182,6 +182,6 @@ All final numerical artifacts and figures are versioned in [`results/headline_an
 
 The CIFAR-100 reproduction phase is concluded with documented limitations (**`CIFAR100_REPORT_READY_WITH_LIMITATIONS`**). 
 
-The team moves to multi-dataset validation under [`docs/team_parallel_dataset_plan.md`](file:///d:/Nhập môn ML/Paper/docs/team_parallel_dataset_plan.md):
+The team moves to multi-dataset validation under [`docs/team_parallel_dataset_plan.md`](../docs/team_parallel_dataset_plan.md):
 - **Member A (DTD Track):** `experiment/dtd-reproduction` (40 classes, 10 tasks $\times$ 4 classes). Test whether Smooth Projection prevents representation collapse when ViT features lack linear separability (paper reports $-11.6\text{ pp}$ drop without SP).
 - **Member B (FGVC-Aircraft Track):** `experiment/fgvcaircraft-reproduction` (100 classes, 10 tasks $\times$ 10 classes). Test fine-grained class separation under Table 4 and investigate the Section 4.4 text discrepancy ($66.2\%$ vs. $62.2\%$).

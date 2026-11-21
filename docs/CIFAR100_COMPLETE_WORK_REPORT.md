@@ -3,8 +3,8 @@
 **Dự án:** Tái hiện bài báo *"F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning"* (NeurIPS 2024)  
 **Tác giả bài báo:** Yuchen Liu, Yanan Guo, Andrew Liu, et al.  
 **Cơ sở đào tạo:** Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM (HCMUS) — Môn học: Nhập môn Học máy (Introduction to Machine Learning)  
-**Nhánh Git thực thi chính:** `experiment/headline-comparison` (commit: [`a63c059`](file:///d:/Nhập%20môn%20ML/Paper))  
-**Nhánh cơ sở ổn định trên Main:** `main` (commit: [`747b828`](file:///d:/Nhập%20môn%20ML/Paper))  
+**Nhánh Git thực thi chính:** `experiment/headline-comparison` (commit: [`a63c059`](..))  
+**Nhánh cơ sở ổn định trên Main:** `main` (commit: [`747b828`](..))  
 **Kho lưu trữ mã nguồn:** [https://github.com/caoban123/F-OAL](https://github.com/caoban123/F-OAL)  
 **Trạng thái đóng giai đoạn CIFAR-100:** **`CIFAR100_REPORT_READY_WITH_LIMITATIONS`**  
 **Hạn chế thực nghiệm cốt lõi:** Đã hoàn thành toàn bộ các lượt chạy GPU trên CIFAR-100; chính thức dừng toàn bộ thực nghiệm GPU trên tập dữ liệu này.
@@ -94,17 +94,17 @@ Quá trình nghiên cứu và tái hiện không diễn ra theo một đường 
 
 | Giai đoạn / Mốc | Thời gian (Dự kiến & Thực tế) | Git SHA / Nhánh | Động cơ & Câu hỏi Nghiên cứu | Thay đổi Triển khai & Hành động Kỹ thuật | Phát hiện Khoa học & Số liệu Kiểm chứng | Giới hạn Còn tồn tại / Bước tiếp |
 | :--- | :---: | :---: | :--- | :--- | :--- | :--- |
-| **P0 & P1.1: Khởi tạo Kiến trúc & Hạ tầng** | 30/10/2026 – 01/11/2026 | [`dfac969`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`2d272b7`](file:///d:/Nhập%20môn%20ML/Paper) (`main`) | Thiết lập khung mã nguồn sạch; kiểm tra tính đúng đắn toán học của RLS giải tích và trích xuất đặc trưng ViT. | Xây dựng `FrozenViT`, `FeatureFusion`, `SmoothProjection`, `OnlineRidgeRLS`. Viết bộ 35 unit test ban đầu. Tích hợp W&B logging. | Unit tests pass trên CPU. Pilot smoke test 2 tasks chạy ổn định, chứng minh nghiệm đóng RLS cập nhật nhất quán. | Chưa kiểm chứng hiệu năng phân loại trên toàn bộ 100 lớp CIFAR-100 với dữ liệu thực. |
-| **P1.2: Lượt chạy Full GPU Đầu tiên của Nhóm** | 01/11/2026 | [`aad7500`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`4959525`](file:///d:/Nhập%20môn%20ML/Paper) (`main`) | Đo đạc hiệu năng của mã nguồn độc lập trên toàn bộ 10 tasks CIFAR-100 (Seed 42). | Chạy notebook trên Google Colab GPU. Xuất kết quả `results/foal_full_cifar100_seed42`. | Độ chính xác trung bình đạt $\bar{A} = 79.33\%$, Last Accuracy $A_{10} = 70.95\%$. Khoảng cách so với bài báo ($91.1\%$) lên tới $-11.77\text{ pp}$. | Xuất hiện khoảng cách số liệu nghiêm trọng. Cần điều tra nguyên nhân gây sụt giảm hiệu năng. |
-| **A19 & A20: Kiểm toán Mã Nguồn Tác giả** | 02/11/2026 | [`6c23af5`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`28cda90`](file:///d:/Nhập%20môn%20ML/Paper) (`audit/official-results-verification`) | Chạy trực tiếp mã nguồn tác giả (`liuyuchen-cz/F-OAL` @ `73e4ac1`) trên cùng môi trường Colab để đối soát. | Tạo notebook chạy mã tác giả (Seed 0). Khắc phục lỗi thiếu dependency DVC `loss.py`. Đồng bộ W&B run `3eca8232`. | Mã tác giả đạt $\bar{A} = 90.98\%$, $A_{10} = 85.84\%$, khớp sát với công bố trong bài báo ($91.1\%$). | Khẳng định thuật toán F-OAL là có thật; khoảng cách nằm ở sự bất đồng trong cấu hình triển khai của nhóm. |
-| **C0: Căn chỉnh Toán học Chỉ số Đánh giá** | 02/11/2026 | [`269f05c`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/c1-projection-initialization`) | Điều tra sự khác biệt giữa công thức tính độ quên (Forgetting) trong bài báo và trong mã nguồn tác giả. | Phân tích toán học Eq. 8 (Past Forgetting) vs Eq. 9 (Code Forgetting). Viết lại module `src/foal/metrics.py` hỗ trợ song song 2 định nghĩa. | Phát hiện mã tác giả tính trung bình quên trên cả $K$ task (gán task cuối quên bằng 0), làm giá trị quên thấp hơn so với định nghĩa chuẩn (chỉ chia cho $K-1$ task cũ). | Đã giải quyết triệt để sự bất đồng toán học; đưa vào 10 bài kiểm thử đơn vị hồi quy. |
-| **C1: Khảo sát Phân phối Khởi tạo Ma trận Chiếu** | 02/11/2026 | [`269f05c`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`878c57e`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/c1-projection-initialization`) | Giả thuyết: Khởi tạo Gaussian chuẩn $\mathcal{N}(0, 1)$ trong mã nhóm làm bão hòa hàm kích hoạt phi tuyến Sigmoid. | Thiết kế đối chứng 3 biến thể: P0 (Gaussian $\sigma=1$), P1 (Uniform tác giả), P2 (Gaussian matched variance $\sigma^2 = \frac{1}{3d}$). Đo đạc chẩn đoán trên cùng batch đầu vào. | Chẩn đoán chỉ ra P0 bị bão hòa Sigmoid tới $81.03\%$, khiến gradient/thông tin bị nghẽn. P1 và P2 có mức bão hòa $0.00\%$. Full GPU: P1 đạt $83.28\%$, P2 đạt $83.37\%$, P0 đạt $79.33\%$. | Cải thiện $+3.95\text{ pp}$, nhưng vẫn còn khoảng cách $\sim 7.5\text{ pp}$ so với bài báo. |
-| **C2: Căn chỉnh Checkpoint Backbone ViT** | 02/11/2026 – 03/11/2026 | [`7c569c8`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`39f35ad`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/c2-backbone-alignment`) | Giả thuyết: Trọng số tiền huấn luyện của backbone ViT-B/16 giữa cấu hình nhóm và mã tác giả không đồng nhất. | Truy vết mã tác giả, phát hiện checkpoint thực tế là `vit_base_patch16_224.augreg2_in21k_ft_in1k` (tiền huấn luyện trên ImageNet-21k và fine-tune trên 1k), trong khi nhóm dùng `augreg_in1k`. Chạy kiểm soát C2-B0 vs C2-B1. | C2-B1 nhảy vọt lên $\bar{A} = 91.77\%$, $A_{10} = 87.43\%$, tăng tới $+8.49\text{ pp}$ so với C2-B0 ($83.28\%$). | Vượt qua kết quả bài báo. Xuất hiện vấn đề mới: Tại sao kết quả nhóm ($91.77\%$) lại cao hơn cả mã tác giả ($90.98\%$) và bài báo ($91.1\%$)? |
-| **C3: Nghiên cứu Giai thừa Tiền xử lý Hình ảnh ($2 \times 2$)** | 03/11/2026 | [`59d96ea`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`d6acd98`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/c3-preprocessing-alignment`) | Điều tra sự khác biệt trong nội suy ảnh (Bilinear vs Bicubic) và chuẩn hóa pixel (Raw $[0, 1]$ vs Normalized $[-1, 1]$). | Thiết kế giai thừa $2 \times 2$: C3-A (Bicubic, Norm), C3-B (Bilinear, Norm), C3-C (Bicubic, Raw), C3-D (Bilinear, Raw). Chạy Full GPU A100. | C3-A: $91.77\%$, C3-B: $91.39\%$, C3-C: $90.88\%$, C3-D: $90.40\%$. Phát hiện mã tác giả dùng Bilinear + Raw $[0, 1]$. Hiệu ứng chuẩn hóa làm tăng $+0.94\text{ pp}$. | Chọn C3-D ($90.40\%$) làm điểm chuẩn F-OAL Full vì bảo đảm tính trung thực tuyệt đối với giao thức của tác giả. |
-| **Table 4: Phân rã Đóng góp Kiến trúc (Ablation Study)** | 03/11/2026 | [`977982d`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`50c61ad`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/table4-ablation`) | Đánh giá mức độ đóng góp độc lập và tương tác của Feature Fusion (FF) và Smooth Projection (SP). | Chạy 4 cấu hình A0 (Full), A1 (w/o FF), A2 (w/o SP), A3 (w/o Cả hai). Tái sử dụng C3-D cho A0; chạy mới A1, A2, A3 trên Colab GPU. | A0: $90.40\%$, A1: $90.10\%$, A2: $90.38\%$, A3: $89.92\%$. Hiệu ứng chính của FF là $+0.38\text{ pp}$, SP là $+0.10\text{ pp}$. Xu hướng bảo toàn đúng bài báo (FF quan trọng hơn SP). | Mức sụt giảm trên CIFAR-100 rất nhỏ ($<0.5\text{ pp}$) do đặc trưng ViT đã phân tách tốt; cần kiểm chứng trên DTD/Aircraft. |
-| **Headline: Triển khai Adapted LwF & ER Baselines** | 03/11/2026 | [`8fb435b`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`d333705`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/headline-comparison`) | Xây dựng hai baseline đại diện cho Exemplar-Free (LwF) và Replay (ER) trên cùng backbone ViT để so sánh tiêu điểm. | Cài đặt `AdaptedLwFAgent` và `ERAgent` (buffer=5000) với AdamW. Chạy GPU Colab Tesla T4. | ER đạt $\bar{A} = 86.67\%$ (Paper: $90.1\%$). LwF sụp đổ nghiêm trọng: $\bar{A} = 29.63\%$, $A_{10} = 11.21\%$, Forgetting $94.99\%$ (Paper: $69.3\% / 64.8\% / 1.3\%$). | LwF bị recency collapse do trọng số loss cố định và tối ưu AdamW. Cần đối soát lại mã nguồn gốc của tác giả. |
-| **Official LwF: Kiểm toán Giao thức & Tái chạy GPU** | 03/11/2026 – 04/11/2026 | [`f0119bb`](file:///d:/Nhập%20môn%20ML/Paper) $\rightarrow$ [`4b3be1a`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/headline-comparison`) | Thẩm định chi tiết file `ref/official_foal/agents/lwf.py` để tìm nguyên nhân khoảng cách của baseline LwF. | Triển khai `OfficialLwFAgent`: Trọng số động $\frac{1}{t+1}$, head tĩnh 100 lớp, SGD $\text{lr}=0.001$, nhiệt độ $T=2.0$. Chạy Full GPU Colab (`foal_cifar100_official_lwf_results.zip`). | LwF đạt độ quên cực thấp: $F_{\text{past}} = 0.41\%$, $F_{\text{code}} = 0.37\%$ (Paper: $1.3\%$). Tuy nhiên, Last Accuracy chỉ đạt $23.34\%$ và $\bar{A} = 46.29\%$. Phát hiện hiện tượng Catastrophic Rigidity. | Khép lại thực nghiệm CIFAR-100. Giải thích thành công cơ chế đánh đổi Stability-Plasticity của LwF dưới luồng trực tuyến. |
-| **Kiểm toán Cuối cùng & Đóng Giai đoạn CIFAR-100** | 04/11/2026 | [`a63c059`](file:///d:/Nhập%20môn%20ML/Paper) (`experiment/headline-comparison`) | Giải quyết mâu thuẫn ghi chép số chiều đặc trưng (768 vs 1536), kiểm toán Git SHA provenance và hoàn thiện báo cáo. | Đối soát mã nguồn: Khẳng định Feature Fusion lấy trung bình 12 tầng ra $D=768$, classifier là `nn.Linear(768, 100)`. Chạy toàn bộ 104 unit test. Chuyển giao roadmap cho DTD và FGVC-Aircraft. | Xác nhận 100% tính nhất quán toán học. Trạng thái chính thức: `CIFAR100_REPORT_READY_WITH_LIMITATIONS`. Sẵn sàng tạo PR vào `main`. | Không chạy thêm GPU trên CIFAR-100. Tập trung nguồn lực sang DTD và FGVC-Aircraft. |
+| **P0 & P1.1: Khởi tạo Kiến trúc & Hạ tầng** | 30/10/2026 – 01/11/2026 | [`dfac969`](..) $\rightarrow$ [`2d272b7`](..) (`main`) | Thiết lập khung mã nguồn sạch; kiểm tra tính đúng đắn toán học của RLS giải tích và trích xuất đặc trưng ViT. | Xây dựng `FrozenViT`, `FeatureFusion`, `SmoothProjection`, `OnlineRidgeRLS`. Viết bộ 35 unit test ban đầu. Tích hợp W&B logging. | Unit tests pass trên CPU. Pilot smoke test 2 tasks chạy ổn định, chứng minh nghiệm đóng RLS cập nhật nhất quán. | Chưa kiểm chứng hiệu năng phân loại trên toàn bộ 100 lớp CIFAR-100 với dữ liệu thực. |
+| **P1.2: Lượt chạy Full GPU Đầu tiên của Nhóm** | 01/11/2026 | [`aad7500`](..) $\rightarrow$ [`4959525`](..) (`main`) | Đo đạc hiệu năng của mã nguồn độc lập trên toàn bộ 10 tasks CIFAR-100 (Seed 42). | Chạy notebook trên Google Colab GPU. Xuất kết quả `results/foal_full_cifar100_seed42`. | Độ chính xác trung bình đạt $\bar{A} = 79.33\%$, Last Accuracy $A_{10} = 70.95\%$. Khoảng cách so với bài báo ($91.1\%$) lên tới $-11.77\text{ pp}$. | Xuất hiện khoảng cách số liệu nghiêm trọng. Cần điều tra nguyên nhân gây sụt giảm hiệu năng. |
+| **A19 & A20: Kiểm toán Mã Nguồn Tác giả** | 02/11/2026 | [`6c23af5`](..) $\rightarrow$ [`28cda90`](..) (`audit/official-results-verification`) | Chạy trực tiếp mã nguồn tác giả (`liuyuchen-cz/F-OAL` @ `73e4ac1`) trên cùng môi trường Colab để đối soát. | Tạo notebook chạy mã tác giả (Seed 0). Khắc phục lỗi thiếu dependency DVC `loss.py`. Đồng bộ W&B run `3eca8232`. | Mã tác giả đạt $\bar{A} = 90.98\%$, $A_{10} = 85.84\%$, khớp sát với công bố trong bài báo ($91.1\%$). | Khẳng định thuật toán F-OAL là có thật; khoảng cách nằm ở sự bất đồng trong cấu hình triển khai của nhóm. |
+| **C0: Căn chỉnh Toán học Chỉ số Đánh giá** | 02/11/2026 | [`269f05c`](..) (`experiment/c1-projection-initialization`) | Điều tra sự khác biệt giữa công thức tính độ quên (Forgetting) trong bài báo và trong mã nguồn tác giả. | Phân tích toán học Eq. 8 (Past Forgetting) vs Eq. 9 (Code Forgetting). Viết lại module `src/foal/metrics.py` hỗ trợ song song 2 định nghĩa. | Phát hiện mã tác giả tính trung bình quên trên cả $K$ task (gán task cuối quên bằng 0), làm giá trị quên thấp hơn so với định nghĩa chuẩn (chỉ chia cho $K-1$ task cũ). | Đã giải quyết triệt để sự bất đồng toán học; đưa vào 10 bài kiểm thử đơn vị hồi quy. |
+| **C1: Khảo sát Phân phối Khởi tạo Ma trận Chiếu** | 02/11/2026 | [`269f05c`](..) $\rightarrow$ [`878c57e`](..) (`experiment/c1-projection-initialization`) | Giả thuyết: Khởi tạo Gaussian chuẩn $\mathcal{N}(0, 1)$ trong mã nhóm làm bão hòa hàm kích hoạt phi tuyến Sigmoid. | Thiết kế đối chứng 3 biến thể: P0 (Gaussian $\sigma=1$), P1 (Uniform tác giả), P2 (Gaussian matched variance $\sigma^2 = \frac{1}{3d}$). Đo đạc chẩn đoán trên cùng batch đầu vào. | Chẩn đoán chỉ ra P0 bị bão hòa Sigmoid tới $81.03\%$, khiến gradient/thông tin bị nghẽn. P1 và P2 có mức bão hòa $0.00\%$. Full GPU: P1 đạt $83.28\%$, P2 đạt $83.37\%$, P0 đạt $79.33\%$. | Cải thiện $+3.95\text{ pp}$, nhưng vẫn còn khoảng cách $\sim 7.5\text{ pp}$ so với bài báo. |
+| **C2: Căn chỉnh Checkpoint Backbone ViT** | 02/11/2026 – 03/11/2026 | [`7c569c8`](..) $\rightarrow$ [`39f35ad`](..) (`experiment/c2-backbone-alignment`) | Giả thuyết: Trọng số tiền huấn luyện của backbone ViT-B/16 giữa cấu hình nhóm và mã tác giả không đồng nhất. | Truy vết mã tác giả, phát hiện checkpoint thực tế là `vit_base_patch16_224.augreg2_in21k_ft_in1k` (tiền huấn luyện trên ImageNet-21k và fine-tune trên 1k), trong khi nhóm dùng `augreg_in1k`. Chạy kiểm soát C2-B0 vs C2-B1. | C2-B1 nhảy vọt lên $\bar{A} = 91.77\%$, $A_{10} = 87.43\%$, tăng tới $+8.49\text{ pp}$ so với C2-B0 ($83.28\%$). | Vượt qua kết quả bài báo. Xuất hiện vấn đề mới: Tại sao kết quả nhóm ($91.77\%$) lại cao hơn cả mã tác giả ($90.98\%$) và bài báo ($91.1\%$)? |
+| **C3: Nghiên cứu Giai thừa Tiền xử lý Hình ảnh ($2 \times 2$)** | 03/11/2026 | [`59d96ea`](..) $\rightarrow$ [`d6acd98`](..) (`experiment/c3-preprocessing-alignment`) | Điều tra sự khác biệt trong nội suy ảnh (Bilinear vs Bicubic) và chuẩn hóa pixel (Raw $[0, 1]$ vs Normalized $[-1, 1]$). | Thiết kế giai thừa $2 \times 2$: C3-A (Bicubic, Norm), C3-B (Bilinear, Norm), C3-C (Bicubic, Raw), C3-D (Bilinear, Raw). Chạy Full GPU A100. | C3-A: $91.77\%$, C3-B: $91.39\%$, C3-C: $90.88\%$, C3-D: $90.40\%$. Phát hiện mã tác giả dùng Bilinear + Raw $[0, 1]$. Hiệu ứng chuẩn hóa làm tăng $+0.94\text{ pp}$. | Chọn C3-D ($90.40\%$) làm điểm chuẩn F-OAL Full vì bảo đảm tính trung thực tuyệt đối với giao thức của tác giả. |
+| **Table 4: Phân rã Đóng góp Kiến trúc (Ablation Study)** | 03/11/2026 | [`977982d`](..) $\rightarrow$ [`50c61ad`](..) (`experiment/table4-ablation`) | Đánh giá mức độ đóng góp độc lập và tương tác của Feature Fusion (FF) và Smooth Projection (SP). | Chạy 4 cấu hình A0 (Full), A1 (w/o FF), A2 (w/o SP), A3 (w/o Cả hai). Tái sử dụng C3-D cho A0; chạy mới A1, A2, A3 trên Colab GPU. | A0: $90.40\%$, A1: $90.10\%$, A2: $90.38\%$, A3: $89.92\%$. Hiệu ứng chính của FF là $+0.38\text{ pp}$, SP là $+0.10\text{ pp}$. Xu hướng bảo toàn đúng bài báo (FF quan trọng hơn SP). | Mức sụt giảm trên CIFAR-100 rất nhỏ ($<0.5\text{ pp}$) do đặc trưng ViT đã phân tách tốt; cần kiểm chứng trên DTD/Aircraft. |
+| **Headline: Triển khai Adapted LwF & ER Baselines** | 03/11/2026 | [`8fb435b`](..) $\rightarrow$ [`d333705`](..) (`experiment/headline-comparison`) | Xây dựng hai baseline đại diện cho Exemplar-Free (LwF) và Replay (ER) trên cùng backbone ViT để so sánh tiêu điểm. | Cài đặt `AdaptedLwFAgent` và `ERAgent` (buffer=5000) với AdamW. Chạy GPU Colab Tesla T4. | ER đạt $\bar{A} = 86.67\%$ (Paper: $90.1\%$). LwF sụp đổ nghiêm trọng: $\bar{A} = 29.63\%$, $A_{10} = 11.21\%$, Forgetting $94.99\%$ (Paper: $69.3\% / 64.8\% / 1.3\%$). | LwF bị recency collapse do trọng số loss cố định và tối ưu AdamW. Cần đối soát lại mã nguồn gốc của tác giả. |
+| **Official LwF: Kiểm toán Giao thức & Tái chạy GPU** | 03/11/2026 – 04/11/2026 | [`f0119bb`](..) $\rightarrow$ [`4b3be1a`](..) (`experiment/headline-comparison`) | Thẩm định chi tiết file `ref/official_foal/agents/lwf.py` để tìm nguyên nhân khoảng cách của baseline LwF. | Triển khai `OfficialLwFAgent`: Trọng số động $\frac{1}{t+1}$, head tĩnh 100 lớp, SGD $\text{lr}=0.001$, nhiệt độ $T=2.0$. Chạy Full GPU Colab (`foal_cifar100_official_lwf_results.zip`). | LwF đạt độ quên cực thấp: $F_{\text{past}} = 0.41\%$, $F_{\text{code}} = 0.37\%$ (Paper: $1.3\%$). Tuy nhiên, Last Accuracy chỉ đạt $23.34\%$ và $\bar{A} = 46.29\%$. Phát hiện hiện tượng Catastrophic Rigidity. | Khép lại thực nghiệm CIFAR-100. Giải thích thành công cơ chế đánh đổi Stability-Plasticity của LwF dưới luồng trực tuyến. |
+| **Kiểm toán Cuối cùng & Đóng Giai đoạn CIFAR-100** | 04/11/2026 | [`a63c059`](..) (`experiment/headline-comparison`) | Giải quyết mâu thuẫn ghi chép số chiều đặc trưng (768 vs 1536), kiểm toán Git SHA provenance và hoàn thiện báo cáo. | Đối soát mã nguồn: Khẳng định Feature Fusion lấy trung bình 12 tầng ra $D=768$, classifier là `nn.Linear(768, 100)`. Chạy toàn bộ 104 unit test. Chuyển giao roadmap cho DTD và FGVC-Aircraft. | Xác nhận 100% tính nhất quán toán học. Trạng thái chính thức: `CIFAR100_REPORT_READY_WITH_LIMITATIONS`. Sẵn sàng tạo PR vào `main`. | Không chạy thêm GPU trên CIFAR-100. Tập trung nguồn lực sang DTD và FGVC-Aircraft. |
 
 ---
 
@@ -186,7 +186,7 @@ Sau đó, vector đặc trưng được chuẩn hóa thông qua tầng Layer Nor
 $$\mathbf{z} = \text{LayerNorm}(\bar{\mathbf{z}}) \in \mathbb{R}^{768}$$
 
 > [!IMPORTANT]
-> **Đính chính số chiều đặc trưng:** Chiều đặc trưng của $\mathbf{z}$ là **$D = 768$**, hoàn toàn bảo toàn số chiều gốc của ViT-B/16. Các suy đoán trước đây về số chiều $1536$ (do nhầm lẫn với phép nối hai tầng $768 \times 2$) đã được kiểm toán và bác bỏ hoàn toàn dựa trên mã nguồn thực tế [`src/foal/feature_fusion.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/feature_fusion.py).
+> **Đính chính số chiều đặc trưng:** Chiều đặc trưng của $\mathbf{z}$ là **$D = 768$**, hoàn toàn bảo toàn số chiều gốc của ViT-B/16. Các suy đoán trước đây về số chiều $1536$ (do nhầm lẫn với phép nối hai tầng $768 \times 2$) đã được kiểm toán và bác bỏ hoàn toàn dựa trên mã nguồn thực tế [`src/foal/feature_fusion.py`](../src/foal/feature_fusion.py).
 
 ### 4.3. Khối Chiếu Trơn Ngẫu Nhiên (Smooth Projection — SP)
 Vector đặc trưng sau khi trộn $\mathbf{z}$ được đưa qua một tầng chiếu ngẫu nhiên phi tuyến cố định để làm giàu không gian đặc trưng và tăng cường tính phân tách tuyến tính:
@@ -330,21 +330,22 @@ graph TD
 ```
 
 ### Cấu Trúc Thư Mục Chuẩn Mực của Codebase:
-- [`src/foal/models/`](file:///d:/Nhập%20môn%20ML/Paper/src/foal):
+- [`src/foal/models/`](../src/foal):
   - `backbone.py`: Lớp `FrozenViT` tải mô hình timm, đóng băng gradient và trích xuất token `[CLS]` từ 12 tầng.
   - `feature_fusion.py`: Thực hiện trung bình cộng 12 tầng đặc trưng kèm LayerNorm chuẩn hóa ($D=768$).
   - `projection.py`: Lớp `SmoothProjection` sinh ma trận ngẫu nhiên cố định $\mathbf{W}_p$ theo phân phối Uniform hoặc Gaussian và áp dụng hàm phi tuyến Sigmoid.
   - `classifier.py`: Lớp `OnlineRidgeRLS` thực hiện nghiệm đóng hồi quy Ridge đệ quy Woodbury.
-- [`src/foal/baselines/`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/baselines):
+- [`src/foal/baselines/`](../src/foal/baselines):
   - `official_lwf.py`: Lớp `OfficialLwFAgent` tái lập chính xác 100% giao thức mã nguồn tác giả (loss weighting $\frac{1}{t+1}$, head tĩnh 100 lớp, SGD, distillation $T=2.0$).
   - `er.py`: Lớp `ERAgent` thực hiện Experience Replay với reservoir sampling buffer 5000 mẫu.
-- [`src/foal/data/`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/data):
-  - `cifar100.py`: Module tải dữ liệu CIFAR-100 tự động từ torchvision, chia task và quản lý luồng streaming.
-  - `dataset_adapters.py`: Lớp cơ sở trừu tượng và các adapter dùng chung cho CIFAR-100, DTD, và FGVC-Aircraft.
-- [`src/foal/metrics.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/metrics.py): Cài đặt toán học chuẩn xác của $A_k, \bar{A}, A_K, F_{\text{past}}$ (Eq. 8) và $F_{\text{code}}$ (Eq. 9).
-- [`configs/`](file:///d:/Nhập%20môn%20ML/Paper/configs): Các file YAML cấu hình thực nghiệm độc lập cho C1, C2, C3, Table 4 và Headline baselines.
-- [`scripts/`](file:///d:/Nhập%20môn%20ML/Paper/scripts): Các script thực thi dòng lệnh (`train.py`, `train_baseline.py`, `audit_headline_results.py`, `generate_headline_final_analysis.py`).
-- [`tests/`](file:///d:/Nhập%20môn%20ML/Paper/tests): Bộ 104 bài kiểm thử tự động bao quát toàn diện.
+- [`src/foal/dataset_adapters/`](../src/foal/dataset_adapters):
+  - `base.py`: Lớp cơ sở trừu tượng dùng chung cho các adapter (chia task theo lớp, không rò rỉ dữ liệu).
+  - `dtd.py`, `fgvc_aircraft.py`: Adapter DTD (`tanganke/dtd`) và FGVC-Aircraft (`Multimodal-Fatima/FGVC_Aircraft_*`), tải từ Hugging Face.
+  - CIFAR-100 nằm ở [`src/foal/datasets.py`](../src/foal/datasets.py), tải `uoft-cs/cifar100` từ Hugging Face.
+- [`src/foal/metrics.py`](../src/foal/metrics.py): Cài đặt toán học chuẩn xác của $A_k, \bar{A}, A_K, F_{\text{past}}$ (Eq. 8) và $F_{\text{code}}$ (Eq. 9).
+- [`configs/`](../configs): Các file YAML cấu hình thực nghiệm độc lập cho C1, C2, C3, Table 4 và Headline baselines.
+- [`scripts/`](../scripts): Các script thực thi dòng lệnh (`train.py`, `train_baseline.py`, `audit_headline_results.py`, `generate_headline_final_analysis.py`).
+- [`tests/`](../tests): Bộ 104 bài kiểm thử tự động bao quát toàn diện.
 
 ---
 
@@ -380,11 +381,11 @@ Trên tập dữ liệu CIFAR-100 với $K=10$ tác vụ, hệ số co rút là 
   - Theo mã tác giả ($K=10$): $F_{\text{code}} = \frac{0.4640}{10} = \mathbf{4.6400\%}$.
 
 ### 7.3. Hành Động Kỹ Thuật và Bài Học Rút Ra
-Nhóm đã cập nhật lại module [`src/foal/metrics.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/metrics.py), cài đặt tường minh cả hai hàm:
+Nhóm đã cập nhật lại module [`src/foal/metrics.py`](../src/foal/metrics.py), cài đặt tường minh cả hai hàm:
 - `compute_past_forgetting()`: Trả về $F_{\text{past}}$ dùng để đối chiếu với văn bản bài báo.
 - `compute_official_code_forgetting()`: Trả về $F_{\text{code}}$ dùng để đối soát với file log và màn hình console của mã tác giả.
 
-Việc chuẩn hóa này được bảo vệ bởi bộ test tự động [`tests/test_metrics.py`](file:///d:/Nhập%20môn%20ML/Paper/tests/test_metrics.py), đảm bảo trong toàn bộ các báo cáo sau này, hai chỉ số này luôn được ghi chú rạch ròi, loại bỏ hoàn toàn khả năng ngộ nhận số liệu.
+Việc chuẩn hóa này được bảo vệ bởi bộ test tự động [`tests/test_metrics.py`](../tests/test_metrics.py), đảm bảo trong toàn bộ các báo cáo sau này, hai chỉ số này luôn được ghi chú rạch ròi, loại bỏ hoàn toàn khả năng ngộ nhận số liệu.
 
 ---
 
@@ -570,11 +571,11 @@ Dựa trên các phương trình phân tích phương sai thực nghiệm:
 ### 11.5. Giám Định Pháp Y Table 4 (Forensic Audit)
 Trong quá trình kiểm toán định kỳ, một vấn đề pháp y nghiêm trọng đã được phát hiện và giải quyết:
 - **Sự cố:** Một script sinh báo cáo tự động trước đây đã in ra một bảng markdown chứa các con số bị lệch pha do parse nhầm chỉ số cột trong bộ đệm.
-- **Biện pháp khắc phục:** Nhóm đã xây dựng script kiểm toán độc lập [`scripts/audit_headline_results.py`](file:///d:/Nhập%20môn%20ML/Paper/scripts/audit_headline_results.py), đọc trực tiếp ma trận $10 \times 10$ gồm đủ 55 phần tử từ các tệp `task_accuracy.csv` nguyên bản trong `results/table4_full_gpu_verified/`, tính toán lại toàn bộ giá trị theo đúng công thức giải tích.
+- **Biện pháp khắc phục:** Nhóm đã xây dựng script kiểm toán độc lập [`scripts/audit_headline_results.py`](../scripts/audit_headline_results.py), đọc trực tiếp ma trận $10 \times 10$ gồm đủ 55 phần tử từ các tệp `task_accuracy.csv` nguyên bản trong `results/table4_full_gpu_verified/`, tính toán lại toàn bộ giá trị theo đúng công thức giải tích.
 - **Kết quả:** Xác nhận 100% các con số trong Bảng $11.2$ khớp tuyệt đối với dữ liệu máy chủ Colab và log W&B, bảo đảm tính liêm chính khoa học cao nhất.
 
 ### 11.6. Mở Rộng Kiểm Chứng Multi-Seed (Seeds 42, 123, 2026)
-Để kiểm tra độ ổn định của các hiệu ứng nhỏ ở Bảng $11.2$, nhóm đã mở rộng Table 4 Ablation sang **3 seed độc lập (42, 123, 2026)** trên cùng giao thức `C3-D` (12 Full runs, báo cáo chi tiết tại [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/CIFAR100_MULTISEED_ABLATION_REPORT.md)):
+Để kiểm tra độ ổn định của các hiệu ứng nhỏ ở Bảng $11.2$, nhóm đã mở rộng Table 4 Ablation sang **3 seed độc lập (42, 123, 2026)** trên cùng giao thức `C3-D` (12 Full runs, báo cáo chi tiết tại [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](CIFAR100_MULTISEED_ABLATION_REPORT.md)):
 - **Mean ± Std ($\bar{A}$, `ddof=1`):** Full: **$90.5885 \pm 0.1619\%$** | Without FF: **$90.2257 \pm 0.1085\%$** | Without SP: **$90.5778 \pm 0.1752\%$** | Without FF & SP: **$90.1596 \pm 0.2057\%$**.
 - **Paired Within-Seed Analysis:**
   - **Feature Fusion ($\Delta\text{FF}$):** $+0.3629 \pm 0.0538\text{ pp}$ (dương ở **3/3 seeds**), khẳng định đóng góp ổn định và nhất quán.
@@ -657,7 +658,7 @@ Sự sụp đổ của Adapted LwF ($29.63\%$ so với $69.3\%$) đã thúc đ�
    Tác giả sử dụng `torch.optim.SGD(lr=0.001, momentum=0.0, weight_decay=0.0)` thay vì AdamW, triệt tiêu hoàn toàn sự tích lũy moment gây trôi dạt trọng số.
 
 ### 15.2. Triển Khai Chuẩn Giao Thức và Thực Thi Colab GPU
-Nhóm đã triển khai lớp [`OfficialLwFAgent`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/baselines/official_lwf.py) và cấu hình [`configs/headline/lwf_cifar100_official_protocol.yaml`](file:///d:/Nhập%20môn%20ML/Paper/configs/headline/lwf_cifar100_official_protocol.yaml) phản ánh chính xác 100% các cơ chế trên, chạy Full GPU Tesla T4 trong $646.35\text{s}$ (gói kết quả: `foal_cifar100_official_lwf_results.zip`).
+Nhóm đã triển khai lớp [`OfficialLwFAgent`](../src/foal/baselines/official_lwf.py) và cấu hình [`configs/headline/lwf_cifar100_official_protocol.yaml`](../configs/headline/lwf_cifar100_official_protocol.yaml) phản ánh chính xác 100% các cơ chế trên, chạy Full GPU Tesla T4 trong $646.35\text{s}$ (gói kết quả: `foal_cifar100_official_lwf_results.zip`).
 
 ### 15.3. Kết Quả Thực Nghiệm: Hiện Tượng Catastrophic Rigidity (Xơ Cứng Thảm Khốc)
 
@@ -761,8 +762,8 @@ Trong suốt vòng đời nghiên cứu CIFAR-100, nhóm đã đối mặt và v
 - **Vấn đề:** Chỉ số độ quên đo lường trên cùng một ma trận độ chính xác cho ra hai kết quả chênh lệch nhau đúng $10\%$ ($5.16\%$ so với $4.64\%$).
 - **Phát hiện:** Khi đối chiếu hàm in kết quả của mã tác giả với công thức trong Section 4 của bài báo NeurIPS 2024.
 - **Nguyên nhân gốc:** Bài báo định nghĩa $F_{\text{past}}$ chia trung bình cho $K-1$ tác vụ cũ (Eq. 8). Mã tác giả `agents/base.py` bổ sung giá trị quên $0.0$ của tác vụ hiện tại và chia cho toàn bộ $K$ tác vụ (Eq. 9).
-- **Khắc phục:** Cài đặt độc lập cả hai hàm `compute_past_forgetting` và `compute_official_code_forgetting` trong [`src/foal/metrics.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/metrics.py).
-- **Kiểm chứng:** Viết bộ test [`tests/test_metrics.py`](file:///d:/Nhập%20môn%20ML/Paper/tests/test_metrics.py) với các ma trận giả lập, xác nhận quan hệ $F_{\text{code}} = \frac{K-1}{K} F_{\text{past}}$ luôn đúng tuyệt đối với sai số $< 10^{-12}$.
+- **Khắc phục:** Cài đặt độc lập cả hai hàm `compute_past_forgetting` và `compute_official_code_forgetting` trong [`src/foal/metrics.py`](../src/foal/metrics.py).
+- **Kiểm chứng:** Viết bộ test [`tests/test_metrics.py`](../tests/test_metrics.py) với các ma trận giả lập, xác nhận quan hệ $F_{\text{code}} = \frac{K-1}{K} F_{\text{past}}$ luôn đúng tuyệt đối với sai số $< 10^{-12}$.
 - **Bài học:** Không bao giờ giả định rằng mã nguồn của tác giả cài đặt y hệt như những gì được viết trong văn bản bài báo.
 
 ### Sự cố 2: Hiện tượng bão hòa hàm kích hoạt do phương sai ma trận chiếu quá lớn (Thực nghiệm C1)
@@ -793,7 +794,7 @@ Trong suốt vòng đời nghiên cứu CIFAR-100, nhóm đã đối mặt và v
 - **Vấn đề:** Một bản thảo báo cáo trước đây in ra bảng Table 4 với các con số bị lệch pha kỳ lạ so với các file log W&B.
 - **Phát hiện:** Viết script kiểm toán pháp y đối soát trực tiếp với các file CSV ma trận task gốc.
 - **Nguyên nhân gốc:** Script parse tự động đọc nhầm chỉ số hàng/cột của các file kết quả trung gian chưa hoàn chỉnh.
-- **Khắc phục:** Xây dựng script kiểm toán toán học độc lập [`scripts/audit_headline_results.py`](file:///d:/Nhập%20môn%20ML/Paper/scripts/audit_headline_results.py), đọc ma trận 55 phần tử gốc và tính toán trực tiếp từ mảng numpy thô.
+- **Khắc phục:** Xây dựng script kiểm toán toán học độc lập [`scripts/audit_headline_results.py`](../scripts/audit_headline_results.py), đọc ma trận 55 phần tử gốc và tính toán trực tiếp từ mảng numpy thô.
 - **Kiểm chứng:** Thêm bài kiểm thử tự động so khớp checksum và giá trị số học, xác nhận các giá trị $90.40\%, 90.10\%, 90.38\%, 89.92\%$.
 - **Bài học:** Mọi báo cáo học thuật phải được truy xuất trực tiếp từ artifact dữ liệu thô, không được tin tưởng mù quáng vào các bộ tổng hợp văn bản trung gian.
 
@@ -807,7 +808,7 @@ Trong suốt vòng đời nghiên cứu CIFAR-100, nhóm đã đối mặt và v
 
 ### Sự cố 7: Mâu thuẫn tài liệu về số chiều đặc trưng (768 vs 1536 Dimensionality Myth)
 - **Vấn đề:** Một số ghi chú sơ bộ mô tả Feature Fusion tạo ra vector $1536$ chiều do nối tầng 11 và 12, mâu thuẫn với định nghĩa mô hình `nn.Linear(768, 100)`.
-- **Phát hiện:** Kiểm toán đối chiếu giữa file code [`src/foal/feature_fusion.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/feature_fusion.py) và tài liệu markdown.
+- **Phát hiện:** Kiểm toán đối chiếu giữa file code [`src/foal/feature_fusion.py`](../src/foal/feature_fusion.py) và tài liệu markdown.
 - **Nguyên nhân gốc:** Nhầm lẫn khái niệm giữa *phép nối chuỗi* (concatenation) và *phép lấy trung bình cộng* (mean averaging).
 - **Khắc phục:** Khẳng định Feature Fusion lấy trung bình 12 tầng cho ra vector shape `[batch, 768]`. Đính chính đồng bộ toàn bộ tài liệu và bảng kiểm tra.
 - **Kiểm chứng:** Chạy assert `FrozenViT.feature_dim == 768` và unit test trên tensor thực tế.
@@ -902,13 +903,13 @@ $$\text{Source Code (Git SHA)} \longrightarrow \text{Config YAML} \longrightarro
 ## 21. Quy trình Phát triển Dựa trên Nhánh Git
 
 Nhóm áp dụng mô hình phân nhánh Git chặt chẽ để bảo vệ nhánh chính:
-- Nhánh `main`: Chỉ chứa mã nguồn ổn định, đã qua kiểm toán và các bài kiểm thử đạt $100\%$. Hiện tại giữ ở commit nền [`747b828`](file:///d:/Nhập%20môn%20ML/Paper).
+- Nhánh `main`: Chỉ chứa mã nguồn ổn định, đã qua kiểm toán và các bài kiểm thử đạt $100\%$. Hiện tại giữ ở commit nền [`747b828`](..).
 - Các nhánh thực nghiệm độc lập:
   - `experiment/c1-projection-initialization`: Nghiên cứu C1.
   - `experiment/c2-backbone-alignment`: Nghiên cứu C2.
   - `experiment/c3-preprocessing-alignment`: Nghiên cứu C3.
   - `experiment/table4-ablation`: Nghiên cứu Table 4.
-  - `experiment/headline-comparison`: Nghiên cứu Headline Comparison với các baseline (nhánh hiện tại, commit [`a63c059`](file:///d:/Nhập%20môn%20ML/Paper)).
+  - `experiment/headline-comparison`: Nghiên cứu Headline Comparison với các baseline (nhánh hiện tại, commit [`a63c059`](..)).
 
 Quy tắc bất di bất dịch: **Không bao giờ tự ý merge nhánh thực nghiệm vào `main`**. Quyền merge cuối cùng thuộc về người quản trị dự án sau khi hoàn thành toàn bộ thẩm định báo cáo.
 
@@ -922,10 +923,10 @@ Dưới đây là bảng đối chiếu chi tiết giữa các tiêu chí đánh
 
 | Tiêu Chí Đề Cương HCMUS | Trạng Thái Quy Chuẩn | Mô Tả Yêu Cầu Cụ Thể | Minh Chứng Thực Tế Trong Kho Lưu Trữ | Đánh Giá Mức Độ Đạt Được |
 | :--- | :---: | :--- | :--- | :---: |
-| **Independent Re-Implementation** | `REQUIRED_BY_HCMUS` | Tự cài đặt lại mô hình từ mô tả toán học của bài báo; không sao chép nguyên trạng mã tác giả. | Toàn bộ package [`src/foal/`](file:///d:/Nhập%20môn%20ML/Paper/src/foal) được viết mới với kiến trúc module hóa sạch, docstrings đầy đủ, type annotations. | **ĐẠT 100%** |
-| **Official Code Execution & Audit** | `REQUIRED_BY_HCMUS` | Chạy mã tác giả, đối chiếu số liệu và xác định các điểm khác biệt giao thức. | Lượt chạy `ref/official_foal` (Seed 0, W&B `3eca8232`), file đối soát [`docs/headline_official_source_diff.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/headline_official_source_diff.md). | **ĐẠT 100%** |
+| **Independent Re-Implementation** | `REQUIRED_BY_HCMUS` | Tự cài đặt lại mô hình từ mô tả toán học của bài báo; không sao chép nguyên trạng mã tác giả. | Toàn bộ package [`src/foal/`](../src/foal) được viết mới với kiến trúc module hóa sạch, docstrings đầy đủ, type annotations. | **ĐẠT 100%** |
+| **Official Code Execution & Audit** | `REQUIRED_BY_HCMUS` | Chạy mã tác giả, đối chiếu số liệu và xác định các điểm khác biệt giao thức. | Lượt chạy `ref/official_foal` (Seed 0, W&B `3eca8232`), file đối soát [`docs/headline_official_source_diff.md`](headline_official_source_diff.md). | **ĐẠT 100%** |
 | **Public W&B Tracking** | `REQUIRED_BY_HCMUS` | Ghi nhận toàn bộ thực nghiệm vào một dự án W&B công khai. | Dự án `hcmus-foal-reproduction` trên máy chủ CoreWeave Forge W&B với hơn 10 runs kiểm toán. | **ĐẠT 100%** |
-| **Programmatic Data Loading** | `REQUIRED_BY_HCMUS` | Tải và tiền xử lý dữ liệu hoàn toàn tự động qua mã lệnh, không thao tác thủ công. | Module [`src/foal/data/cifar100.py`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/data/cifar100.py) và `dataset_adapters.py` tích hợp tự động torchvision. | **ĐẠT 100%** |
+| **Programmatic Data Loading** | `REQUIRED_BY_HCMUS` | Tải và tiền xử lý dữ liệu hoàn toàn tự động qua mã lệnh, không thao tác thủ công. | Module [`src/foal/datasets.py`](../src/foal/datasets.py) và [`src/foal/dataset_adapters/`](../src/foal/dataset_adapters) tải tự động từ Hugging Face. | **ĐẠT 100%** |
 | **Experiment 1: Headline Comparison** | `REQUIRED_BY_HCMUS` (Core Scope) | So sánh mô hình chính với các baseline tiêu biểu (Exemplar-Free và Replay). | Bảng so sánh Table 2 trên CIFAR-100: F-OAL ($90.40\%$) vs ER ($86.67\%$) vs Official LwF ($46.29\%$) vs Adapted LwF ($29.63\%$). | **ĐẠT 100%** |
 | **Experiment 2: Table 4 Ablation** | `CHOSEN_BY_TEAM` | Thực nghiệm chính thứ hai tự chọn: Khảo sát bóc tách thành phần kiến trúc. | Nghiên cứu Table 4 đầy đủ 4 điều kiện A0, A1, A2, A3 trên GPU A100; phân tích hiệu ứng giai thừa $2 \times 2$. | **ĐẠT 100%** |
 | **Additional Analysis: Diagnostic Studies** | `CHOSEN_BY_TEAM` | Phân tích bổ sung tự thiết kế thay thế cho các tập dữ liệu phụ. | Chuỗi thực nghiệm kiểm soát C0 (toán học), C1 (phương sai chiếu), C2 (checkpoint backbone), C3 (giai thừa tiền xử lý). | **VƯỢT CHỈ TIÊU** |
@@ -973,11 +974,11 @@ Với việc pha nghiên cứu CIFAR-100 đã chính thức khép lại trọn v
 - **Thành viên A (Track DTD — Describable Textures Dataset):**
   - Nhánh làm việc: `experiment/dtd-reproduction`.
   - Nhiệm vụ: Đánh giá Table 4 Ablation trên 40 lớp texture nhằm kiểm chứng tuyên bố của bài báo rằng việc loại bỏ Smooth Projection trên DTD sẽ gây sụt giảm nghiêm trọng tới **$11.6\text{ pp}$**.
-  - Công cụ: Sử dụng adapter chuẩn [`DTDAdapter`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/data/dataset_adapters.py#L86-L125).
+  - Công cụ: Sử dụng adapter chuẩn [`DTDAdapter`](../src/foal/dataset_adapters/dtd.py).
 - **Thành viên B (Track FGVC-Aircraft):**
   - Nhánh làm việc: `experiment/fgvcaircraft-reproduction`.
   - Nhiệm vụ: Đánh giá Table 4 Ablation trên 100 biến thể máy bay chi tiết (fine-grained), điều tra và làm rõ sự bất đồng số liệu trong chính văn bản bài báo giữa Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
-  - Công cụ: Sử dụng adapter chuẩn [`FGVCAircraftAdapter`](file:///d:/Nhập%20môn%20ML/Paper/src/foal/data/dataset_adapters.py#L128-L167).
+  - Công cụ: Sử dụng adapter chuẩn [`FGVCAircraftAdapter`](../src/foal/dataset_adapters/fgvc_aircraft.py).
 
 ---
 
@@ -1044,37 +1045,37 @@ Với việc pha nghiên cứu CIFAR-100 đã chính thức khép lại trọn v
 
 ## Phụ lục D: Biên niên sử Các Commit Git Quan trọng
 
-- [`37c7074`](file:///d:/Nhập%20môn%20ML/Paper): Khởi tạo commit đầu tiên của repository.
-- [`dfac969`](file:///d:/Nhập%20môn%20ML/Paper): Hoàn thiện triển khai P0, sửa tiền xử lý ViT và thêm bộ test suite.
-- [`aad7500`](file:///d:/Nhập%20môn%20ML/Paper): Chạy P1.2 Single-seed Full GPU đầu tiên trên Colab (đạt $79.33\%$).
-- [`28cda90`](file:///d:/Nhập%20môn%20ML/Paper): Kiểm toán A19/A20 chạy mã tác giả F-OAL (đạt $90.98\%$, W&B `3eca8232`).
-- [`269f05c`](file:///d:/Nhập%20môn%20ML/Paper): Thực hiện C0 căn chỉnh metric và triển khai C1 chẩn đoán ma trận chiếu.
-- [`878c57e`](file:///d:/Nhập%20môn%20ML/Paper): Hoàn thành thực nghiệm C1 Full GPU A100 (P1 Uniform đạt $83.28\%$).
-- [`7c569c8`](file:///d:/Nhập%20môn%20ML/Paper): Triển khai C2 chuyển đổi có kiểm soát backbone tiền huấn luyện ViT.
-- [`39f35ad`](file:///d:/Nhập%20môn%20ML/Paper): Xác minh C2 GPU, đạt bước nhảy vọt $+8.49\text{ pp}$ lên mức $91.77\%$.
-- [`59d96ea`](file:///d:/Nhập%20môn%20ML/Paper): Triển khai thực nghiệm C3 giai thừa $2 \times 2$ tiền xử lý hình ảnh.
-- [`d6acd98`](file:///d:/Nhập%20môn%20ML/Paper): Ký duyệt C3 GPU, xác lập C3-D ($90.40\%$) làm cấu hình chuẩn.
-- [`977982d`](file:///d:/Nhập%20môn%20ML/Paper): Triển khai Table 4 Ablation Study phân rã FF và SP.
-- [`50c61ad`](file:///d:/Nhập%20môn%20ML/Paper): Ký duyệt Table 4 GPU, tính toán hiệu ứng chính FF ($+0.38\text{ pp}$) và SP ($+0.10\text{ pp}$).
-- [`747b828`](file:///d:/Nhập%20môn%20ML/Paper): Merge nhánh Table 4 vào `main` (commit nền ổn định).
-- [`8fb435b`](file:///d:/Nhập%20môn%20ML/Paper): Khởi tạo nhánh `experiment/headline-comparison`, cài đặt Adapted LwF và ER.
-- [`d333705`](file:///d:/Nhập%20môn%20ML/Paper): Hoàn thành kiểm toán Headline đợt 1, phát hiện sự sụp đổ của Adapted LwF.
-- [`f0119bb`](file:///d:/Nhập%20môn%20ML/Paper): Cài đặt `OfficialLwFAgent` khớp 100% mã nguồn tác giả.
-- [`33c058b`](file:///d:/Nhập%20môn%20ML/Paper): Chuẩn bị notebook và preflight cho lượt chạy Official LwF Colab.
-- [`c3dd3f2`](file:///d:/Nhập%20môn%20ML/Paper): Commit thực thi Colab GPU, thêm test skip cho archive cũ.
-- [`4b3be1a`](file:///d:/Nhập%20môn%20ML/Paper): Tiếp nhận kết quả Official LwF GPU, phát hiện Catastrophic Rigidity.
-- [`a63c059`](file:///d:/Nhập%20môn%20ML/Paper): Đính chính số chiều 768, hoàn tất báo cáo và đóng toàn diện CIFAR-100.
+- [`37c7074`](..): Khởi tạo commit đầu tiên của repository.
+- [`dfac969`](..): Hoàn thiện triển khai P0, sửa tiền xử lý ViT và thêm bộ test suite.
+- [`aad7500`](..): Chạy P1.2 Single-seed Full GPU đầu tiên trên Colab (đạt $79.33\%$).
+- [`28cda90`](..): Kiểm toán A19/A20 chạy mã tác giả F-OAL (đạt $90.98\%$, W&B `3eca8232`).
+- [`269f05c`](..): Thực hiện C0 căn chỉnh metric và triển khai C1 chẩn đoán ma trận chiếu.
+- [`878c57e`](..): Hoàn thành thực nghiệm C1 Full GPU A100 (P1 Uniform đạt $83.28\%$).
+- [`7c569c8`](..): Triển khai C2 chuyển đổi có kiểm soát backbone tiền huấn luyện ViT.
+- [`39f35ad`](..): Xác minh C2 GPU, đạt bước nhảy vọt $+8.49\text{ pp}$ lên mức $91.77\%$.
+- [`59d96ea`](..): Triển khai thực nghiệm C3 giai thừa $2 \times 2$ tiền xử lý hình ảnh.
+- [`d6acd98`](..): Ký duyệt C3 GPU, xác lập C3-D ($90.40\%$) làm cấu hình chuẩn.
+- [`977982d`](..): Triển khai Table 4 Ablation Study phân rã FF và SP.
+- [`50c61ad`](..): Ký duyệt Table 4 GPU, tính toán hiệu ứng chính FF ($+0.38\text{ pp}$) và SP ($+0.10\text{ pp}$).
+- [`747b828`](..): Merge nhánh Table 4 vào `main` (commit nền ổn định).
+- [`8fb435b`](..): Khởi tạo nhánh `experiment/headline-comparison`, cài đặt Adapted LwF và ER.
+- [`d333705`](..): Hoàn thành kiểm toán Headline đợt 1, phát hiện sự sụp đổ của Adapted LwF.
+- [`f0119bb`](..): Cài đặt `OfficialLwFAgent` khớp 100% mã nguồn tác giả.
+- [`33c058b`](..): Chuẩn bị notebook và preflight cho lượt chạy Official LwF Colab.
+- [`c3dd3f2`](..): Commit thực thi Colab GPU, thêm test skip cho archive cũ.
+- [`4b3be1a`](..): Tiếp nhận kết quả Official LwF GPU, phát hiện Catastrophic Rigidity.
+- [`a63c059`](..): Đính chính số chiều 768, hoàn tất báo cáo và đóng toàn diện CIFAR-100.
 
 ---
 
 ## Phụ lục E: Chỉ mục Tệp Tin, Biểu đồ và Bằng chứng Pháp y
 
 1. **Báo cáo và Tài liệu Nghiên cứu:**
-   - [`docs/CIFAR100_COMPLETE_WORK_REPORT.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/CIFAR100_COMPLETE_WORK_REPORT.md): Báo cáo tổng kết toàn diện (tài liệu này).
-   - [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md): Báo cáo kiểm toán khoa học tóm lược.
-   - [`docs/cifar100_completion_checklist.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/cifar100_completion_checklist.md): Bảng kiểm tra đóng giai đoạn CIFAR-100.
-   - [`docs/experiments.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/experiments.md): Nhật ký tổng hợp toàn bộ số liệu thực nghiệm từ P0 đến Headline.
-   - [`docs/team_parallel_dataset_plan.md`](file:///d:/Nhập%20môn%20ML/Paper/docs/team_parallel_dataset_plan.md): Kế hoạch song song cho DTD và FGVC-Aircraft.
+   - [`docs/CIFAR100_COMPLETE_WORK_REPORT.md`](CIFAR100_COMPLETE_WORK_REPORT.md): Báo cáo tổng kết toàn diện (tài liệu này).
+   - [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](CIFAR100_FINAL_REPRODUCTION_REPORT.md): Báo cáo kiểm toán khoa học tóm lược.
+   - [`docs/cifar100_completion_checklist.md`](cifar100_completion_checklist.md): Bảng kiểm tra đóng giai đoạn CIFAR-100.
+   - [`docs/experiments.md`](experiments.md): Nhật ký tổng hợp toàn bộ số liệu thực nghiệm từ P0 đến Headline.
+   - [`docs/team_parallel_dataset_plan.md`](team_parallel_dataset_plan.md): Kế hoạch song song cho DTD và FGVC-Aircraft.
 2. **Biểu đồ Trực quan Hóa Chính Thức (`results/headline_analysis/`):**
    - `fig1_headline_final_task_matrices.png`: Bản đồ nhiệt (heatmap) ma trận $10 \times 10$ của cả 4 mô hình.
    - `fig2_headline_final_foal_vs_baselines.png`: Biểu đồ cột so sánh $\bar{A}, A_{10}$ và Forgetting.

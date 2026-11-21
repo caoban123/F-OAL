@@ -487,7 +487,7 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 4. **Tổng độ dịch chuyển tiền xử lý ($\Delta_{\text{total}}$):** $-1.3726\text{ pp}$ (từ $91.7742\%$ xuống $90.4016\%$).
 5. **Hội tụ với Tác giả:** Khi tiền xử lý được chuẩn hóa hoàn toàn về phía tác giả (C3-D), Last Accuracy $A_{10} = 85.73\%$ khớp gần như chính xác tuyệt đối với tác giả ($85.84\%$, độ lệch chỉ $-0.11\text{ pp}$), tỷ lệ quên $F_{10}^{\text{code}} = 4.64\%$ so với $4.69\%$ (lệch $-0.05\text{ pp}$).
 - **Nhánh thực nghiệm:** `experiment/c3-preprocessing-alignment`
-- **Colab Notebook:** [`notebooks/foal_c3_preprocessing_controlled.ipynb`](file:///d:/Nhập%20môn%20ML/Paper/notebooks/foal_c3_preprocessing_controlled.ipynb)
+- **Colab Notebook:** [`notebooks/foal_c3_preprocessing_controlled.ipynb`](../notebooks/foal_c3_preprocessing_controlled.ipynb)
 - **Thiết kế Nghiên cứu:** Mô hình Giai thừa $2 \times 2$ (Factorial Design)
   - Factor A (Nội suy không gian): Bicubic vs Bilinear
   - Factor B (Chuẩn hóa dải pixel): Normalized $[-1.0, 1.0]$ (`mean=0.5, std=0.5`) vs Raw $[0.0, 1.0]$ (`ToTensor()` only)
