@@ -51,6 +51,12 @@ results/foal_multiseed_dtd_seed2026/*.pt
 !results/foal_dtd_headline_baselines_results/
 results/foal_dtd_headline_baselines_results/**/*.pt
 !results/headline_dtd_analysis/
+!results/aircraft_ablation/
+!results/aircraft_c1_full/
+!results/aircraft_c2_full/
+!results/aircraft_c3_full/
+!results/aircraft_c1_diagnostics/
+!results/official_foal_aircraft_seed0/
 *.zip
 data/
 *.ckpt

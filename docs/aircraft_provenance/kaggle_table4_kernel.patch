@@ -1,0 +1,323 @@
+diff --git a/configs/aircraft/aircraft_a0_full.yaml b/configs/aircraft/aircraft_a0_full.yaml
+new file mode 100644
+index 0000000..64f046f
+--- /dev/null
++++ b/configs/aircraft/aircraft_a0_full.yaml
+@@ -0,0 +1,40 @@
++# FGVC-Aircraft, Table 4 condition a0_full. Paper reports 62.2%.
++# Official train/test splits; LANCZOS resize and raw [0, 1] input as in the author's Aircraft pipeline.
++class_order_seed: 42
++dataset:
++  class_order: null
++  classes_per_task: 10
++  image_size: 224
++  interpolation: lanczos
++  mean: null
++  name: fgvc_aircraft
++  normalize: false
++  num_classes: 100
++  std: null
++logging:
++  base_url: https://api.forge.coreweave.com
++  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
++  group: aircraft_table4_ablation
++  project: hcmus-foal-reproduction
++  results_dir: results
++  use_wandb: true
++model:
++  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
++  feature_fusion: true
++  gamma: 1.0
++  pretrained: true
++  projection_dim: 1000
++  projection_init: official_uniform
++  rls_dtype: float64
++  smooth_projection: true
++projection:
++  dimension: 1000
++  initialization: official_uniform
++  seed: 42
++projection_seed: 42
++seed: 42
++stream_seed: 42
++training:
++  batch_size: 10
++  device: auto
++  num_workers: 2
+diff --git a/configs/aircraft/aircraft_a1_without_ff.yaml b/configs/aircraft/aircraft_a1_without_ff.yaml
+new file mode 100644
+index 0000000..99e633f
+--- /dev/null
++++ b/configs/aircraft/aircraft_a1_without_ff.yaml
+@@ -0,0 +1,40 @@
++# FGVC-Aircraft, Table 4 condition a1_without_ff. Paper reports 60.9%.
++# Official train/test splits; LANCZOS resize and raw [0, 1] input as in the author's Aircraft pipeline.
++class_order_seed: 42
++dataset:
++  class_order: null
++  classes_per_task: 10
++  image_size: 224
++  interpolation: lanczos
++  mean: null
++  name: fgvc_aircraft
++  normalize: false
++  num_classes: 100
++  std: null
++logging:
++  base_url: https://api.forge.coreweave.com
++  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
++  group: aircraft_table4_ablation
++  project: hcmus-foal-reproduction
++  results_dir: results
++  use_wandb: true
++model:
++  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
++  feature_fusion: false
++  gamma: 1.0
++  pretrained: true
++  projection_dim: 1000
++  projection_init: official_uniform
++  rls_dtype: float64
++  smooth_projection: true
++projection:
++  dimension: 1000
++  initialization: official_uniform
++  seed: 42
++projection_seed: 42
++seed: 42
++stream_seed: 42
++training:
++  batch_size: 10
++  device: auto
++  num_workers: 2
+diff --git a/configs/aircraft/aircraft_a2_without_sp.yaml b/configs/aircraft/aircraft_a2_without_sp.yaml
+new file mode 100644
+index 0000000..fca69c2
+--- /dev/null
++++ b/configs/aircraft/aircraft_a2_without_sp.yaml
+@@ -0,0 +1,40 @@
++# FGVC-Aircraft, Table 4 condition a2_without_sp. Paper reports 58.7%.
++# Official train/test splits; LANCZOS resize and raw [0, 1] input as in the author's Aircraft pipeline.
++class_order_seed: 42
++dataset:
++  class_order: null
++  classes_per_task: 10
++  image_size: 224
++  interpolation: lanczos
++  mean: null
++  name: fgvc_aircraft
++  normalize: false
++  num_classes: 100
++  std: null
++logging:
++  base_url: https://api.forge.coreweave.com
++  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
++  group: aircraft_table4_ablation
++  project: hcmus-foal-reproduction
++  results_dir: results
++  use_wandb: true
++model:
++  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
++  feature_fusion: true
++  gamma: 1.0
++  pretrained: true
++  projection_dim: 768
++  projection_init: null
++  rls_dtype: float64
++  smooth_projection: false
++projection:
++  dimension: 768
++  initialization: null
++  seed: 42
++projection_seed: 42
++seed: 42
++stream_seed: 42
++training:
++  batch_size: 10
++  device: auto
++  num_workers: 2
+diff --git a/configs/aircraft/aircraft_a3_without_both.yaml b/configs/aircraft/aircraft_a3_without_both.yaml
+new file mode 100644
+index 0000000..48debdf
+--- /dev/null
++++ b/configs/aircraft/aircraft_a3_without_both.yaml
+@@ -0,0 +1,40 @@
++# FGVC-Aircraft, Table 4 condition a3_without_both. Paper reports 56.0%.
++# Official train/test splits; LANCZOS resize and raw [0, 1] input as in the author's Aircraft pipeline.
++class_order_seed: 42
++dataset:
++  class_order: null
++  classes_per_task: 10
++  image_size: 224
++  interpolation: lanczos
++  mean: null
++  name: fgvc_aircraft
++  normalize: false
++  num_classes: 100
++  std: null
++logging:
++  base_url: https://api.forge.coreweave.com
++  entity: caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm
++  group: aircraft_table4_ablation
++  project: hcmus-foal-reproduction
++  results_dir: results
++  use_wandb: true
++model:
++  backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
++  feature_fusion: false
++  gamma: 1.0
++  pretrained: true
++  projection_dim: 768
++  projection_init: null
++  rls_dtype: float64
++  smooth_projection: false
++projection:
++  dimension: 768
++  initialization: null
++  seed: 42
++projection_seed: 42
++seed: 42
++stream_seed: 42
++training:
++  batch_size: 10
++  device: auto
++  num_workers: 2
+diff --git a/scripts/train.py b/scripts/train.py
+index 21d9fe1..fcca7e3 100644
+--- a/scripts/train.py
++++ b/scripts/train.py
+@@ -32,6 +32,7 @@ from src.foal.datasets import (load_cifar100, make_class_order, make_task_specs,
+ from src.foal.model import FOALModel
+ from src.foal.projection import VALID_PROJECTION_INITIALIZATIONS
+ from src.foal.metrics import summary_from_task_matrix, format_summary_percentages
++from src.foal.dataset_adapters.fgvc_aircraft import load_fgvc_aircraft
+ from src.foal.environment import get_environment_info
+ 
+ 
+@@ -266,7 +267,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
+     data_cfg = cfg['dataset']
+     model_cfg = cfg['model']
+ 
+-    train_source, test_source = load_cifar100()
++    if 'aircraft' in str(data_cfg['name']).lower():
++        train_source, test_source = load_fgvc_aircraft()
++    else:
++        train_source, test_source = load_cifar100()
+     labels_train = train_source['fine_label']
+     labels_test = test_source['fine_label']
+ 
+@@ -454,7 +458,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
+ 
+             if feature_cache_dir is not None:
+                 bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
+-                interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
++                interp_tag = interp_str if interp_str in ("bicubic", "lanczos") else "bilinear"
+                 norm_tag = "norm" if normalize_bool else "raw"
+                 ff_tag = "ff" if use_fusion else "noff"
+                 cache_prefix = (
+@@ -506,7 +510,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
+                     if previous_spec.task_id not in cached_test_sets:
+                         test_ds = IndexedImageDataset(test_source, task_test_ids, mapping, trans)
+                         bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
+-                        interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
++                        interp_tag = interp_str if interp_str in ("bicubic", "lanczos") else "bilinear"
+                         norm_tag = "norm" if normalize_bool else "raw"
+                         ff_tag = "ff" if use_fusion else "noff"
+                         cache_prefix = (
+diff --git a/src/foal/dataset_adapters/fgvc_aircraft.py b/src/foal/dataset_adapters/fgvc_aircraft.py
+index 7bb7e5d..7b63644 100644
+--- a/src/foal/dataset_adapters/fgvc_aircraft.py
++++ b/src/foal/dataset_adapters/fgvc_aircraft.py
+@@ -22,27 +22,34 @@ from src.foal.dataset_adapters.base import BaseDatasetAdapter
+ from src.foal.dataset_adapters.dtd import MockImageSource
+ 
+ 
+-class TorchvisionAircraftWrapper:
+-    """Wraps torchvision.datasets.FGVCAircraft to provide {'img': PIL, 'fine_label': int}."""
+-    def __init__(self, tv_dataset, selected_classes_map: dict[int, int]):
+-        self.dataset = tv_dataset
+-        self.selected_classes_map = selected_classes_map
+-        self.valid_indices = []
+-        self.fine_label = []
+-        for i in range(len(tv_dataset)):
+-            raw_label = int(tv_dataset._labels[i]) if hasattr(tv_dataset, "_labels") else int(tv_dataset[i][1])
+-            if raw_label in selected_classes_map:
+-                mapped_label = selected_classes_map[raw_label]
+-                self.valid_indices.append(i)
+-                self.fine_label.append(mapped_label)
+-
+-    def __len__(self) -> int:
+-        return len(self.valid_indices)
+-
+-    def __getitem__(self, idx: int) -> dict[str, Any]:
+-        real_idx = self.valid_indices[idx]
+-        img, _ = self.dataset[real_idx]
+-        return {"img": img, "fine_label": self.fine_label[idx]}
++HF_TRAIN_REPO = "Multimodal-Fatima/FGVC_Aircraft_train"
++HF_TEST_REPO = "Multimodal-Fatima/FGVC_Aircraft_test"
++EXPECTED_TRAIN, EXPECTED_TEST, EXPECTED_CLASSES = 3334, 3333, 100
++
++
++def load_fgvc_aircraft() -> Tuple[Any, Any]:
++    """Load the official FGVC-Aircraft `train` and `test` splits from Hugging Face.
++
++    The paper reports about 33 train and 33 test images per class, which is the
++    `train` split (3,334 images), not `trainval` (6,667 images).
++
++    Returns:
++        (train, test) datasets exposing the columns `img` and `fine_label`.
++
++    Raises:
++        ValueError: if the downloaded data does not match the expected sizes.
++    """
++    from datasets import load_dataset
++
++    sources = []
++    for repo, split, expected in ((HF_TRAIN_REPO, "train", EXPECTED_TRAIN), (HF_TEST_REPO, "test", EXPECTED_TEST)):
++        data = load_dataset(repo, split=split).select_columns(["image", "label"])
++        data = data.rename_columns({"image": "img", "label": "fine_label"})
++        n_classes = len(set(data["fine_label"]))
++        if len(data) != expected or n_classes != EXPECTED_CLASSES:
++            raise ValueError(f"{repo}: got {len(data)} images and {n_classes} classes")
++        sources.append(data)
++    return sources[0], sources[1]
+ 
+ 
+ class FGVCAircraftAdapter(BaseDatasetAdapter):
+@@ -82,19 +89,9 @@ class FGVCAircraftAdapter(BaseDatasetAdapter):
+         if self.use_mock:
+             return self._create_mock_dataset()
+ 
+-        try:
+-            from torchvision.datasets import FGVCAircraft
+-            # 'trainval' is standard training set in FGVCAircraft CL benchmarks
+-            tv_train = FGVCAircraft(root=str(self.data_root), split="trainval", annotation_level="variant", download=True)
+-            tv_test = FGVCAircraft(root=str(self.data_root), split="test", annotation_level="variant", download=True)
+-
+-            raw_to_mapped = {i: i for i in range(self.num_classes)}
+-            train_src = TorchvisionAircraftWrapper(tv_train, raw_to_mapped)
+-            test_src = TorchvisionAircraftWrapper(tv_test, raw_to_mapped)
+-            return train_src, test_src, train_src.fine_label, test_src.fine_label
+-        except Exception as exc:
+-            print(f"Notice: FGVC-Aircraft not found or download failed ({exc}). Falling back to MockImageSource.")
+-            return self._create_mock_dataset()
++        # No fallback to mock data: a failed download must stop the run.
++        train_src, test_src = load_fgvc_aircraft()
++        return train_src, test_src, list(train_src["fine_label"]), list(test_src["fine_label"])
+ 
+     def _create_mock_dataset(self) -> Tuple[Any, Any, Sequence[int], Sequence[int]]:
+         """Create deterministic mock dataset: ~33 train & ~33 test samples per class."""
+diff --git a/src/foal/datasets.py b/src/foal/datasets.py
+index cc6b448..222b919 100644
+--- a/src/foal/datasets.py
++++ b/src/foal/datasets.py
+@@ -102,7 +102,8 @@ def cifar100_transforms(size: int = 224,
+     from torchvision import transforms
+     from torchvision.transforms import InterpolationMode
+     
+-    interp_mode = InterpolationMode.BICUBIC if str(interpolation).lower() == 'bicubic' else InterpolationMode.BILINEAR
++    interp_modes = {'bicubic': InterpolationMode.BICUBIC, 'lanczos': InterpolationMode.LANCZOS}
++    interp_mode = interp_modes.get(str(interpolation).lower(), InterpolationMode.BILINEAR)
+     transform_list = [
+         transforms.Resize((size, size), interpolation=interp_mode),
+         transforms.ToTensor(),

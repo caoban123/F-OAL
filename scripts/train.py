@@ -33,6 +33,7 @@ from src.foal.dtd_datasets import load_dtd, make_dtd_class_order, make_dtd_task_
 from src.foal.model import FOALModel
 from src.foal.projection import VALID_PROJECTION_INITIALIZATIONS
 from src.foal.metrics import summary_from_task_matrix, format_summary_percentages
+from src.foal.dataset_adapters.fgvc_aircraft import load_fgvc_aircraft
 from src.foal.environment import get_environment_info
 
 
@@ -292,7 +293,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             samples_per_class=dtd_samples_per_class, seed=class_order_seed
         )
     else:
-        train_source, test_source = load_cifar100()
+        if 'aircraft' in dataset_name:
+            train_source, test_source = load_fgvc_aircraft()
+        else:
+            train_source, test_source = load_cifar100()
         labels_train = train_source['fine_label']
         labels_test = test_source['fine_label']
 
@@ -480,7 +484,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
             if feature_cache_dir is not None:
                 bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
-                interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
+                interp_tag = interp_str if interp_str in ("bicubic", "lanczos") else "bilinear"
                 norm_tag = "norm" if normalize_bool else "raw"
                 ff_tag = "ff" if use_fusion else "noff"
                 cache_prefix = (
@@ -532,7 +536,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     if previous_spec.task_id not in cached_test_sets:
                         test_ds = IndexedImageDataset(test_source, task_test_ids, mapping, trans)
                         bb_slug = model.backbone_name.replace('/', '_').replace('.', '_')
-                        interp_tag = "bicubic" if interp_str == "bicubic" else "bilinear"
+                        interp_tag = interp_str if interp_str in ("bicubic", "lanczos") else "bilinear"
                         norm_tag = "norm" if normalize_bool else "raw"
                         ff_tag = "ff" if use_fusion else "noff"
                         cache_prefix = (
