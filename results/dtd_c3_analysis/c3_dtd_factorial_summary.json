@@ -1,0 +1,20 @@
+{
+  "dataset": "tanganke/dtd",
+  "num_tasks": 10,
+  "accuracies_pct": {
+    "C3-A (Bicubic, Normalized)": 85.115,
+    "C3-B (Bilinear, Normalized)": 85.128,
+    "C3-C (Bicubic, Raw)": 85.134,
+    "C3-D (Bilinear, Raw)": 85.0838
+  },
+  "effects_pp": {
+    "main_effect_interpolation_bilinear_minus_bicubic": -0.0186,
+    "main_effect_normalization_raw_minus_normalized": -0.0126,
+    "interaction_effect": -0.0631,
+    "total_effect_c3_d_minus_c3_a": -0.0312,
+    "interp_effect_in_normalized": 0.013,
+    "interp_effect_in_raw": -0.0501,
+    "norm_effect_in_bicubic": 0.019,
+    "norm_effect_in_bilinear": -0.0442
+  }
+}

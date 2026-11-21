@@ -1,0 +1,163 @@
+{
+  "created_at_utc": "2026-11-16T15:25:10.749456+00:00",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "project": "hcmus-foal-reproduction",
+  "runs_sha256": "2820ace12334d98a92858507460513eee4fab945f48ebbb84903b7d57a0a5142",
+  "runs": {
+    "c5pjewk4": {
+      "id": "c5pjewk4",
+      "name": "headline_lwf_official_protocol_seed42",
+      "state": "finished",
+      "group": "headline_comparison",
+      "job_type": null,
+      "config": {
+        "seed": 42,
+        "agent": "official_lwf",
+        "method": "LwF (Official Protocol SGD + Dynamic Loss)",
+        "dataset": "cifar100",
+        "paradigm": "Exemplar-Free Distillation",
+        "optimizer": "sgd",
+        "batch_size": 10,
+        "provenance": {
+          "verifier": "Antigravity Scientific Auditor",
+          "import_type": "posthoc_import_from_verified_colab_artifacts",
+          "source_archive": "foal_cifar100_official_lwf_results.zip"
+        },
+        "buffer_size": 0,
+        "feature_dim": 768,
+        "num_classes": 100,
+        "learning_rate": 0.001,
+        "feature_fusion": "12-block CLS average + LayerNorm (D=768)",
+        "class_order_seed": 42,
+        "classes_per_task": 10,
+        "execution_environment": {
+          "hardware": {
+            "gpu": {
+              "count": 1,
+              "capability": [
+                7,
+                5
+              ],
+              "device_name": "Tesla T4",
+              "cuda_version": "13.0",
+              "total_memory_gb": 14.56
+            },
+            "cpu_count": 2,
+            "cuda_available": true
+          },
+          "platform": "Google Colab GPU",
+          "git_commit": "c3dd3f23fbf2d8d94d481ec75daceb860190118e",
+          "archive_sha256": "2f5e67ea86b22d36e8223d8a68494dc0de0f285e015b97b9fcc29df9ccd8f0ce"
+        },
+        "provenance_remediation": {
+          "verified_seeds": {
+            "seed": 42,
+            "class_order_seed": 42
+          },
+          "training_script": "scripts/train_baseline.py",
+          "missing_evidence": {
+            "original_stdout_log": "MISSING",
+            "original_cli_command": "MISSING"
+          },
+          "verified_backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+          "verified_class_order": {
+            "class_order_seed": 42,
+            "explicit_class_order_list": "NOT_STORED_IN_SUMMARY_JSON (deterministic via make_class_order(100, 42))"
+          },
+          "source_worktree_dirty": true,
+          "source_commit_evidence": "recorded_in_original_summary",
+          "verified_preprocessing": {
+            "size": 224,
+            "normalize": false,
+            "interpolation": "bilinear"
+          },
+          "source_code_base_commit": "c3dd3f23fbf2d8d94d481ec75daceb860190118e",
+          "uncommitted_diff_status": "MISSING",
+          "verified_hyperparameters": {
+            "agent": "official_lwf",
+            "momentum": 0,
+            "optimizer": "sgd",
+            "batch_size": 10,
+            "temperature": 2,
+            "weight_decay": 0,
+            "learning_rate": 0.001,
+            "feature_fusion": true,
+            "full_output_head": 100,
+            "dynamic_loss_weighting": true
+          },
+          "provenance_classification": "POST_HOC_IMPORT",
+          "source_artifact_references": {
+            "files": [
+              {
+                "path": "configs/headline/lwf_cifar100_official_protocol.yaml",
+                "sha256": "4dd4a126de89a93e596dbddc1a83b586c82a3484027aa82e5593572b830cb698",
+                "size_bytes": 1150
+              },
+              {
+                "path": "results/headline_official_lwf_verified/runs/headline/lwf_official_cifar100/summary.json",
+                "sha256": "9de1f84e0a7a37042e9b334ce9af3ac514222e86f1ee1dd70237311ec497ae70",
+                "size_bytes": 4917
+              },
+              {
+                "path": "results/headline_official_lwf_verified/runs/headline/lwf_official_cifar100/task_matrix.csv",
+                "sha256": "1e5c7ca267a78f86cff486957f775184551553d8cda96efdf9db9ff43f4f0998",
+                "size_bytes": 505
+              }
+            ],
+            "archive": {
+              "sha256": "2f5e67ea86b22d36e8223d8a68494dc0de0f285e015b97b9fcc29df9ccd8f0ce",
+              "filename": "foal_cifar100_official_lwf_results.zip"
+            },
+            "bundle_sha256": "d47e57555e4b1367de0363e08aaab47ed5612557410416dd134244f721f6a628"
+          },
+          "import_script_commit_evidence": "latest_git_history_commit_for_import_script_not_runtime_verified",
+          "import_script_reference_commit": "8e977037dc3fb3e4ae231d111cf0e634deebcdee",
+          "provenance_verification_status": "VERIFIED_LOCAL_PARTIAL_ON_WANDB"
+        }
+      },
+      "summary": {
+        "average_incremental_accuracy_so_far": 46.29349206349206,
+        "comparison/average_incremental_accuracy_pct": 46.29349206349207,
+        "comparison/forgetting_past_tasks_pct": 1.2528558437610272e-16,
+        "fig2_headline_final_foal_vs_baselines": "{'path': 'media/images/fig2_headline_final_foal_vs_baselines_11_56411efd75b4dbce6e94.png', 'size': 101543, '_type': 'image-file', 'width': 2400, 'format': 'png', 'height': 1500, 'sha256': '56411efd75b4dbce6e9476ebd57abff1dd1f717a132b04270d2e3dd462f10709'}",
+        "fig3_headline_final_adapted_vs_official_lwf": "{'path': 'media/images/fig3_headline_final_adapted_vs_official_lwf_12_7c942b38b6a735b2becd.png', 'size': 239507, '_type': 'image-file', 'width': 2700, 'format': 'png', 'height': 1500, 'sha256': '7c942b38b6a735b2becdff69dfa19760bc9178bc969d22fc8ff41a11a36ed79f'}",
+        "fig6_headline_final_forgetting_comparison": "{'path': 'media/images/fig6_headline_final_forgetting_comparison_13_6cd59f98bbdac7b188ea.png', 'size': 134920, '_type': 'image-file', 'width': 2700, 'format': 'png', 'height': 1500, 'sha256': '6cd59f98bbdac7b188ea64d2bfd365225f24a63b0308f7a121171dc2a8d45ae9'}",
+        "final/average_incremental_accuracy": 46.29349206349207,
+        "final/forgetting_official_code": 0.37000000000000033,
+        "final/forgetting_past_tasks": 1.2528558437610272e-16,
+        "final/last_accuracy": 23.34,
+        "final/training_time_seconds": 646.3514009749993,
+        "final_task_accuracies/task_01": 86.4,
+        "final_task_accuracies/task_02": 79.9,
+        "final_task_accuracies/task_03": 37,
+        "final_task_accuracies/task_04": 23,
+        "final_task_accuracies/task_05": 5.8999999999999995,
+        "final_task_accuracies/task_06": 0.8999999999999999,
+        "final_task_accuracies/task_07": 0.3,
+        "final_task_accuracies/task_08": 0,
+        "final_task_accuracies/task_09": 0,
+        "final_task_accuracies/task_10": 0,
+        "stage_accuracy": 23.34,
+        "task": 10,
+        "task_accuracy_matrix": "{'path': 'media/table/task_accuracy_matrix_10_927c40ed69b4bc642601.table.json', 'size': 739, '_type': 'table-file', 'ncols': 11, 'nrows': 10, 'sha256': '927c40ed69b4bc642601c95d7ee89ac6c70eb695b80bab3d1231d5330b317290', 'log_mode': 'IMMUTABLE', 'artifact_path': 'wandb-client-artifact://arha7ighg4ean5wfabyru8kf5jga6l3gswqrhb6600g505dolm47m8avwux0z1zlwb89fza6q6vxrzbzr4dlx11jkw99dc5co63k5mc51i6d2sdd9dh213ty1bcz2mnx/task_accuracy_matrix.table.json', '_latest_artifact_path': 'wandb-client-artifact://ec79t0rsyq47r8wtevn0krxlsuf3m2e7z7lyq3vk80g9gz6yru9hh4guqpkm572emxzcwr7xtnxls12qulbqyi0s81heoh93180gbu54ikeu3dnd7h6wu9hzhvvkopdl:latest/task_accuracy_matrix.table.json'}"
+      },
+      "history_len": 13,
+      "history_sha256": "108ec4487877e09c13176e6ed342e901c77ee8eacb17118dddfacb78129b1dac",
+      "logged_artifacts": [
+        {
+          "name": "run-c5pjewk4-task_accuracy_matrix:v0",
+          "type": "run_table",
+          "version": "v0",
+          "digest": "888c3897ea7680264fc97b38305b41a2"
+        },
+        {
+          "name": "run-c5pjewk4-history:v0",
+          "type": "wandb-history",
+          "version": "v0",
+          "digest": "f09c1089558267791b4e0047b9fbf0e4"
+        }
+      ],
+      "used_artifacts": []
+    }
+  }
+}

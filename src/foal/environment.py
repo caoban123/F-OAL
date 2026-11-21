@@ -7,6 +7,11 @@ from typing import Any, Dict
 
 
 def get_git_info() -> dict[str, Any]:
+    """Collect current Git commit SHA, branch name, and dirty worktree flag.
+
+    Returns:
+        Dictionary with keys `commit`, `branch`, and `dirty`.
+    """
     info: dict[str, Any] = {'commit': None, 'branch': None, 'dirty': False}
     try:
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
@@ -23,7 +28,7 @@ def get_git_info() -> dict[str, Any]:
         pass
 
     try:
-        status = subprocess.check_output(['git', 'status', '--porcelain'],
+        status = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'],
                                          stderr=subprocess.DEVNULL, text=True).strip()
         info['dirty'] = len(status) > 0
     except (subprocess.CalledProcessError, FileNotFoundError):

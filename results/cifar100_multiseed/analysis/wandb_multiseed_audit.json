@@ -1,0 +1,143 @@
+{
+  "project": "hcmus-foal-reproduction",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "group": "cifar100_table4_multiseed",
+  "runs": [
+    {
+      "run_name": "cifar100_full_seed123",
+      "run_id": "g32wwf9a",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g32wwf9a",
+      "state": "finished",
+      "seed": 123,
+      "ablation": "full",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.67745634920637,
+      "wb_last_acc_pct": 85.7,
+      "wb_forgetting_past_pct": 6.033333333333332,
+      "artifacts": [
+        "cifar100_full_seed123_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_ff_seed123",
+      "run_id": "4lqkxf9f",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4lqkxf9f",
+      "state": "finished",
+      "seed": 123,
+      "ablation": "no_ff",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.2908531746032,
+      "wb_last_acc_pct": 85.46,
+      "wb_forgetting_past_pct": 5.855555555555555,
+      "artifacts": [
+        "cifar100_no_ff_seed123_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_sp_seed123",
+      "run_id": "q3d9rei2",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q3d9rei2",
+      "state": "finished",
+      "seed": 123,
+      "ablation": "no_sp",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.63072619047618,
+      "wb_last_acc_pct": 85.72,
+      "wb_forgetting_past_pct": 5.866666666666666,
+      "artifacts": [
+        "cifar100_no_sp_seed123_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_ff_no_sp_seed123",
+      "run_id": "cvo857q3",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/cvo857q3",
+      "state": "finished",
+      "seed": 123,
+      "ablation": "no_ff_no_sp",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.27001190476189,
+      "wb_last_acc_pct": 85.48,
+      "wb_forgetting_past_pct": 5.877777777777777,
+      "artifacts": [
+        "cifar100_no_ff_no_sp_seed123_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_full_seed2026",
+      "run_id": "9uinxzzr",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9uinxzzr",
+      "state": "finished",
+      "seed": 2026,
+      "ablation": "full",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.68649603174602,
+      "wb_last_acc_pct": 85.71,
+      "wb_forgetting_past_pct": 5.855555555555555,
+      "artifacts": [
+        "cifar100_full_seed2026_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_ff_seed2026",
+      "run_id": "0wotm3e8",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0wotm3e8",
+      "state": "finished",
+      "seed": 2026,
+      "ablation": "no_ff",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.2857380952381,
+      "wb_last_acc_pct": 85.38,
+      "wb_forgetting_past_pct": 5.666666666666667,
+      "artifacts": [
+        "cifar100_no_ff_seed2026_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_sp_seed2026",
+      "run_id": "6oxn4ioz",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6oxn4ioz",
+      "state": "finished",
+      "seed": 2026,
+      "ablation": "no_sp",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.7204761904762,
+      "wb_last_acc_pct": 85.72,
+      "wb_forgetting_past_pct": 5.9,
+      "artifacts": [
+        "cifar100_no_sp_seed2026_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    },
+    {
+      "run_name": "cifar100_no_ff_no_sp_seed2026",
+      "run_id": "w0e0h1od",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/w0e0h1od",
+      "state": "finished",
+      "seed": 2026,
+      "ablation": "no_ff_no_sp",
+      "git_commit": "d7ef0974e381e75bf0175caf11fb3096c37b7c3e",
+      "history_rows": 10,
+      "wb_avg_inc_acc_pct": 90.28652777777776,
+      "wb_last_acc_pct": 85.48,
+      "wb_forgetting_past_pct": 5.377777777777778,
+      "artifacts": [
+        "cifar100_no_ff_no_sp_seed2026_results:v0"
+      ],
+      "matches_zip_artifacts": true
+    }
+  ]
+}

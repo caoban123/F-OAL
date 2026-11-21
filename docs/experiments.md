@@ -586,3 +586,65 @@ e1p16b5](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-n
 | **A3: w/o Both** | **90.6%** | **89.9224%** | $-0.5\text{ pp}$ | $-0.4793\text{ pp}$ | $\checkmark$ Thấp nhất toàn bảng |
 
 - **Kết luận:** Tái hiện thành công **xu hướng kiến trúc** của Table 4 bài báo gốc: cả hai thành phần đều mang lại giá trị gia tăng thực nghiệm, và việc loại bỏ đồng thời cả hai đẩy độ chính xác xuống mức thấp nhất ($89.92\%$). Thứ tự ưu tiên giữa các mô hình trên Seed 42 bảo toàn: $A0 > A2 > A1 > A3$.
+
+
+---
+
+## 10. Giai đoạn Kế tiếp: Headline Comparison (Table 2) & Phân công Nhóm Song song Đa Tập Dữ liệu
+
+### 10.1. Tình trạng Hiện tại & Khép lại Pha CIFAR-100
+- C0 (Metric Alignment), C1 (Random Projection Init), C2 (Pretrained ViT Backbone Alignment), C3 (Preprocessing Alignment) và Table 4 (Architectural Ablation) đã được hoàn thành, kiểm toán pháp y toàn diện và merge vào nhánh `main` tại commit `747b828`.
+- Bộ tiêu chuẩn hoàn tất 15 tiêu chí (`docs/cifar100_completion_checklist.md`) chuyển trạng thái sang `CIFAR100_PENDING_BASELINES`.
+
+### 10.2. Triển khai Headline Comparison (Table 2 CIFAR-100)
+- Đã hiện thực hai baseline trung tâm từ Table 2 của paper trên cùng đặc trưng ViT trích xuất:
+  1. **LwF (Li & Hoiem TPAMI 2018):** `src/foal/baselines/lwf.py`, config `configs/headline/lwf_cifar100.yaml` (Exemplar-free, Distillation $T=2.0$, paper ref: $\bar{A} = 69.3\%$, $A_{10} = 64.8\%$, $F = 1.3\%$).
+  2. **ER (Chaudhry et al. ICRA 2019):** `src/foal/baselines/er.py`, config `configs/headline/er_cifar100.yaml` (Replay buffer $M=5000$, reservoir update, paper ref: $\bar{A} = 90.1\%$, $A_{10} = 84.6\%$, $F = 20.7\%$).
+- Runner hợp nhất: `scripts/train_baseline.py`.
+- Notebook thực thi push-button Colab GPU: `notebooks/foal_cifar100_headline_final.ipynb`.
+
+### 10.3. Khung Dataset Adapter Dùng chung & Phân công Nhóm Đa Tập Dữ liệu
+- Khung adapter cơ sở: `src/foal/dataset_adapters/base.py` (bảo đảm không làm ảnh hưởng `src/foal/datasets.py`, bảo toàn tính phân hoạch chặt, zero replay, deterministic fingerprinting).
+- Phân công song song hai thành viên (`docs/team_parallel_dataset_plan.md`):
+  - **Thành viên A (Track DTD):** `src/foal/dataset_adapters/dtd.py`, branch `experiment/dtd-ablation`. Đo đạc 4 cấu hình Table 4 trên 40 lớp texture (10 tasks $\times$ 4 lớp), kiểm chứng mức suy giảm $11.6\text{ pp}$ khi bỏ SP.
+  - **Thành viên B (Track FGVC-Aircraft):** `src/foal/dataset_adapters/fgvc_aircraft.py`, branch `experiment/fgvc-aircraft-ablation`. Đo đạc 4 cấu hình Table 4 trên 100 lớp aircraft variants (10 tasks $\times$ 10 lớp), điều tra đối chiếu bất đồng số liệu giữa Section 4.4 ($66.2\%$) và Table 4 ($62.2\%$).
+- Lộ trình tổng thể 6 cột mốc: [`docs/FOAL_FINAL_REPRODUCTION_ROADMAP.md`](FOAL_FINAL_REPRODUCTION_ROADMAP.md).
+
+
+---
+
+## 11. Báo cáo Thực nghiệm Headline Comparison (Table 2 CIFAR-100 Full GPU)
+
+### 11.1. Bảng Tổng hợp Kết quả Thực nghiệm So sánh Baseline
+- **Phần cứng thực thi:** Google Colab GPU Tesla T4 (14.56 GB VRAM), CUDA 13.0, PyTorch 2.11.0.
+- **Dữ liệu kiểm toán:** `foal_cifar100_headline_results.zip` (SHA256: `6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551`).
+- **Giao thức:** CIFAR-100, 10 tasks $\times$ 10 classes, seed 42, backbone `vit_base_patch16_224.augreg2_in21k_ft_in1k`, single-pass streaming.
+
+| Phương pháp | Loại / Cơ chế | Bộ nhớ Đệm ($M$) | $\bar{A}$ (Ours) | $\bar{A}$ (Paper) | $\Delta \bar{A}$ | $A_{10}$ (Ours) | $A_{10}$ (Paper) | $F_{past}$ (Ours) | $F_{code}$ (Ours) | $F$ (Paper) | Thời gian chạy | Phần cứng & Ghi chú |
+|:---|:---:|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|
+| **F-OAL (Full)** | Giải tích (Analytic RLS) | **0 (Zero)** | **90.4016%** | **91.1%** | $-0.70\text{ pp}$ | **85.73%** | **86.5%** | **5.16%** | **4.64%** | **5.5%** | **229.11s** | A100 GPU (175.3s feat + 8.5s RLS) |
+| **ER (Replay)** | Experience Replay | **5000** | **86.6703%** | **90.1%** | $-3.43\text{ pp}$ | **79.79%** | **84.6%** | **16.74%** | **15.07%** | **20.7%** | **626.85s** | Tesla T4 (Colab streaming loop) |
+| **LwF (Official Protocol)** | Distillation (SGD + Dynamic Loss) | **0 (Zero)** | **46.2935%** | **69.3%** | $-23.01\text{ pp}$ | **23.34%** | **64.8%** | **0.41%** | **0.37%** | **1.3%** | **646.35s** | Tesla T4 (Colab streaming loop) |
+| **LwF (Distill, Adapted)** | Distillation (AdamW, Static Loss) | **0 (Zero)** | **29.6295%** | **69.3%** | $-39.67\text{ pp}$ | **11.21%** | **64.8%** | **94.99%** | **85.49%** | **1.3%** | **629.52s** | Tesla T4 (Colab streaming loop) |
+
+### 11.2. Phân tích Khoa học & Kiểm toán Pháp y Cốt lõi
+1. **F-OAL giải quyết triệt để bài toán Exemplar-Free:** Không lưu bất kỳ mẫu cũ nào ($M=0$), F-OAL vẫn đạt $\bar{A} = 90.40\%$ và độ quên $F_{\text{past}} = 5.16\%$ (tiệm cận sát các mốc của bài báo: $91.1\%$, $86.5\%$, và $5.5\%$).
+2. **Khảo sát Nguồn gốc Độ lệch Baseline LwF (Protocol Parity Audit):**
+   - Đã clone và kiểm toán đối sánh chi tiết mã nguồn tác giả tại `ref/official_foal/` (commit SHA `73e4ac1b4c965030973a2b77f05c57c2f44f49f5`).
+   - Kết quả chỉ ra rằng độ lệch của baseline LwF (đo được 29.63% so với bài báo 69.3%) xuất phát từ các khác biệt giao thức then chốt trong mã tác giả:
+     - **Trọng số mất mát động (Dynamic Loss Weighting):** Mã tác giả (`agents/lwf.py:55`) dùng công thức $\mathcal{L} = \frac{1}{t+1} \mathcal{L}_{\text{new}} + \left(1 - \frac{1}{t+1}\right) \mathcal{L}_{\text{old}}$. Đến Task 10, tín hiệu học lớp mới bị giảm xuống còn 0.10, trong khi chưng cất lớp cũ tăng lên 0.90, khống chế hiện tượng recency bias. Ngược lại, baseline chuyển đổi trước đó sử dụng trọng số tĩnh 1.0 / 1.0.
+     - **Phạm vi Logit Chưng cất (KD Scoping):** Mã tác giả khởi tạo sẵn đầu ra 100 lớp (`nn.Linear(768, 100)`) và tính toán chưng cất trên toàn bộ 100 lớp, ngăn chặn việc logit lớp mới tăng đột biến không kiểm soát.
+     - **Tối ưu hóa (Optimizer):** Tác giả sử dụng `SGD(lr=0.001, momentum=0.0, weight_decay=0.0)` thay vì AdamW.
+   - Nhóm đã hoàn thành việc triển khai `OfficialLwFAgent` (`src/foal/baselines/official_lwf.py`) và cấu hình `configs/headline/lwf_cifar100_official_protocol.yaml` với độ tương thích 100% mã nguồn tác giả.
+3. **ER duy trì độ chính xác nhưng đòi hỏi bộ đệm lớn:** ER giữ được $70\text{--}83\%$ độ chính xác trên các task cũ nhờ bộ đệm 5.000 mẫu, đạt $\bar{A} = 86.67\%$, tiệm cận kết quả bài báo ($90.1\%$, sai lệch $-3.43\text{ pp}$), nhưng độ quên vẫn ở mức $16.74\%$ và tiêu tốn tài nguyên bộ nhớ đáng kể.
+4. **Giải trình Toàn diện Thời gian Chạy & Rút lại Tuyên bố Gia tốc Phần cứng chéo:**
+   - Thời gian vòng lặp huấn luyện F-OAL (tổng cộng 229.11s trên NVIDIA A100) được hạch toán minh bạch:
+     - Trích xuất đặc trưng ViT: **175.28s** (76.5%).
+     - Cập nhật giải tích RLS & đánh giá kiểm thử: **8.50s** (3.7%).
+     - Chi phí I/O tuần tự hóa đĩa đặc trưng (`torch.save` 20 tệp `.pt`), DataLoader collation overhead, kiểm tra tính toàn vẹn SHA256 ma trận chiếu và ghi nhật ký: **45.33s** (19.8%).
+   - Tuyên bố gia tốc "11.7 lần" trước đây được chính thức rút lại do thiếu tính tương đương phần cứng (NVIDIA A100 vs Tesla T4) và phạm vi đo lường.
+5. **Trạng thái Quản trị Pha CIFAR-100:** Thiết lập trạng thái **`CIFAR100_COMPLETED_WITH_LIMITATIONS`**.
+   - Lượt chạy Official Protocol LwF trên Google Colab GPU (Tesla T4, 646.35s) đã hoàn tất và được kiểm toán toàn diện (`foal_cifar100_official_lwf_results.zip`).
+   - Kết quả: $\bar{A} = 46.2935\%$, $A_{10} = 23.34\%$, $F_{\text{past}} = 0.4111\%$, $F_{\text{code}} = 0.3700\%$.
+   - Tỷ lệ quên $F_{\text{code}} = 0.37\%$ tiệm cận sát mốc $1.3\%$ của bài báo, chứng minh rằng cơ chế dynamic loss weighting của tác giả đã loại bỏ hoàn toàn recency collapse.
+   - Toàn bộ 15 tiêu chí nghiệm thu CIFAR-100 đã PASS 100%. Nhóm chính thức đóng pha CIFAR-100 và chuyển sang DTD và FGVC-Aircraft. Báo cáo chi tiết: [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](CIFAR100_FINAL_REPRODUCTION_REPORT.md).

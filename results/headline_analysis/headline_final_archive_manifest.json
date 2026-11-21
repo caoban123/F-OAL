@@ -1,0 +1,22 @@
+{
+  "historical_headline_archive": {
+    "filename": "foal_cifar100_headline_results.zip",
+    "sha256": "6ec6a4a4cadecb4e77b7704a217878356ac6f6cd4e2d72c8a78a3813cceea551",
+    "size_bytes": 191587,
+    "contains": [
+      "runs/headline/lwf",
+      "runs/headline/er"
+    ],
+    "status": "PRESERVED_HISTORICAL"
+  },
+  "official_lwf_archive": {
+    "filename": "foal_cifar100_official_lwf_results.zip",
+    "sha256": "2f5e67ea86b22d36e8223d8a68494dc0de0f285e015b97b9fcc29df9ccd8f0ce",
+    "size_bytes": 184113,
+    "contains": [
+      "runs/headline/lwf_official_cifar100",
+      "configs/headline/lwf_cifar100_official_protocol.yaml"
+    ],
+    "status": "VERIFIED_PRIMARY"
+  }
+}

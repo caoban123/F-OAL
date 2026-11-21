@@ -1,0 +1,66 @@
+# Headline Benchmark Comparison: F-OAL Full Reference (DTD)
+# Canonical verified A0 / C3-D run on DTD (results/dtd/dtd_a0_full, Seed 42, commit ca42e672)
+dataset: dtd
+dataset_source: tanganke/dtd
+data_dir: ./data
+total_classes: 47
+num_classes: 40
+classes_per_task: 4
+samples_per_class: 40
+seed: 42
+class_order_seed: 42
+stream_seed: 42
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+projection:
+  enabled: true
+  dimension: 1000
+  initialization: official_uniform
+  seed: 42
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+training:
+  batch_size: 10
+  gamma: 1.0
+  rls_dtype: float64
+  device: auto
+
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 & 4"
+    method: "F-OAL (Full)"
+    buffer_size: 0
+    a_avg_pct: 82.8
+    training_time_seconds: 8
+    other_baselines_a_avg_pct:
+      ewc: 41.2
+      lwf: 55.8
+      slca: 72.8
+      er: 73.2
+      icarl: 74.5
+      ease: 76.0
+  our_reproduced_seed42:
+    source_dir: "results/dtd/dtd_a0_full"
+    git_commit: "ca42e67265e3c6be485113216e51b488bb3775a9"
+    task_split_fingerprint_sha256: "42b13803af83abc522b7f814a6b9e450f884a4a7b675d77a0067491a72e79590"
+    a_avg_pct: 85.08382936507937
+    a_last_pct: 76.0625
+    f_past_pct: 8.611111111111109
+    f_code_pct: 7.749999999999998
+    hardware: "NVIDIA Tesla T4 (14.56 GB)"
+    total_duration_seconds: 40.4
+    feature_extraction_seconds: 38.99
+    rls_and_eval_seconds: 0.88
+  our_reproduced_3seed_mean:
+    seeds: [42, 123, 2026]
+    a_avg_mean_pct: 85.85085978835978
+    a_avg_std_pct: 0.9196022273703743
+    a_last_mean_pct: 77.3125
+    f_past_mean_pct: 8.217592592592592
+    f_code_mean_pct: 7.458333333333333

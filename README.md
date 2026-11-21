@@ -18,6 +18,36 @@
 
 **Mã nguồn:** [GitHub — F-OAL](https://github.com/liuyuchen-cz/F-OAL).
 
+---
+
+## Quick Start & Hướng dẫn cho Người chấm (CIFAR-100 Reproduction)
+
+* **Paper tái lập:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024).
+* **Phạm vi lựa chọn:** **Core Scope** trên **CIFAR-100** (Headline Comparison + Table 4 Ablation 3 seeds `42, 123, 2026` + chuỗi chẩn đoán C0–C3; mở rộng DTD & FGVC-Aircraft xem Mục 14.4).
+* **Thuật toán cốt lõi (nhóm tự triển khai):** [`src/foal/`](src/foal/) (`backbone.py`, `feature_fusion.py`, `projection.py`, `rls.py`, `model.py`).
+* **Tài liệu kiểm toán & checklist giảng viên:** [`docs/TEACHER_COMPLIANCE_CHECKLIST.md`](docs/TEACHER_COMPLIANCE_CHECKLIST.md) | [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md) | [`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md).
+
+```bash
+# 1. Cài đặt môi trường (Python 3.10+)
+python -m venv .venv
+# Windows: .venv\Scripts\Activate.ps1 | Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt && pip install -e .
+
+# 2. Chạy unit tests
+python -m pytest -q
+
+# 3. Chạy Smoke Test end-to-end (smoke verified: CPU, 2 tasks, không cần W&B key, không ghi đè kết quả chính thức)
+python -m scripts.reproduce_cifar100 --mode smoke
+
+# 4. Chạy Full CIFAR-100 (full execution supported: pipeline đầy đủ 10 tasks; khuyến nghị GPU T4/A100)
+python -m scripts.reproduce_cifar100 --mode full --config configs/c3_d_bilinear_raw.yaml --seed 42
+```
+
+* **Phân biệt trạng thái xác minh:** **`smoke verified`** (đã chạy pass end-to-end trên CPU qua `--mode smoke`), **`full execution supported`** (pipeline full 10 tasks sẵn sàng chạy qua `--mode full` khi có GPU), và **`numerical reproduction verified`** (các kết quả số liệu GPU chính thức đã kiểm toán & lưu ở `results/` + W&B Mục 14.4–15).
+* Chi tiết cài đặt, tải tự động `uoft-cs/cifar100` (Hugging Face / `torchvision`), tái tạo bảng/biểu đồ (`scripts/analyze_cifar100_multiseed.py`, `scripts/generate_headline_final_analysis.py`) và bảng ánh xạ W&B Project / Report xem tại **Mục 14**, **Mục 15** và [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md).
+
+---
+
 ### 1.1. Tóm tắt nghiên cứu
 
 F-OAL là một phương pháp **Online Class-Incremental Learning (OCIL)** được đề xuất nhằm giải quyết hiện tượng **Catastrophic Forgetting**, đồng thời giảm thời gian huấn luyện và chi phí bộ nhớ GPU.
@@ -637,30 +667,112 @@ Tuy nhiên, phương pháp vẫn phụ thuộc mạnh vào chất lượng của
 
 ---
 
-## 14. Bảng Ánh xạ Bằng chứng Thực nghiệm (README Evidence Mapping — Checkpoint 3)
+## 14. Experiment Tracking, Core Scope & Reproducibility
 
-| Experiment | Implementation | Dataset | Seed | $\bar{A}$ | $A_{10}$ | $F$ ($F_{\text{official}}$ / $F_{\text{ours}}$) | Git SHA | Local Artifact | W&B Run | Status |
-|---|---|---|---:|---:|---:|---:|---|---|---|---|
-| **F-OAL Paper** | Paper (Table 2 & 3) | CIFAR-100 | 3 runs | 91.10% | 86.50% | 5.50% / — | — | — | — | `PAPER_REPORTED` |
-| **F-OAL Official** | Original (`liuyuchen-cz/F-OAL`) | CIFAR-100 | `0` (`n=1, std=N/A`) | **90.98%** | **85.84%** | **4.69%** / **5.17%** | `73e4ac1` | [`results/official_foal_cifar100_seed0/`](results/official_foal_cifar100_seed0/) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | `VERIFIED` (`A19 PASS`) |
-| **F-OAL Full** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.92%** | **8.29%** / **9.21%** | `aad7500` | [`results/foal_full_cifar100_seed42/`](results/foal_full_cifar100_seed42/) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | `VERIFIED` (`P1.2 PASS`) |
-| **F-OAL Controlled (`C0` Metric)** | Ours (`src/foal`) | CIFAR-100 | `42` / `0` | Verified | Verified | **5.17%** / **4.69%** (Orig) & **9.21%** / **8.29%** (Ours) | `HEAD` | [`docs/experiments.md`](docs/experiments.md) | Verified | `VERIFIED` (`C0 PASS`) |
-| **C1: P0 Gaussian std=1** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **79.33%** | **70.95%** | **8.25%** / **9.17%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) | `VERIFIED FULL GPU` (`C1 PASS`) |
-| **C1: P1 Official Uniform** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.28%** | **74.84%** | **8.07%** / **8.97%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) | `VERIFIED FULL GPU` (`C1 PASS`) |
-| **C1: P2 Matched Gaussian** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.37%** | **74.99%** | **7.93%** / **8.81%** | `269f05c` | [`results/c1_analysis/`](results/c1_analysis/) | [Run `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | `VERIFIED FULL GPU` (`C1 PASS`) |
-| **C2: B0 Control (`augreg_in1k`)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **83.28%** | **74.84%** | **8.07%** / **8.97%** | `7fd0f4a` | [`results/c2_analysis/`](results/c2_analysis/) | [Run `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) | `VERIFIED FULL GPU` (`C2 PASS`) |
-| **C2: B1 Treatment (`augreg2_in21k_ft_in1k`)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **91.77%** | **87.43%** | **4.52%** / **5.02%** | `7fd0f4a` | [`results/c2_analysis/`](results/c2_analysis/) | [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | `VERIFIED FULL GPU` (`C2 SIGNED OFF`) |
-| **C3-A Baseline (Bicubic, Norm)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **91.77%** | **87.43%** | **4.52%** / **5.02%** | `7fd0f4a` | [`results/c2_analysis/`](results/c2_analysis/) | [Run `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | `REUSED C2-B1` (`C3_A_REUSE_APPROVED`) |
-| **C3-B (Bilinear, Norm)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **91.39%** | **86.95%** | **4.40%** / **4.89%** | `15b8afc` | [`results/c3_analysis/`](results/c3_analysis/) | [Run `ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3) | `VERIFIED FULL GPU` (`C3 PASS`) |
-| **C3-C (Bicubic, Raw)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **90.88%** | **86.35%** | **4.71%** / **5.23%** | `15b8afc` | [`results/c3_analysis/`](results/c3_analysis/) | [Run `4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h) | `VERIFIED FULL GPU` (`C3 PASS`) |
-| **C3-D (Bilinear, Raw — Official Aligned)** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1, std=N/A`) | **90.40%** | **85.73%** | **4.64%** / **5.16%** | `15b8afc` | [`results/c3_analysis/`](results/c3_analysis/) | [Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | `VERIFIED FULL GPU` (`C3 PASS`) |
-| **F-OAL Multi-Seed** | Ours (`src/foal`) | CIFAR-100 | `42, 123, 2026` | `NOT RUN` | `NOT RUN` | `NOT RUN` | `PENDING` | `PENDING` | `NOT YET SYNCED` | `PENDING` (`A12`) |
-| **Table 4: A0 Full F-OAL** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1`) | **90.40%** | **85.73%** | **4.64%** / **5.16%** | `15b8afc` | [`results/table4_analysis/`](results/table4_analysis/) | [Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | `REUSED C3-D` (`TABLE4 SIGNED OFF`) |
-| **Table 4: A1 w/o FF** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1`) | **90.10%** | **85.48%** | **4.90%** / **5.44%** | `d40310f` | [`results/table4_analysis/`](results/table4_analysis/) | [Run `shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) | `VERIFIED FULL GPU` (`TABLE4 SIGNED OFF`) |
-| **Table 4: A2 w/o SP** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1`) | **90.38%** | **85.72%** | **4.72%** / **5.24%** | `d40310f` | [`results/table4_analysis/`](results/table4_analysis/) | [Run `rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) | `VERIFIED FULL GPU` (`TABLE4 SIGNED OFF`) |
-| **Table 4: A3 w/o Both** | Ours (`src/foal`) | CIFAR-100 | `42` (`n=1`) | **89.92%** | **85.48%** | **4.79%** / **5.32%** | `d40310f` | [`results/table4_analysis/`](results/table4_analysis/) | [Run `k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | `VERIFIED FULL GPU` (`TABLE4 SIGNED OFF`) |
+### 14.1. Lựa chọn Phạm vi (Core Scope) & Lý do chọn CIFAR-100
+Dự án lựa chọn **Core Scope** theo chuẩn HCMUS Lab Book: tập trung tái lập đầy đủ hai thí nghiệm trọng tâm trên **CIFAR-100** (10 tasks $\times$ 10 lớp, 1-pass online stream): (1) **Headline Comparison** (F-OAL vs. Experience Replay và LwF, Table 2) và (2) **Table 4 Ablation Study** (cô lập Feature Fusion và Smooth Projection trên 3 seed `42`, `123`, `2026`), thay thế phần còn lại bằng chuỗi phân tích chẩn đoán tự thiết kế (**C0–C3**) để giải thích chính xác nguyên nhân chênh lệch với mã nguồn tác giả (`liuyuchen-cz/F-OAL`). CIFAR-100 được chọn làm bộ dữ liệu chính vì có kích thước chuẩn (50,000 train / 10,000 test), xuất hiện trong cả Table 2, Table 3 và Table 4 của bài báo gốc, cho phép kiểm chứng đồng thời độ chính xác, mức độ quên và tính ổn định đa seed trong giới hạn tài nguyên GPU Colab/Kaggle. Ngoài ra, nhóm thực hiện mở rộng kiểm chứng trên **DTD** và **FGVC-Aircraft** (chi tiết phạm vi thực tế ở bảng dưới).
 
-* **Hướng dẫn triển khai & thực nghiệm chi tiết:** [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)
-* **Kế hoạch thực nghiệm & kết quả tái hiện:** [`docs/experiments.md`](docs/experiments.md)
-* **Báo cáo kiểm toán kỹ thuật & tuân thủ Checkpoint 3:** [`docs/FOAL_AUDIT_AND_FIX_PLAN.md`](docs/FOAL_AUDIT_AND_FIX_PLAN.md)
-* **Đối chiếu giao thức Code gốc tác giả vs. Code nhóm (`A19`/`A20`):** [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md)
+### 14.2. Quick Start (Cài đặt & Chạy lại)
+Yêu cầu **Python 3.10+** (chi tiết đầy đủ xem tại [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)):
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\Activate.ps1 | Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+python -m pytest -v
+
+# Chạy smoke test nhanh (2 tasks, 20 mẫu/task, không cần W&B key, lưu riêng ở results/smoke_cifar100_seed42/):
+python -m scripts.reproduce_cifar100 --mode smoke
+
+# Chạy full C3-D (seed 42) hoặc Multi-Seed Table 4 Ablation (seeds 42, 123, 2026):
+python -m scripts.reproduce_cifar100 --mode full --config configs/c3_d_bilinear_raw.yaml --seed 42
+python -m scripts.run_cifar100_multiseed_ablation --seeds 42 123 2026
+```
+Tất cả dataset (`uoft-cs/cifar100`, `tanganke/dtd`, `fgvc_aircraft`) và trọng số pre-trained được tải tự động bằng code (`src/foal/datasets.py`, `src/foal/dataset_adapters/`), không cần chuẩn bị thủ công.
+
+### 14.3. External Dependencies and Reuse
+Các thư viện phụ trợ được tái sử dụng để phục vụ hạ tầng dữ liệu, backbone và theo dõi thực nghiệm (tách biệt hoàn toàn với phần lõi thuật toán F-OAL do nhóm tự triển khai trong `src/foal/`):
+* **`torch` & `torchvision`:** Khung tính toán tensor, biến đổi ảnh chuẩn (`Resize`, `ToTensor`) và bộ nạp dữ liệu (`DataLoader`).
+* **`timm`:** Nạp trọng số ViT-B pre-trained đóng băng (`vit_base_patch16_224.augreg_in1k`, `vit_base_patch16_224.augreg2_in21k_ft_in1k`).
+* **`datasets` (Hugging Face):** Tải tự động `uoft-cs/cifar100` và `tanganke/dtd` trực tiếp trong code.
+* **`wandb`:** Ghi nhận cấu hình, metrics, learning curves và Provenance Artifacts lên project `hcmus-foal-reproduction`.
+* **`PyYAML`, `numpy`, `pytest`:** Đọc cấu hình YAML, xử lý mảng/seed, và kiểm thử tự động.
+* **Phần thuật toán do nhóm tự triển khai từ mô tả toán học của paper (`src/foal/`):** Trích xuất và trung bình CLS token qua 12 blocks (`FrozenViT` / `feature_fusion.py`), phép chiếu ngẫu nhiên `SmoothProjection` (`projection.py`), bộ phân loại giải tích `OnlineRidgeRLS` cập nhật theo công thức Woodbury (`rls.py`), và pipeline `FOALModel` (`model.py`).
+
+### 14.4. Bảng Ánh xạ Thực nghiệm (Experiment → Script/Notebook → W&B Run URL → Purpose)
+
+#### A. Main Experiments (CIFAR-100 Headline Comparison & Official Reference)
+| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
+| :--- | :--- | :--- | :--- |
+| **F-OAL Official Reference (`seed=0`)** | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | Chạy mã nguồn gốc `liuyuchen-cz/F-OAL @ 73e4ac1` ($\bar{A}=90.98\%$, $A_{10}=85.84\%$) làm mốc đối chứng. |
+| **F-OAL Initial Rebuild (`seed=42`)** | [`scripts/train.py`](scripts/train.py) / [`notebooks/foal_cifar100_full_reproduction.ipynb`](notebooks/foal_cifar100_full_reproduction.ipynb) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | Bản tái lập ban đầu ($\bar{A}=79.33\%$), làm bộc lộ khoảng cách $-11.65\text{ pp}$ dẫn tới chuỗi phân tích C1–C3. |
+| **F-OAL Aligned C3-D (`seed=42`, Full)** | [`scripts/train.py`](scripts/train.py) (`configs/c3_d_bilinear_raw.yaml`) | [Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Bản tái lập chuẩn hóa theo giao thức gốc ($\bar{A}=90.40\%$, $A_{10}=85.73\%$, $F_{\text{past}}=5.16\%$, `ONLINE_TRAINING`). |
+| **Experience Replay (`B=5000`, `seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `xlcme1c3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3) | Baseline Replay ($\bar{A}=86.67\%$, $A_{10}=79.79\%$, $F_{\text{past}}=16.74\%$, `POST_HOC_IMPORT`). |
+| **Official-Protocol LwF (`seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `c5pjewk4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4) | Baseline LwF SGD + Dynamic Weighting ($\bar{A}=46.29\%$, $A_{10}=23.34\%$, `POST_HOC_IMPORT`). |
+| **Adapted LwF (`AdamW`, `seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `ifl3rz2u`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u) | Baseline LwF AdamW minh họa hiện tượng recency collapse ($F_{\text{past}}=94.99\%$, `POST_HOC_IMPORT`). |
+
+#### B. Main Experiment 2: Table 4 Ablation & Multi-Seed (CIFAR-100, Seeds `42, 123, 2026` — 12 Runs Completed)
+| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
+| :--- | :--- | :--- | :--- |
+| **Table 4 `seed=42` (`A0, A1, A2, A3`)** | [`scripts/ablation.py`](scripts/ablation.py) / [`notebooks/foal_table4_ablation_controlled.ipynb`](notebooks/foal_table4_ablation_controlled.ipynb) | [A0 `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5), [A1 `shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l), [A2 `rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk), [A3 `k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | Cô lập đóng góp của FF ($+0.30\text{ pp}$) và SP ($+0.02\text{ pp}$) ở `seed=42`. |
+| **Table 4 `seed=123` (`Full, No-FF, No-SP, Neither`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) / [`notebooks/foal_cifar100_multiseed_ablation.ipynb`](notebooks/foal_cifar100_multiseed_ablation.ipynb) | [Full `g32wwf9a`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g32wwf9a), [No-FF `4lqkxf9f`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4lqkxf9f), [No-SP `q3d9rei2`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q3d9rei2), [Neither `cvo857q3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/cvo857q3) | Kiểm định tính ổn định của Table 4 trên `seed=123` (`Mean±Std` tổng hợp ở [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](docs/CIFAR100_MULTISEED_ABLATION_REPORT.md)). |
+| **Table 4 `seed=2026` (`Full, No-FF, No-SP, Neither`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) / [`notebooks/foal_cifar100_multiseed_ablation.ipynb`](notebooks/foal_cifar100_multiseed_ablation.ipynb) | [Full `9uinxzzr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9uinxzzr), [No-FF `0wotm3e8`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0wotm3e8), [No-SP `6oxn4ioz`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6oxn4ioz), [Neither `w0e0h1od`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/w0e0h1od) | Hoàn tất bộ 12 runs đa seed (`Full = 90.59 ± 0.16%`, `No-FF = 90.23 ± 0.11%`, `No-SP = 90.58 ± 0.18%`, `Neither = 90.16 ± 0.21%`). |
+
+#### C. Additional Controlled Analyses (`C1–C3` & `Analysis-only`)
+| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
+| :--- | :--- | :--- | :--- |
+| **C1: Projection Initialization (`P0, P1, P2`)** | [`scripts/run_c1_diagnostics.py`](scripts/run_c1_diagnostics.py) / [`notebooks/foal_c1_projection_controlled.ipynb`](notebooks/foal_c1_projection_controlled.ipynb) | [P0 `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k), [P1 `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z), [P2 `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | Chứng minh bão hòa Sigmoid từ $\mathcal{N}(0,1)$ làm giảm $-3.95\text{ pp}$ (`79.33%` $\to$ `83.28%`). |
+| **C2: Backbone Alignment (`B0` vs. `B1`)** | [`scripts/run_c2_diagnostics.py`](scripts/run_c2_diagnostics.py) / [`notebooks/foal_c2_backbone_controlled.ipynb`](notebooks/foal_c2_backbone_controlled.ipynb) | [B0 `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6), [B1 `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | Cô lập tác động của checkpoint `augreg2_in21k_ft_in1k` vs `augreg_in1k` ($+8.49\text{ pp}$: `83.28%` $\to$ `91.77%`). |
+| **C3: Preprocessing Alignment (`B, C, D`)** | [`scripts/run_c3_diagnostics.py`](scripts/run_c3_diagnostics.py) / [`notebooks/foal_c3_preprocessing_controlled.ipynb`](notebooks/foal_c3_preprocessing_controlled.ipynb) | [C3-B `ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3), [C3-C `4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h), [C3-D `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Xác minh `Bilinear + Raw [0,1]` (`C3-D`) khớp bitwise với code gốc (`Max abs diff = 0.0`). |
+| **Analysis-Only: 10-Task Progression** | [`scripts/create_wandb_accuracy_progression_run.py`](scripts/create_wandb_accuracy_progression_run.py) | [Run `nceap43w`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nceap43w) | Run tổng hợp (`job_type="analysis"`, không phải training) vẽ đường cong 10 tasks từ 4 runs chính. |
+
+#### D. Cross-Dataset Extension (`DTD` & `FGVC-Aircraft` — ghi nhận theo `run.config` thực tế)
+| Experiment | Source / Adapter | W&B Run URL | Actual Scope & What it demonstrates |
+| :--- | :--- | :--- | :--- |
+| **DTD Official Reference (`seed=0`)** | Official `liuyuchen-cz/F-OAL` (W&B group `official_reproduction_dtd`) | [Run `c9yyo08r`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c9yyo08r) | Chạy code gốc trên DTD 10 tasks (`hist_len=10`, $\bar{A}=85.04\%$, $A_{10}=75.94\%$). |
+| **DTD Table 4 Ablation (`seed=42`)** | [`src/foal/dataset_adapters/dtd.py`](src/foal/dataset_adapters/dtd.py) (nhánh thành viên, group `table4_ablation_dtd`) | [A0 `rce44mi0`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rce44mi0), [A0-full `u449ge40`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u449ge40) | `config`: `tanganke/dtd`, `40/47` classes (`4` classes/task, `hist_len=10`); `rce44mi0` giới hạn `samples_per_class=40` ($\bar{A}=85.08\%$), `u449ge40` không giới hạn mẫu ($\bar{A}=87.20\%$). |
+| **FGVC-Aircraft Table 4 (`seeds=42, 123, 2026`)** | [`src/foal/dataset_adapters/fgvc_aircraft.py`](src/foal/dataset_adapters/fgvc_aircraft.py) (nhánh thành viên, group `aircraft_table4_ablation`) | [`seed=42` `2qksp3kv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qksp3kv), [`seed=123` `m1kze328`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/m1kze328), [`seed=2026` `2qqecl0m`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qqecl0m) | `config`: `fgvc_aircraft`, `100` classes (`10` classes/task, `hist_len=11`), nội suy `lanczos` (`normalize=False`); 13 runs hoàn tất trên 3 seeds (`64.63%`, `67.69%`, `60.33%` cho `a0_full`). |
+
+#### E. Pilot Runs & Failed / Crashed Runs (Không tính là Full Reproduction)
+* **Pilot Runs (chạy giới hạn `max_tasks` / `limit_train_per_task` để kiểm thử):** [`172e2y2y`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/172e2y2y), [`b4bao7ql`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/b4bao7ql), [`euwibfmj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/euwibfmj), [`zzzeg0k6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/zzzeg0k6), [`ixsoajxj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ixsoajxj), [`no13lg4t`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/no13lg4t) — chỉ là pilot kiểm thử kỹ thuật, không dùng báo cáo kết quả full.
+* **Failed / Crashed Runs (đã được thay thế):** [`97nxs96l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/97nxs96l) (`failed` — thay thế bằng `xlcme1c3`) và [`jh6dbi0h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/jh6dbi0h) (`crashed` — thay thế bằng `u449ge40`).
+
+* **Tài liệu kỹ thuật liên quan:** [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](docs/CIFAR100_MULTISEED_ABLATION_REPORT.md) | [`docs/CIFAR100_PREPROCESSING_AUDIT.md`](docs/CIFAR100_PREPROCESSING_AUDIT.md) | [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) | [`docs/hcmus_core_scope_matrix.md`](docs/hcmus_core_scope_matrix.md) | [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)
+
+### 14.5. Script Directory (Phân loại nhanh `scripts/`)
+* **Entry Points & Training:** `scripts/reproduce_cifar100.py` (launcher `smoke`/`full`), `scripts/train.py` (F-OAL chính), `scripts/train_baseline.py` (ER / LwF), `scripts/ablation.py`, `scripts/run_cifar100_multiseed_ablation.py`, `scripts/run_seeds.py`.
+* **Evaluation & Diagnostics:** `scripts/evaluate.py`, `scripts/run_c1_diagnostics.py`, `scripts/run_c2_diagnostics.py`, `scripts/run_c3_diagnostics.py`, `scripts/verify_official_transform.py`, `scripts/check_fairness.py`.
+* **Analysis & Visualization:** `scripts/analyze_cifar100_multiseed.py`, `scripts/analyze_c1_results.py`, `scripts/generate_headline_final_analysis.py`, `scripts/generate_table4_analysis.py`, `scripts/generate_table4_paper_vs_reproduction.py`, `scripts/generate_c1_tables_and_plots.py`, `scripts/generate_c2_analysis.py`, `scripts/generate_c3_analysis.py`, `scripts/generate_task_accuracy_heatmaps.py`, `scripts/generate_standardized_charts.py`, `scripts/summarize_runs.py`.
+* **W&B Utilities & Forensic Audits:** `scripts/backfill_wandb_provenance.py`, `scripts/import_headline_to_wandb.py`, `scripts/import_c1_to_wandb.py`, `scripts/normalize_wandb_comparison_metrics.py`, `scripts/create_wandb_accuracy_progression_run.py`, `scripts/audit_*.py`, `scripts/verify_*_zip.py`, `scripts/run_forensic_matrix_audit.py`.
+* **Legacy Generators (lịch sử, dùng một lần):** `scripts/create_c1_notebook.py`, `scripts/create_c2_notebook.py`, `scripts/create_c3_notebook.py`, `scripts/create_table4_notebook.py`, `scripts/update_docs.py`, `scripts/update_docs_wandb.py`.
+
+---
+
+## 15. Experiment Tracking and Provenance
+
+* **W&B Project:** [hcmus-foal-reproduction](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction) (`https://forge.coreweave.com`)
+* **W&B Report chính thức:** [F-OAL: Tái lập kết quả và phân tích thực nghiệm trên bộ dữ liệu CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+* **Tài liệu Audit & Remediation:**
+  * [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md) — Kiểm toán nguồn gốc runs, phân biệt bằng chứng gốc và dữ liệu import hậu kiểm.
+  * [`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md) — Báo cáo bổ sung `provenance_remediation`, Artifact bundles, backup snapshots và đối chiếu BEFORE/AFTER.
+
+### Bảng ánh xạ W&B Runs & Provenance Artifacts (CIFAR-100)
+
+| Method | W&B Run ID | Provenance Classification | W&B Artifact (`v0`) | Type | `bundle_sha256` |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **F-OAL (C3-D)** | `3v53tmq5` | `ONLINE_TRAINING` *(artifact gắn post-hoc)* | `c3_d_bilinear_raw_results:v0` | `evaluation` | `903456d64538af7c5550ac4468efd844149753ef7a405ab9cde6836e939dca05` |
+| **Experience Replay (`B=5000`)** | `xlcme1c3` | `POST_HOC_IMPORT` | `headline_er_provenance_bundle:v0` | `provenance_results` | `190a5870a34471ed417e9a7800d1c978b79b0f756973870cc0497872db998491` |
+| **Official-Protocol LwF** | `c5pjewk4` | `POST_HOC_IMPORT` | `headline_official_lwf_provenance_bundle:v0` | `provenance_results` | `d47e57555e4b1367de0363e08aaab47ed5612557410416dd134244f721f6a628` |
+| **Adapted LwF (`AdamW`)** | `ifl3rz2u` | `POST_HOC_IMPORT` | `headline_adapted_lwf_provenance_bundle:v0` | `provenance_results` | `9b612893419141bdd911d4fb7eff77a9d6dd5b15e9fd8fd73c9f08b42093d2f8` |
+
+*(Run `nceap43w` là `ANALYSIS_ONLY`, dùng để tổng hợp đường cong 10-task từ 4 runs trên.)*
+
+### Hướng dẫn kiểm tra dữ liệu thực nghiệm
+1. Mở W&B Project và truy cập từng Run ID hoặc tab **Artifacts** để kiểm tra `run.config['provenance_remediation']` và `artifact.metadata` (chứa SHA256 từng file và `bundle_sha256`).
+2. Đối chiếu `summary.json`, `task_matrix.csv`, `metrics.json`, `metadata.json`, `task_accuracy.csv` trong các Artifact với các file cục bộ tại `results/c3_full_gpu_verified/`, `results/headline_full_gpu_verified/`, `results/headline_official_lwf_verified/` và `configs/headline/`.
+3. Xem lịch sử snapshot bất biến trước khi ghi tại `results/headline_analysis/wandb_provenance_backups/`.
+
+### Giới hạn về khả năng tái lập chính xác
+* **Dirty worktree:** Cả 4 source runs đều có `source_worktree_dirty=True` và `uncommitted_diff_status="MISSING"`, nên `source_code_base_commit` không chứng minh toàn bộ mã nguồn thực thi khớp 100% với commit đó.
+* **Bằng chứng 3 baselines (`POST_HOC_IMPORT`):** `xlcme1c3`, `c5pjewk4`, `ifl3rz2u` không được W&B tracking trực tiếp khi training; thiếu `original_stdout_log` và `original_cli_command` (`output.log` trên W&B được tạo khi import hậu kiểm, không phải stdout gốc). Các file YAML đều có trong ZIP Colab nhưng `config_execution_verified=False` (chưa xác minh trực tiếp cấu hình runtime, không có nghĩa cấu hình sai).
+* **Phạm vi dữ liệu:** Các bằng chứng W&B đã kiểm toán ở trên áp dụng cho **CIFAR-100** (`seed=42`), không đại diện cho khả năng tái lập trên toàn bộ các bộ dữ liệu khác của bài báo gốc.

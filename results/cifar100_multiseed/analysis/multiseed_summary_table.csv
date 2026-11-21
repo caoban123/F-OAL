@@ -1,0 +1,13 @@
+metric,configuration,seed_42,seed_123,seed_2026,mean_pct,std_ddof1_pct
+average_incremental_accuracy_pct,Full F-OAL,90.401635,90.677456,90.686496,90.588529,0.161918
+average_incremental_accuracy_pct,Without FF,90.100369,90.290853,90.285738,90.225653,0.108530
+average_incremental_accuracy_pct,Without SP,90.382341,90.630726,90.720476,90.577848,0.175160
+average_incremental_accuracy_pct,Without FF & SP,89.922353,90.270012,90.286528,90.159631,0.205654
+last_accuracy_pct,Full F-OAL,85.730000,85.700000,85.710000,85.713333,0.015275
+last_accuracy_pct,Without FF,85.480000,85.460000,85.380000,85.440000,0.052915
+last_accuracy_pct,Without SP,85.720000,85.720000,85.720000,85.720000,0.000000
+last_accuracy_pct,Without FF & SP,85.480000,85.480000,85.480000,85.480000,0.000000
+forgetting_past_tasks_pct,Full F-OAL,5.155556,6.033333,5.855556,5.681481,0.464058
+forgetting_past_tasks_pct,Without FF,5.444444,5.855556,5.666667,5.655556,0.205781
+forgetting_past_tasks_pct,Without SP,5.244444,5.866667,5.900000,5.670370,0.369239
+forgetting_past_tasks_pct,Without FF & SP,5.322222,5.877778,5.377778,5.525926,0.305976

@@ -1,0 +1,44 @@
+{
+  "paper": "F-OAL NeurIPS 2024",
+  "method": "official_foal",
+  "experiment_type": "official_reproduction",
+  "run_name": "official_foal_dtd_seed0",
+  "official_repo_url": "https://github.com/liuyuchen-cz/F-OAL.git",
+  "official_commit_sha": "73e4ac1b4c965030973a2b77f05c57c2f44f49f5",
+  "seeds": {
+    "base": 0,
+    "class_order": 42,
+    "projection": 0,
+    "stream": 0
+  },
+  "model_config": {
+    "backbone": "vit_base_patch16_224",
+    "pretrained": true,
+    "feature_fusion": true,
+    "smooth_projection": true,
+    "projection_dim": 1000,
+    "gamma": 1.0,
+    "rls_dtype": "float64"
+  },
+  "training_protocol": {
+    "dataset": "tanganke/dtd",
+    "num_classes": 40,
+    "classes_per_task": 4,
+    "max_tasks": 10,
+    "samples_per_class": 40,
+    "limit_train_per_task": null,
+    "limit_test_per_task": null,
+    "batch_size": 10,
+    "device": "cuda",
+    "one_pass": true
+  },
+  "environment": {
+    "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+    "torch": "2.14.1+cu130",
+    "torchvision": "0.29.1+cu130",
+    "timm": "1.0.31",
+    "kornia": "0.9.0",
+    "gpu_name": "Tesla T4",
+    "cuda_version": "13.0"
+  }
+}

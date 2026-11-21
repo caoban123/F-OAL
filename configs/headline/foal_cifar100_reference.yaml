@@ -1,0 +1,47 @@
+# Headline Benchmark Comparison: F-OAL Full Reference (CIFAR-100)
+# Verified C3-D / A0 execution on NVIDIA RTX A5000 (W&B ID: 3v53tmq5)
+dataset: cifar100
+data_dir: ./data
+num_classes: 100
+classes_per_task: 10
+seed: 42
+class_order_seed: 42
+
+backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k
+feature_fusion: true
+
+projection:
+  enabled: true
+  dimension: 1000
+  initialization: official_uniform
+  seed: 42
+
+preprocessing:
+  interpolation: bilinear
+  normalize: false
+  size: 224
+
+training:
+  batch_size: 10
+  gamma: 1.0
+  rls_dtype: float64
+  device: auto
+
+# Ground Truth Anchors (NeurIPS 2024 Table 2 & C3-D Run 3v53tmq5)
+reference_values:
+  paper_reported:
+    venue: "NeurIPS 2024 Table 2 (Page 7)"
+    method: "F-OAL (Full)"
+    buffer_size: 0
+    a_avg_pct: 91.1
+    a_last_pct: 86.5
+    forgetting_pct: 5.5
+  our_reproduced_c3d:
+    run_id: "3v53tmq5"
+    wandb_url: "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5"
+    a_avg_pct: 90.401635
+    a_last_pct: 85.7300
+    f_past_pct: 5.1556
+    f_code_pct: 4.6400
+    hardware: "NVIDIA RTX A5000 (24GB VRAM)"
+    total_time_seconds: 53.47

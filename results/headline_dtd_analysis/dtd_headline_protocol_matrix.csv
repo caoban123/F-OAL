@@ -1,0 +1,8 @@
+Dimension,FOAL_Full,ER_Adapted,LwF_Official,LwF_Adapted
+Dataset,"DTD (40/47 classes, 10x4, 40 train/test/cls)","DTD (40/47 classes, 10x4, 40 train/test/cls)","DTD (40/47 classes, 10x4, 40 train/test/cls)","DTD (40/47 classes, 10x4, 40 train/test/cls)"
+Backbone,vit_base_patch16_224.augreg2_in21k_ft_in1k (Frozen),vit_base_patch16_224.augreg2_in21k_ft_in1k (Frozen),vit_base_patch16_224.augreg2_in21k_ft_in1k (Frozen),vit_base_patch16_224.augreg2_in21k_ft_in1k (Frozen)
+Feature_Extraction,12-block CLS average + LayerNorm (D=768),12-block CLS average + LayerNorm (D=768),12-block CLS average + LayerNorm (D=768),12-block CLS average + LayerNorm (D=768)
+Classifier_Head,SmoothProjection(768->1000) + Analytic Ridge RLS,"Dynamic nn.Linear(768, seen_classes)","Static nn.Linear(768, 40)","Dynamic nn.Linear(768, seen_classes)"
+Loss_Weighting,Closed-form L2 Ridge (gamma=1.0),Cross-Entropy on stream + replay mini-batch,Dynamic: 1/(t+1) L_new + (1 - 1/(t+1)) L_old (T=2.0),Static: 1.0 L_new + 1.0 L_old (T=2.0)
+Optimizer,Woodbury RLS (float64),"AdamW (lr=0.001, wd=1e-4)","SGD (lr=0.001, momentum=0.0, wd=0.0)","AdamW (lr=0.001, wd=1e-4)"
+Replay_Buffer,0,5000 (Reservoir Sampling),0,0

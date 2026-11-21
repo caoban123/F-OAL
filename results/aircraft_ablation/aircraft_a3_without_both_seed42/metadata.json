@@ -1,0 +1,444 @@
+{
+  "paper": "F-OAL NeurIPS 2024",
+  "method": "foal_neither",
+  "experiment_type": "ablation",
+  "run_name": "aircraft_a3_without_both_seed42",
+  "git_commit": "e91749276713723ceb5a742d43abb4fca5f7b69c",
+  "seeds": {
+    "base": 42,
+    "dataset": 42,
+    "class_order": 42,
+    "projection": 42,
+    "stream": 42
+  },
+  "model_config": {
+    "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+    "pretrained": true,
+    "pretrained_cfg": {
+      "hf_hub_id": "timm/vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "tag": "augreg2_in21k_ft_in1k",
+      "architecture": "vit_base_patch16_224",
+      "url": "",
+      "input_size": [
+        3,
+        224,
+        224
+      ],
+      "interpolation": "bicubic",
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "num_classes": 1000
+    },
+    "feature_fusion": false,
+    "smooth_projection": false,
+    "projection_dim": 768,
+    "projection_init": "gaussian_std1",
+    "gaussian_std": 1.0,
+    "gamma": 1.0,
+    "rls_dtype": "float64"
+  },
+  "projection_metadata": null,
+  "training_protocol": {
+    "dataset": "fgvc_aircraft",
+    "num_classes": 100,
+    "classes_per_task": 10,
+    "max_tasks": 10,
+    "limit_train_per_task": null,
+    "limit_test_per_task": null,
+    "batch_size": 10,
+    "device": "cuda",
+    "one_pass": true,
+    "feature_cache_enabled": true
+  },
+  "task_split_fingerprint": {
+    "sha256": "f2be2f75de0a6e0909e95de4974840956acba5fc0d87aded7a882032157adbb2",
+    "class_order_sha256": "c64d29597444deef58361ab932aaacacd44e77b1f237e09ee9ad88521f335f31",
+    "num_tasks": 10,
+    "tasks": [
+      {
+        "task_id": 0,
+        "new_original_labels": [
+          59,
+          21,
+          56,
+          18,
+          33,
+          42,
+          50,
+          27,
+          92,
+          71
+        ],
+        "num_train_samples": 335,
+        "num_test_samples": 335,
+        "train_indices_sha256": "73b5c589f7b2e602bd084bb86894307d2ede235f7ab2b837582680b48daddaff",
+        "test_indices_sha256": "f6dd107cf8ea35e5a0d97e1270afc4d5a1d2b1b5d3b78c81911f6331476281cb"
+      },
+      {
+        "task_id": 1,
+        "new_original_labels": [
+          2,
+          25,
+          24,
+          52,
+          81,
+          99,
+          51,
+          61,
+          4,
+          97
+        ],
+        "num_train_samples": 334,
+        "num_test_samples": 331,
+        "train_indices_sha256": "4cef2e5d7ce67eae442f21287f460bdbf6df7eb3faf9b6c365a0f25e9821ee20",
+        "test_indices_sha256": "3eadd61645a65499ff51ee466add4b88480ae2695a64faf30d4da964576b4745"
+      },
+      {
+        "task_id": 2,
+        "new_original_labels": [
+          94,
+          37,
+          28,
+          80,
+          7,
+          57,
+          79,
+          26,
+          76,
+          78
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 332,
+        "train_indices_sha256": "6d9c32ba38f175d501e9876aa85d86a87e4307d21ed95bd1d27b2da7d3234ef4",
+        "test_indices_sha256": "a153147cbb0f7047b099f021c10a882e22f451d739ac67d8bceae201fb1bf632"
+      },
+      {
+        "task_id": 3,
+        "new_original_labels": [
+          38,
+          0,
+          86,
+          46,
+          10,
+          29,
+          70,
+          45,
+          17,
+          39
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 334,
+        "train_indices_sha256": "3766ecda0cd72bcd3678a87553066e1d4063ebe19313d3a268e8ac2628f3ebcb",
+        "test_indices_sha256": "730deba4b7f47a07e14a58ccea3aa87a8803bef6163be60eb820a43462c6a66b"
+      },
+      {
+        "task_id": 4,
+        "new_original_labels": [
+          91,
+          40,
+          89,
+          5,
+          68,
+          1,
+          95,
+          84,
+          63,
+          3
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 334,
+        "train_indices_sha256": "0a4afd29a6c2650baf552c4609e87cff3297f71cff2da89b9504901385765871",
+        "test_indices_sha256": "181854490b84867c82fd83a87821cb909d6671237f67fa819e2a2b15463093ab"
+      },
+      {
+        "task_id": 5,
+        "new_original_labels": [
+          83,
+          93,
+          20,
+          87,
+          43,
+          73,
+          32,
+          75,
+          23,
+          96
+        ],
+        "num_train_samples": 334,
+        "num_test_samples": 334,
+        "train_indices_sha256": "d036960f9e51d165a1d666ea10fc5d895971f182eefce9a0f6f7ca553d48b6f6",
+        "test_indices_sha256": "445eec6fa9de192894b597448c9a8b78ce2d29b4211885d07968ffe53a6f027b"
+      },
+      {
+        "task_id": 6,
+        "new_original_labels": [
+          69,
+          15,
+          48,
+          55,
+          60,
+          9,
+          62,
+          31,
+          72,
+          16
+        ],
+        "num_train_samples": 336,
+        "num_test_samples": 331,
+        "train_indices_sha256": "14d996135801cef1bb633954958c1a83a957035aad1e8a9c9d9ecf452004bf0c",
+        "test_indices_sha256": "8cff519c5e9977b963420cc757a23f65c10c22183ddff86d8f7d9c01c7f96122"
+      },
+      {
+        "task_id": 7,
+        "new_original_labels": [
+          44,
+          82,
+          67,
+          34,
+          30,
+          58,
+          74,
+          88,
+          98,
+          54
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 333,
+        "train_indices_sha256": "7ccb45c8fe62dce8331fd172d5d74c2ce734dbd97fb16ea5c7385fece24d87d2",
+        "test_indices_sha256": "59d1d9e17c2ce4d072fe76c66aec1f4597096f73c0ea1c804f04321225e4399d"
+      },
+      {
+        "task_id": 8,
+        "new_original_labels": [
+          49,
+          6,
+          90,
+          11,
+          85,
+          41,
+          22,
+          19,
+          35,
+          64
+        ],
+        "num_train_samples": 332,
+        "num_test_samples": 333,
+        "train_indices_sha256": "761e099330adc1a0ab5099569ff2f7d435a5d1c3a8141f63865b8d4a691167ba",
+        "test_indices_sha256": "ee5fa60f53bf6942e3b089cbd688928a99650b8d820712d24a1322e370aa88c8"
+      },
+      {
+        "task_id": 9,
+        "new_original_labels": [
+          47,
+          12,
+          53,
+          14,
+          13,
+          66,
+          36,
+          65,
+          77,
+          8
+        ],
+        "num_train_samples": 333,
+        "num_test_samples": 336,
+        "train_indices_sha256": "9e3f099cefcdf8579c60fffcbecc1fec76b2d5d8b26fb95abe02b0600bf8041a",
+        "test_indices_sha256": "16601eca2108744bee466497a25aa1750de9dd527d91b9ec47c40fc3292cec17"
+      }
+    ]
+  },
+  "class_order": [
+    59,
+    21,
+    56,
+    18,
+    33,
+    42,
+    50,
+    27,
+    92,
+    71,
+    2,
+    25,
+    24,
+    52,
+    81,
+    99,
+    51,
+    61,
+    4,
+    97,
+    94,
+    37,
+    28,
+    80,
+    7,
+    57,
+    79,
+    26,
+    76,
+    78,
+    38,
+    0,
+    86,
+    46,
+    10,
+    29,
+    70,
+    45,
+    17,
+    39,
+    91,
+    40,
+    89,
+    5,
+    68,
+    1,
+    95,
+    84,
+    63,
+    3,
+    83,
+    93,
+    20,
+    87,
+    43,
+    73,
+    32,
+    75,
+    23,
+    96,
+    69,
+    15,
+    48,
+    55,
+    60,
+    9,
+    62,
+    31,
+    72,
+    16,
+    44,
+    82,
+    67,
+    34,
+    30,
+    58,
+    74,
+    88,
+    98,
+    54,
+    49,
+    6,
+    90,
+    11,
+    85,
+    41,
+    22,
+    19,
+    35,
+    64,
+    47,
+    12,
+    53,
+    14,
+    13,
+    66,
+    36,
+    65,
+    77,
+    8
+  ],
+  "environment": {
+    "os": {
+      "system": "Linux",
+      "release": "6.18.55+",
+      "version": "#1 SMP Thu Oct 22 16:37:21 UTC 2026",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+      "implementation": "CPython"
+    },
+    "libraries": {
+      "torch": "2.7.1+cu126",
+      "torchvision": "0.22.1+cu126",
+      "timm": "1.0.30",
+      "datasets": "4.8.5",
+      "wandb": "0.28.1"
+    },
+    "hardware": {
+      "cuda_available": true,
+      "gpu": {
+        "count": 2,
+        "device_name": "Tesla T4",
+        "total_memory_gb": 14.56,
+        "cuda_version": "12.6",
+        "capability": [
+          7,
+          5
+        ]
+      },
+      "cpu_count": 4
+    },
+    "git": {
+      "commit": "e91749276713723ceb5a742d43abb4fca5f7b69c",
+      "branch": "HEAD",
+      "dirty": true
+    }
+  },
+  "config": {
+    "class_order_seed": 42,
+    "dataset": {
+      "class_order": null,
+      "classes_per_task": 10,
+      "image_size": 224,
+      "interpolation": "lanczos",
+      "mean": null,
+      "name": "fgvc_aircraft",
+      "normalize": false,
+      "num_classes": 100,
+      "std": null
+    },
+    "logging": {
+      "base_url": "https://api.forge.coreweave.com",
+      "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+      "group": "aircraft_table4_ablation",
+      "project": "hcmus-foal-reproduction",
+      "results_dir": "results",
+      "use_wandb": true
+    },
+    "model": {
+      "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+      "feature_fusion": false,
+      "gamma": 1.0,
+      "pretrained": true,
+      "projection_dim": 768,
+      "projection_init": null,
+      "rls_dtype": "float64",
+      "smooth_projection": false
+    },
+    "projection": {
+      "dimension": 768,
+      "initialization": null,
+      "seed": 42
+    },
+    "projection_seed": 42,
+    "seed": 42,
+    "stream_seed": 42,
+    "training": {
+      "batch_size": 10,
+      "device": "auto",
+      "num_workers": 2
+    }
+  }
+}

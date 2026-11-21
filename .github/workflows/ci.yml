@@ -1,0 +1,39 @@
+name: CI (CPU Unit & Reproducibility Tests)
+
+on:
+  push:
+    branches: [main, "experiment/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  cpu-tests:
+    runs-on: ubuntu-latest
+    env:
+      WANDB_MODE: disabled
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -r requirements.txt
+          pip install -e . --no-deps
+
+      - name: Check latest commit formatting and whitespace
+        run: git diff-tree --no-commit-id --check HEAD
+
+      - name: Run CPU-only offline unit tests
+        run: |
+          python -m pytest -q \
+            --ignore=tests/test_checkpoint_roundtrip.py \
+            --ignore=tests/test_rls_real_features.py \
+            --ignore=tests/test_vit_transforms.py

@@ -1,0 +1,593 @@
+{
+  "created_at_utc": "2026-11-16T14:59:17.380400+00:00",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "project": "hcmus-foal-reproduction",
+  "runs_sha256": "19a634bf122676e49a7c37846165e0b6cbefaece69c027b6d99b221edf393c28",
+  "runs": {
+    "3v53tmq5": {
+      "id": "3v53tmq5",
+      "name": "c3_d_bilinear_raw",
+      "state": "finished",
+      "group": "c3_preprocessing_alignment",
+      "job_type": null,
+      "config": {
+        "paper": "F-OAL NeurIPS 2024",
+        "seeds": {
+          "base": 42,
+          "stream": 42,
+          "dataset": 42,
+          "projection": 42,
+          "class_order": 42
+        },
+        "config": {
+          "seed": 42,
+          "model": {
+            "gamma": 1,
+            "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+            "rls_dtype": "float64",
+            "pretrained": true,
+            "feature_fusion": true,
+            "projection_dim": 1000,
+            "projection_init": "official_uniform",
+            "smooth_projection": true
+          },
+          "dataset": {
+            "std": null,
+            "mean": null,
+            "name": "uoft-cs/cifar100",
+            "normalize": false,
+            "image_size": 224,
+            "class_order": null,
+            "num_classes": 100,
+            "interpolation": "bilinear",
+            "classes_per_task": 10
+          },
+          "logging": {
+            "group": "c3_preprocessing_alignment",
+            "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+            "project": "hcmus-foal-reproduction",
+            "base_url": "https://api.forge.coreweave.com",
+            "use_wandb": true,
+            "results_dir": "results"
+          },
+          "training": {
+            "device": "auto",
+            "batch_size": 10,
+            "num_workers": 2
+          },
+          "projection": {
+            "seed": 42,
+            "dimension": 1000,
+            "initialization": "official_uniform"
+          },
+          "stream_seed": 42,
+          "projection_seed": 42,
+          "class_order_seed": 42
+        },
+        "method": "foal",
+        "run_name": "c3_d_bilinear_raw",
+        "git_commit": "15b8afc71f6109efdbf3ff98a801ffcc83aa58d5",
+        "class_order": [
+          59,
+          21,
+          56,
+          18,
+          33,
+          42,
+          50,
+          27,
+          92,
+          71,
+          2,
+          25,
+          24,
+          52,
+          81,
+          99,
+          51,
+          61,
+          4,
+          97,
+          94,
+          37,
+          28,
+          80,
+          7,
+          57,
+          79,
+          26,
+          76,
+          78,
+          38,
+          0,
+          86,
+          46,
+          10,
+          29,
+          70,
+          45,
+          17,
+          39,
+          91,
+          40,
+          89,
+          5,
+          68,
+          1,
+          95,
+          84,
+          63,
+          3,
+          83,
+          93,
+          20,
+          87,
+          43,
+          73,
+          32,
+          75,
+          23,
+          96,
+          69,
+          15,
+          48,
+          55,
+          60,
+          9,
+          62,
+          31,
+          72,
+          16,
+          44,
+          82,
+          67,
+          34,
+          30,
+          58,
+          74,
+          88,
+          98,
+          54,
+          49,
+          6,
+          90,
+          11,
+          85,
+          41,
+          22,
+          19,
+          35,
+          64,
+          47,
+          12,
+          53,
+          14,
+          13,
+          66,
+          36,
+          65,
+          77,
+          8
+        ],
+        "environment": {
+          "os": {
+            "system": "Linux",
+            "machine": "x86_64",
+            "release": "6.6.159+",
+            "version": "#1 SMP Thu Oct 22 03:07:54 UTC 2026",
+            "processor": "x86_64"
+          },
+          "git": {
+            "dirty": true,
+            "branch": "experiment/c3-preprocessing-alignment",
+            "commit": "15b8afc71f6109efdbf3ff98a801ffcc83aa58d5"
+          },
+          "python": {
+            "version": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+            "implementation": "CPython"
+          },
+          "hardware": {
+            "gpu": {
+              "count": 1,
+              "capability": [
+                8,
+                0
+              ],
+              "device_name": "NVIDIA A100-SXM4-40GB",
+              "cuda_version": "13.0",
+              "total_memory_gb": 39.49
+            },
+            "cpu_count": 12,
+            "cuda_available": true
+          },
+          "libraries": {
+            "timm": "1.0.30",
+            "torch": "2.11.0+cu130",
+            "wandb": "0.28.1",
+            "datasets": "4.8.5",
+            "torchvision": "0.26.0+cu130"
+          }
+        },
+        "model_config": {
+          "gamma": 1,
+          "backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+          "rls_dtype": "float64",
+          "pretrained": true,
+          "gaussian_std": 1,
+          "feature_fusion": true,
+          "pretrained_cfg": {
+            "std": [
+              0.5,
+              0.5,
+              0.5
+            ],
+            "tag": "augreg2_in21k_ft_in1k",
+            "url": "",
+            "mean": [
+              0.5,
+              0.5,
+              0.5
+            ],
+            "hf_hub_id": "timm/vit_base_patch16_224.augreg2_in21k_ft_in1k",
+            "input_size": [
+              3,
+              224,
+              224
+            ],
+            "num_classes": 1000,
+            "architecture": "vit_base_patch16_224",
+            "interpolation": "bicubic"
+          },
+          "projection_dim": 1000,
+          "projection_init": "official_uniform",
+          "smooth_projection": true
+        },
+        "experiment_type": "reproduction",
+        "training_protocol": {
+          "device": "cuda",
+          "dataset": "uoft-cs/cifar100",
+          "one_pass": true,
+          "max_tasks": 10,
+          "batch_size": 10,
+          "num_classes": 100,
+          "classes_per_task": 10,
+          "limit_test_per_task": null,
+          "limit_train_per_task": null,
+          "feature_cache_enabled": true
+        },
+        "projection_metadata": {
+          "seed": 42,
+          "input_dim": 768,
+          "output_dim": 1000,
+          "measured_max": 0.03608420491218567,
+          "measured_min": -0.0360843725502491,
+          "measured_std": 0.02083195559680462,
+          "matrix_sha256": "6d3048f4a0fca38799d090113ff9a0c5b9f80a6dfd743a6c4f3d6e9607553a8b",
+          "measured_mean": -1.4644034308730625e-05,
+          "uniform_bound": 0.036084391824351615,
+          "initialization": "official_uniform",
+          "theoretical_std": 0.020833333333333332,
+          "theoretical_mean": 0,
+          "measured_variance": 0.0004339703591540456,
+          "theoretical_variance": 0.00043402777777777775
+        },
+        "provenance_remediation": {
+          "verified_seeds": {
+            "base": 42,
+            "stream": 42,
+            "dataset": 42,
+            "projection": 42,
+            "class_order": 42
+          },
+          "training_script": "scripts/train.py",
+          "missing_evidence": {
+            "original_stdout_log": "VERIFIED (output.log present on W&B & local)",
+            "original_cli_command": "VERIFIED (wandb-metadata.json args present)"
+          },
+          "verified_backbone": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+          "verified_class_order": {
+            "class_order_len": 100,
+            "class_order_seed": 42,
+            "class_order_sha256": "c64d29597444deef58361ab932aaacacd44e77b1f237e09ee9ad88521f335f31"
+          },
+          "source_worktree_dirty": true,
+          "source_commit_evidence": "recorded_in_original_metadata_and_wandb_metadata",
+          "verified_preprocessing": {
+            "size": 224,
+            "normalize": false,
+            "interpolation": "bilinear"
+          },
+          "source_code_base_commit": "15b8afc71f6109efdbf3ff98a801ffcc83aa58d5",
+          "uncommitted_diff_status": "MISSING",
+          "verified_hyperparameters": {
+            "gamma": 1,
+            "rls_dtype": "float64",
+            "batch_size": 10,
+            "feature_fusion": true,
+            "projection_dim": 1000,
+            "projection_init": "official_uniform",
+            "smooth_projection": true
+          },
+          "provenance_classification": "ONLINE_TRAINING",
+          "source_artifact_references": {
+            "files": [
+              {
+                "path": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/metrics.json",
+                "sha256": "55a22febcf0cf18732fe87bf49b83b2fb3e4fce947833adea238501247557f52",
+                "size_bytes": 2316
+              },
+              {
+                "path": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/metadata.json",
+                "sha256": "0a7f098570893fc8f2954b4f3e5630d4e57bb55a39f9c5ac55dbafee51673282",
+                "size_bytes": 10058
+              },
+              {
+                "path": "results/c3_full_gpu_verified/results/c3_full_gpu/c3_d_bilinear_raw/task_accuracy.csv",
+                "sha256": "68684dfb3d348c5838815a63fa45dd874bd84b3a427cd29d06f4c320fa5de1d7",
+                "size_bytes": 628
+              }
+            ],
+            "archive": {
+              "sha256": "a44b00ca2f12fcc895dedbefe6712087f7d1b17ebf977002e35b13b023361fa6",
+              "filename": "foal_c3_preprocessing_results.zip"
+            },
+            "bundle_sha256": "903456d64538af7c5550ac4468efd844149753ef7a405ab9cde6836e939dca05"
+          },
+          "import_script_commit_evidence": null,
+          "import_script_reference_commit": null,
+          "provenance_verification_status": "VERIFIED_WITH_MINOR_ARTIFACT_GAP"
+        },
+        "task_split_fingerprint": {
+          "tasks": [
+            {
+              "task_id": 0,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                59,
+                21,
+                56,
+                18,
+                33,
+                42,
+                50,
+                27,
+                92,
+                71
+              ],
+              "test_indices_sha256": "43336bb3e27b1bce8ddcc0545e341445c424a7cd55452782475ed838250b1821",
+              "train_indices_sha256": "2b4cfc886526b43ea72ea069d31eceb2721d66dceec7c1568d71984c70d9685a"
+            },
+            {
+              "task_id": 1,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                2,
+                25,
+                24,
+                52,
+                81,
+                99,
+                51,
+                61,
+                4,
+                97
+              ],
+              "test_indices_sha256": "7b4814734e8ff33c623f3b8d554e1c0c632066778f8becdce633f08fc63609dd",
+              "train_indices_sha256": "9cd2653ba715a11f510e5113c47ca10ac48113102903156017c19dfb1e83b503"
+            },
+            {
+              "task_id": 2,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                94,
+                37,
+                28,
+                80,
+                7,
+                57,
+                79,
+                26,
+                76,
+                78
+              ],
+              "test_indices_sha256": "5a627b07667c633c995e95dd9f617f7123b436535d6062e7cfeaa5cba858f4ff",
+              "train_indices_sha256": "76ce4fa3f187e0a33ea73bcf8367525a31ad2220e9adbe3014289f2a8cf43d94"
+            },
+            {
+              "task_id": 3,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                38,
+                0,
+                86,
+                46,
+                10,
+                29,
+                70,
+                45,
+                17,
+                39
+              ],
+              "test_indices_sha256": "2c6ee04e076c76a7ba49b4b2fea6e2e6b8090530a6cb4941081fe636aba0d181",
+              "train_indices_sha256": "4be9c1046c82c2f87991370ef2eeb349dd127e297752b9feade6b965ae97d8e4"
+            },
+            {
+              "task_id": 4,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                91,
+                40,
+                89,
+                5,
+                68,
+                1,
+                95,
+                84,
+                63,
+                3
+              ],
+              "test_indices_sha256": "c29abd380e12ec8f7117d2f4b7d5ef26ff0d30df1295e1721a6fd1a25953a786",
+              "train_indices_sha256": "e6647a4d8fddf2ad89240bf4868e978c4f96919d035eac2cd834d9e2df6801ac"
+            },
+            {
+              "task_id": 5,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                83,
+                93,
+                20,
+                87,
+                43,
+                73,
+                32,
+                75,
+                23,
+                96
+              ],
+              "test_indices_sha256": "3fd20d7a01dcbb73b12c0a03ae37f1656bc3a2abfeb1b12e0ef161d1582c0aab",
+              "train_indices_sha256": "ceadb6c6e5ec387f9ad90da53c4a4049bd9a262df73e137137c5b58bb9a773a3"
+            },
+            {
+              "task_id": 6,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                69,
+                15,
+                48,
+                55,
+                60,
+                9,
+                62,
+                31,
+                72,
+                16
+              ],
+              "test_indices_sha256": "c1fe0e5bc21c2e0442df054ac65f656fe5dd39bbd307dd0893ee5aeb48f16836",
+              "train_indices_sha256": "97b2c1fadea7bf5454eb4a7825ebbb94021bcfdb5782a8999d0e687ad2f222f6"
+            },
+            {
+              "task_id": 7,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                44,
+                82,
+                67,
+                34,
+                30,
+                58,
+                74,
+                88,
+                98,
+                54
+              ],
+              "test_indices_sha256": "6965bea1189903d6969019d7956ed64277ec84677f70566b1de2dd7de57e9d66",
+              "train_indices_sha256": "f7a32c6c98fe2c42cf96c6c14f75d67a083a246f325bd6a9ff4d6a657fa2f849"
+            },
+            {
+              "task_id": 8,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                49,
+                6,
+                90,
+                11,
+                85,
+                41,
+                22,
+                19,
+                35,
+                64
+              ],
+              "test_indices_sha256": "0ca94410eadd9b509a4cfe526702e62ac6aeece8b00b3286a8cb654545f6f827",
+              "train_indices_sha256": "d7a4441825dcef46872effbc1c0ce964c4eb3f4cd56e66f8b89688dc9408ba4d"
+            },
+            {
+              "task_id": 9,
+              "num_test_samples": 1000,
+              "num_train_samples": 5000,
+              "new_original_labels": [
+                47,
+                12,
+                53,
+                14,
+                13,
+                66,
+                36,
+                65,
+                77,
+                8
+              ],
+              "test_indices_sha256": "f9505a0256ce2cb79ec0fde317d73a1e3264052dbc3f4ecc0a9595cc53304643",
+              "train_indices_sha256": "996536e38a368a312f5dfea8c36a4a8573702d2b7d295ff59dcf7273526c7f68"
+            }
+          ],
+          "sha256": "7c461e9300daaa73e894d716782b0cb7d4eb922d4b2b3e35debfa2d61f67ca6f",
+          "num_tasks": 10,
+          "class_order_sha256": "c64d29597444deef58361ab932aaacacd44e77b1f237e09ee9ad88521f335f31"
+        }
+      },
+      "summary": {
+        "comparison/average_incremental_accuracy_pct": 90.40163492063492,
+        "comparison/forgetting_past_tasks_pct": 5.155555555555556,
+        "duration_seconds": 229.09,
+        "samples_seen": 50000,
+        "stage_accuracy": 0.8573000000000001,
+        "stage_accuracy_pct": 85.73,
+        "summary/average_incremental_accuracy": 0.9040163492063492,
+        "summary/average_incremental_accuracy_pct": 90.40163492063492,
+        "summary/feature_extraction_seconds": 175.28,
+        "summary/forgetting": 0.05155555555555556,
+        "summary/forgetting_official_code": 0.04640000000000001,
+        "summary/forgetting_official_code_pct": 4.6400000000000015,
+        "summary/forgetting_past_tasks": 0.05155555555555556,
+        "summary/forgetting_past_tasks_pct": 5.155555555555556,
+        "summary/forgetting_pct": 5.155555555555556,
+        "summary/last_accuracy": 0.8573000000000001,
+        "summary/last_accuracy_pct": 85.73,
+        "summary/rls_and_eval_seconds": 8.5,
+        "summary/total_duration_seconds": 229.11,
+        "task": 10,
+        "task_acc/task_1": 0.798,
+        "task_acc/task_10": 0.87,
+        "task_acc/task_2": 0.847,
+        "task_acc/task_3": 0.884,
+        "task_acc/task_4": 0.873,
+        "task_acc/task_5": 0.884,
+        "task_acc/task_6": 0.858,
+        "task_acc/task_7": 0.869,
+        "task_acc/task_8": 0.847,
+        "task_acc/task_9": 0.843,
+        "task_acc_pct/task_1": 79.80000000000001,
+        "task_acc_pct/task_10": 87,
+        "task_acc_pct/task_2": 84.7,
+        "task_acc_pct/task_3": 88.4,
+        "task_acc_pct/task_4": 87.3,
+        "task_acc_pct/task_5": 88.4,
+        "task_acc_pct/task_6": 85.8,
+        "task_acc_pct/task_7": 86.9,
+        "task_acc_pct/task_8": 84.7,
+        "task_acc_pct/task_9": 84.3
+      },
+      "history_len": 11,
+      "history_sha256": "e935eb5c3805cc286d856adb4ec6bbd6731d9f1a04c45c6edc65ce5d6c7da085",
+      "logged_artifacts": [
+        {
+          "name": "run-3v53tmq5-history:v0",
+          "type": "wandb-history",
+          "version": "v0",
+          "digest": "c92f169c5ae4fdb2900a534499c60ddd"
+        }
+      ],
+      "used_artifacts": []
+    }
+  }
+}

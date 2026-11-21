@@ -11,3 +11,7 @@ requires-python = ">=3.10"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["wandb", ".venv", ".git", "results", "scratch"]

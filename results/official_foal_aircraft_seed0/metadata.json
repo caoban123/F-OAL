@@ -1,0 +1,12 @@
+{
+  "method": "official_foal",
+  "run_name": "official_foal_aircraft_seed0",
+  "official_repo_url": "https://github.com/liuyuchen-cz/F-OAL",
+  "official_commit_sha": "73e4ac1b4c965030973a2b77f05c57c2f44f49f5",
+  "command": "python general_main.py --data aircraft --cl_type nc --agent FOAL --num_runs 1 --seed 0",
+  "shim": "loss.py (DVC agent import only)",
+  "timm": "0.9.7",
+  "gpu": "Tesla T4",
+  "kaggle_kernel": "tthanh1223/foal-aircraft-c1c3 v2",
+  "note": "task matrix parsed from official_stdout.log (numpy printed rows wrapped over 2 lines)"
+}
