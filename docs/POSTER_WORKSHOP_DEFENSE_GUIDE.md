@@ -1,6 +1,8 @@
 # KỊCH BẢN TRÌNH BÀY & BỘ CÂU HỎI PHẢN BIỆN TẠI POSTER WORKSHOP (FINAL ORAL EXAM)
 
-> **Học phần:** Nhập môn Học máy (*Introduction to Machine Learning*) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Phản biện Lý thuyết](CRITICAL_ANALYSIS_REPORT.md) | [Báo cáo Thực nghiệm Lab 2](LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md) | [Poster A2 `.pptx`](../poster/F-OAL_Critical_Analysis_Poster_A2.pptx) | [W&B Report Lab 2](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Ph%C3%A2n-t%C3%ADch-Ph%E1%BA%A3n-bi%E1%BB%87n-L%C3%BD-thuy%E1%BA%BFt-Th%E1%BB%B1c-nghi%E1%BB%87m-Lab-2-Long-Tail-Scaling--VmlldzoxODM1OTE5Mg)
+>
+> **Học phần:** Nhập môn Học máy (*Introduction to Machine Learning*) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS) — Nhóm: **Nguyễn Cao Bản · Nguyễn Thái Thành · Phan Thế Phong**
 > **Hình thức thi cuối kỳ:** **Poster Workshop** — Nhóm treo Poster khổ dọc `Portrait A2` ([`poster/F-OAL_Critical_Analysis_Poster_A2.pptx`](../poster/F-OAL_Critical_Analysis_Poster_A2.pptx)), trình bày trực tiếp cạnh Poster trong **3–4 phút** và trả lời vấn đáp mở từ hội đồng giám khảo.
 
 ---

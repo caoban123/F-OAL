@@ -1,9 +1,12 @@
 # W&B Provenance Audit Report — CIFAR-100 Benchmark Runs
 
-**Project:** `hcmus-foal-reproduction`  
-**Entity:** `caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm`  
-**W&B Server:** `https://forge.coreweave.com`  
-**Audit Role:** Research Reproducibility Auditor  
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Khắc phục Provenance](WANDB_PROVENANCE_REMEDIATION_REPORT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+
+**Project:** `hcmus-foal-reproduction`
+**Entity:** `caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm`
+**W&B Server:** `https://forge.coreweave.com`
+**Audit Role:** Research Reproducibility Auditor
 **Scope:** Kiểm toán độc lập nguồn gốc (Provenance) **chỉ tập trung vào 4 source runs CIFAR-100 (`seed=42`)** (`3v53tmq5` — F-OAL C3-D, `xlcme1c3` — Experience Replay, `c5pjewk4` — Official-protocol LwF, `ifl3rz2u` — Adapted LwF) cùng 1 run tổng hợp `analysis-only` (`nceap43w`). Toàn bộ dự án còn bao gồm các thí nghiệm C1–C3 khác và Table 4 ablation với 3 seed (`42`, `123`, `2026`), cũng như các bộ dữ liệu khác của bài báo. Không chỉnh sửa Summary gốc, không sửa history, không tạo run mới, không chạy lại training.
 
 ---

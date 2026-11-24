@@ -1,7 +1,11 @@
 # F-OAL Table 4 Ablation & Control Studies Report — DTD Benchmark
 
-**Branch**: `experiment/dtd-ablation`  
-**Canonical Evidence Source**: `results/dtd/` (12 decoupled Colab Tesla T4 runs: Conditions `A0–A3` × Seeds `42, 123, 2026`, git commit `ca42e672`)  
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Giải trình Giới hạn DTD](Limitations.md) | [Nghịch lý Độ quên DTD](Limitations_2.md) | [W&B Report DTD](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T%C3%A1i-l%E1%BA%ADp-th%E1%BB%B1c-nghi%E1%BB%87m-v%C3%A0-ph%C3%A2n-t%C3%ADch-ablation-tr%C3%AAn-DTD--VmlldzoxODI3ODAxMQ)
+> *(Ghi chú tích hợp: Toàn bộ 12 runs Table 4 và chuỗi C1–C3 của DTD đã hợp nhất đầy đủ vào nhánh `main`).*
+
+**Branch**: `experiment/dtd-ablation`
+**Canonical Evidence Source**: `results/dtd/` (12 decoupled Colab Tesla T4 runs: Conditions `A0–A3` × Seeds `42, 123, 2026`, git commit `ca42e672`)
 **Canonical Summary & Charts**: [results/dtd/dtd_table4_summary.json](../results/dtd/dtd_table4_summary.json), [results/dtd_table4_analysis/](../results/dtd_table4_analysis/table4_metrics_comparison.json)
 
 ---

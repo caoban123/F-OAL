@@ -1,8 +1,11 @@
 # F-OAL CIFAR-100 Preprocessing Pipeline Forensic Audit (Official vs. C3-D)
 
-**Audit Role:** Research Reproducibility Auditor  
-**Target Benchmark:** CIFAR-100 (100 classes, 10 tasks × 10 classes)  
-**C3 Reference Results:** C3-A (Bicubic + Normalized) = `91.77%` | C3-B (Bilinear + Normalized) = `91.39%` | C3-C (Bicubic + Raw) = `90.88%` | **C3-D (Bilinear + Raw) = `90.40%`**  
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Headline CIFAR-100](CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+
+**Audit Role:** Research Reproducibility Auditor
+**Target Benchmark:** CIFAR-100 (100 classes, 10 tasks × 10 classes)
+**C3 Reference Results:** C3-A (Bicubic + Normalized) = `91.77%` | C3-B (Bilinear + Normalized) = `91.39%` | C3-C (Bicubic + Raw) = `90.88%` | **C3-D (Bilinear + Raw) = `90.40%`**
 **Final Audit Verdict:** **`MATCH`** *(C3-D produces bitwise-identical `[0.0, 1.0]` input tensors to the Official F-OAL CIFAR-100 pipeline)*
 
 ---

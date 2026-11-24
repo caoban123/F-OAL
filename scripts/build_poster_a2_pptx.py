@@ -272,9 +272,9 @@ def build_poster() -> Path:
 
     p_auth = tf_h.add_paragraph()
     ra = p_auth.add_run()
-    ra.text = "Nhóm thực hiện: 24122014 · 24122029 (Nguyễn Cao Bản) · 24122050   |   Repo: github.com/caoban123/F-OAL   |   W&B Tag: lab2-empirical-demo"
+    ra.text = "Nhóm thực hiện: Nguyễn Cao Bản · Nguyễn Thái Thành · Phan Thế Phong (24122014 · 24122029 · 24122050)  |  github.com/caoban123/F-OAL"
     ra.font.name = FONT_MAIN
-    ra.font.size = Pt(11.8)
+    ra.font.size = Pt(11.4)
     ra.font.bold = True
     ra.font.color.rgb = RGBColor(0xFD, 0xE6, 0x8A)
 
@@ -423,7 +423,7 @@ def build_poster() -> Path:
     add_caption(
         slide, 10.5, 542.0, 269.0, 6.2,
         "Bảng 1 — Đối chiếu Tuyên bố Bài báo, Phát hiện Kiểm định & Giải pháp:",
-        "(Điểm yếu L3 xem chi tiết tại README.md §16).",
+        "(Điểm yếu L3 xem chi tiết tại README.md §5.4).",
         font_pt=10.1,
     )
 
@@ -431,7 +431,7 @@ def build_poster() -> Path:
         [" Tuyên bố trong Bài báo [1]", " Phát hiện Phản biện & Đo đạc", " Giải pháp Giải tích 0-Replay", " Hiệu quả Kiểm chứng"],
         [" Chuẩn ‖w_c‖₂ đồng đều (Fig. 3)", " Sụp đổ O(1/ρ) khi lệch lớp (r = +0.89)", " Balanced Woodbury + Norm (FD1)", " +42.7 pp Tail, +13.3 pp Ā [fqahbyt4]"],
         [" R tốn O(D²C); γ = 1 cố định", " Đúng là Θ(D²S); nổ ‖Ŵ‖_F khi D ≈ V", " Trace-Adaptive Ridge γ_auto (FD2)", " 88.2% Ā (+9.4 pp vs γ=10⁻³) [kyj36qk9]"],
-        [" Chiếu ngẫu nhiên N(0, 1) (tr. 4)", " Bão hòa >81% Sigmoid (README §16)", " Luật phương sai σ_P² = 1/(3d_in)", " +16.5 pp DTD, +18.8 pp Aircraft [C1]"],
+        [" Chiếu ngẫu nhiên N(0, 1) (tr. 4)", " Bão hòa >81% Sigmoid (README §5.4)", " Luật phương sai σ_P² = 1/(3d_in)", " +16.5 pp DTD, +18.8 pp Aircraft [C1]"],
     ]
     tbl_shape = slide.shapes.add_table(4, 4, Mm(10.5), Mm(549.5), Mm(269.0), Mm(36.5))
     tbl = tbl_shape.table

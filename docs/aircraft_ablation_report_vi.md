@@ -1,6 +1,9 @@
 # FGVC-Aircraft: tái lập F-OAL, ablation Table 4 và kiểm tra C1–C3
 
-**Nhánh:** `experiment/fgvc-aircraft-ablation` · **Cập nhật:** 18/11/2026 · **Trạng thái:** `READY_FOR_INTEGRATION_REVIEW` (chưa merge vào `main`)
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo DTD](dtd_ablation_report.md) | [Báo cáo CIFAR-100](CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [W&B Report FGVC-Aircraft](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Th%C3%AD-nghi%E1%BB%87m-lo%E1%BA%A1i-b%E1%BB%8F-th%C3%A0nh-ph%E1%BA%A7n-tr%C3%AAn-FGVC-Aircraft--VmlldzoxODI3NTM0Mg)
+
+**Nhánh:** `experiment/fgvc-aircraft-ablation` · **Cập nhật:** 18/11/2026 · **Trạng thái:** `MERGED_TO_MAIN` (đã tích hợp đầy đủ vào nhánh `main`)
 
 Báo cáo theo cùng khung với báo cáo DTD: ablation 3 seed → C1/C2/C3 → đối chiếu paper và code tác giả → forgetting → giới hạn, nguồn gốc, cách chạy lại. Mọi số dưới đây là của Aircraft; không chuyển số hay kết luận của CIFAR-100, DTD sang. Số % là accuracy; chênh lệch giữa hai accuracy tính bằng điểm (pp). SD là độ lệch chuẩn mẫu (`ddof=1`).
 

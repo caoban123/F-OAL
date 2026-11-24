@@ -1,817 +1,323 @@
-# PHÂN TÍCH PAPER F-OAL: FORWARD-ONLY ONLINE ANALYTIC LEARNING
+# F-OAL: Tái lập Thực nghiệm Đa Miền, Phân tích Phản biện Lý thuyết & Giải pháp Giải tích Không Lưu Mẫu
 
-## 1. Thông tin tổng quan
+[![CI (CPU Unit & Reproducibility Tests)](https://github.com/caoban123/F-OAL/actions/workflows/ci.yml/badge.svg)](https://github.com/caoban123/F-OAL/actions/workflows/ci.yml)
+![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-0F2942)
+![Conference](https://img.shields.io/badge/NeurIPS_2024-Rank_A*%20(ICORE)-0F766E)
+![Paradigm](https://img.shields.io/badge/OCIL-Forward--Only%20%7C%20Zero--Replay-0284C7)
 
-**Tên paper:** F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning.
-
-**Tác giả:** Huiping Zhuang, Yuchen Liu, Run He, Kai Tong, Ziqian Zeng, Cen Chen, Yi Wang và Lap-Pui Chau.
-
-**Năm công bố:** 2024.
-
-**Hội nghị:** Advances in Neural Information Processing Systems 37 (NeurIPS 2024), Main Conference Track.
-
-**Xếp hạng hội nghị:** A* theo ICORE2026.
-
-**Lĩnh vực:** Machine Learning, Continual Learning, Online Class-Incremental Learning, Computer Vision.
-
-**Paper chính thức:** [NeurIPS Proceedings](https://proceedings.neurips.cc/paper_files/paper/2024/hash/48ffa38c13078d6ce26b328e7f373243-Abstract-Conference.html).
-
-**Mã nguồn:** [GitHub — F-OAL](https://github.com/liuyuchen-cz/F-OAL).
+> **Đồ án Môn học:** Nhập môn Học máy (*Introduction to Machine Learning*) — Khoa Công nghệ Thông tin, Trường ĐHKHTN, ĐHQG-HCM (HCMUS)
+> **Nhóm thực hiện:** **Nguyễn Cao Bản · Nguyễn Thái Thành · Phan Thế Phong** (`MSSV: 24122014 · 24122029 · 24122050`)
+> **Bài báo gốc:** Huiping Zhuang\*, Yuchen Liu\*, Run He, Kai Tong, Ziqian Zeng, Cen Chen, Yi Wang, Lap-Pui Chau — *"F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning"*, **NeurIPS 2024** ([Proceedings](https://proceedings.neurips.cc/paper_files/paper/2024/hash/48ffa38c13078d6ce26b328e7f373243-Abstract-Conference.html) · [PDF](https://papers.neurips.cc/paper_files/paper/2024/file/48ffa38c13078d6ce26b328e7f373243-Paper-Conference.pdf) · [Mã nguồn tác giả](https://github.com/liuyuchen-cz/F-OAL)).
 
 ---
 
-## Quick Start & Hướng dẫn cho Người chấm (CIFAR-100 Reproduction)
+## Cổng Điều hướng Nhanh cho Giảng viên & Người chấm (Executive Hub)
 
-* **Paper tái lập:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024).
-* **Phạm vi lựa chọn:** **Core Scope** trên **CIFAR-100** (Headline Comparison + Table 4 Ablation 3 seeds `42, 123, 2026` + chuỗi chẩn đoán C0–C3; mở rộng DTD & FGVC-Aircraft xem Mục 14.4).
-* **Thuật toán cốt lõi (nhóm tự triển khai):** [`src/foal/`](src/foal/) (`backbone.py`, `feature_fusion.py`, `projection.py`, `rls.py`, `model.py`).
-* **Tài liệu kiểm toán & checklist giảng viên:** [`docs/TEACHER_COMPLIANCE_CHECKLIST.md`](docs/TEACHER_COMPLIANCE_CHECKLIST.md) | [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md) | [`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md).
+### A. Trung tâm Báo cáo Trực tuyến Weights & Biases (`hcmus-foal-reproduction`)
+
+Toàn bộ thực nghiệm của dự án được quản lý tập trung trên một W&B Project công khai duy nhất: **[`hcmus-foal-reproduction`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction)**. Để thuận tiện nhất khi chấm bài, nhóm tổ chức thành **2 chế độ xem đồng bộ**:
+* **Xem Báo cáo Tổng hợp & Đồ thị So sánh Đa Mô hình (Khuyên dùng đầu tiên):** Nhấp vào **4 trang W&B Report công khai** dưới đây (mỗi biểu đồ đã khóa sẵn đúng bộ lọc thực nghiệm, hiển thị đầy đủ trên mọi trình duyệt không cần đăng nhập).
+* **Xem Chi tiết Từng Lượt chạy Đơn lẻ (`Overview`, `Charts`, `Logs`, `Artifacts`):** Nhấp vào từng mã Run ở **[Mục 6](#6-hệ-thống-đăng-ký-thực-nghiệm-wb--kiểm-toán-nguồn-gốc-provenance)** (Workspace đã được chuẩn hóa mở sẵn mục `Charts` tự động ở Trang 1 và đồng bộ đầy đủ khóa `summary/*_pct` để không xảy ra hiện tượng khung biểu đồ trống).
+
+| STT | Chuyên đề Báo cáo Trực tuyến (Public W&B Reports) | Tập dữ liệu / Chặng | Đường dẫn Trực tiếp |
+| :---: | :--- | :---: | :--- |
+| **1** | **Tái lập Kết quả, So sánh Baselines & Chuỗi Chẩn đoán C1–C3** | **CIFAR-100** *(Core Scope)* | [Mở W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA) |
+| **2** | **Tái lập Thực nghiệm, Baselines & Phân tích Ablation Đa Seed** | **DTD** *(Cross-Domain)* | [Mở W&B Report DTD](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T%C3%A1i-l%E1%BA%ADp-th%E1%BB%B1c-nghi%E1%BB%87m-v%C3%A0-ph%C3%A2n-t%C3%ADch-ablation-tr%C3%AAn-DTD--VmlldzoxODI3ODAxMQ) |
+| **3** | **Thí nghiệm Loại bỏ Thành phần (Table 4) & Kiểm soát C1–C3** | **FGVC-Aircraft** *(Fine-Grained)* | [Mở W&B Report FGVC-Aircraft](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Th%C3%AD-nghi%E1%BB%87m-lo%E1%BA%A1i-b%E1%BB%8F-th%C3%A0nh-ph%E1%BA%A7n-tr%C3%AAn-FGVC-Aircraft--VmlldzoxODI3NTM0Mg) |
+| **4** | **Phản biện Lý thuyết & Thực nghiệm Lab 2 (`Long-Tail` & `Scaling`)** | **Lab 2** *(152 Runs, `FD1` & `FD2`)* | [Mở W&B Report Lab 2](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Ph%C3%A2n-t%C3%ADch-Ph%E1%BA%A3n-bi%E1%BB%87n-L%C3%BD-thuy%E1%BA%BFt-Th%E1%BB%B1c-nghi%E1%BB%87m-Lab-2-Long-Tail-Scaling--VmlldzoxODM1OTE5Mg) |
+
+### B. Bảng Ánh xạ Toàn bộ Học liệu Theo Cấu trúc Đánh giá HCMUS
+
+| Chặng Đồ án | Trọng tâm Khoa học & Kỹ thuật | Mã nguồn Chính | Tài liệu Báo cáo & Sản phẩm Nộp |
+| :--- | :--- | :--- | :--- |
+| **Checklist Tuân thủ** | Đối chiếu 13 tiêu chí bắt buộc của HCMUS Lab Book | Toàn bộ repo `main` | [`docs/TEACHER_COMPLIANCE_CHECKLIST.md`](docs/TEACHER_COMPLIANCE_CHECKLIST.md) · [`docs/hcmus_core_scope_matrix.md`](docs/hcmus_core_scope_matrix.md) |
+| **Clean-Room Core** | Tự hiện thực F-OAL từ công thức bài báo (`FrozenViT`, `FF`, `SP`, `Woodbury RLS`) | [`src/foal/`](src/foal/) · [`tests/`](tests/) | [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md) · [`docs/repository_structure.md`](docs/repository_structure.md) |
+| **Lab 1 — Tái lập & Mở rộng** | Headline Table 2 + Multi-Seed Table 4 (36 runs) + Chẩn đoán C0–C3 trên **CIFAR-100, DTD, Aircraft** | [`scripts/reproduce_cifar100.py`](scripts/reproduce_cifar100.py) · [`configs/`](configs/) | [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md) · [`docs/dtd_ablation_report.md`](docs/dtd_ablation_report.md) · [`docs/aircraft_ablation_report_vi.md`](docs/aircraft_ablation_report_vi.md) |
+| **Milestone 3 — Critical Analysis** | Kiểm toán 5 giả định ẩn, 5 lỗi nội tại PDF, 3 điểm mạnh (`S1–S3`), 3 điểm yếu (`L1–L3`) & 3 giải pháp (`FD1–FD3`) | — | [`docs/CRITICAL_ANALYSIS_REPORT.md`](docs/CRITICAL_ANALYSIS_REPORT.md) · [`docs/Limitations_2.md`](docs/Limitations_2.md) |
+| **Lab 2 — Empirical Demo** | Hiện thực giải pháp 0-replay `BalancedOnlineRidgeRLS` (`FD1`) & `Trace-Scaled Ridge` (`FD2`); 54 runs `E1` + 98 runs `E3` | [`src/foal/critical_analysis.py`](src/foal/critical_analysis.py) · [`scripts/run_lab2_longtail.py`](scripts/run_lab2_longtail.py) | [`docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md`](docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md) · [`notebooks/foal_lab2_empirical_demonstration.ipynb`](notebooks/foal_lab2_empirical_demonstration.ipynb) |
+| **Poster Workshop** | Poster khoa học **1 slide `Portrait A2 (420 × 594 mm)`** chuẩn mù màu + Kịch bản bảo vệ 3.5 phút | [`scripts/build_poster_a2_pptx.py`](scripts/build_poster_a2_pptx.py) | **[`poster/F-OAL_Critical_Analysis_Poster_A2.pptx`](poster/F-OAL_Critical_Analysis_Poster_A2.pptx)** · [`docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md`](docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md) |
+
+### Mục lục Nội dung
+1. [Kiến trúc Hệ thống, Cấu trúc Mã nguồn & Thư viện Phụ trợ](#1-kiến-trúc-hệ-thống-cấu-trúc-mã-nguồn--thư-viện-phụ-trợ)
+2. [Hướng dẫn Cài đặt & Chạy Lại Nhanh (Quick Start)](#2-hướng-dẫn-cài-đặt--chạy-lại-nhanh-quick-start)
+3. [Cơ sở Lý thuyết & Nền tảng Toán học F-OAL](#3-cơ-sở-lý-thuyết--nền-tảng-toán-học-f-oal)
+4. [Giai đoạn I — Kết quả Tái lập Thực nghiệm & Giải mã Chênh lệch Đa Tập Dữ Liệu](#4-giai-đoạn-i--kết-quả-tái-lập-thực-nghiệm--giải-mã-chênh-lệch-đa-tập-dữ-liệu)
+5. [Giai đoạn II — Phân tích Phản biện Lý thuyết, Thực nghiệm Lab 2 & Poster A2](#5-giai-đoạn-ii--phân-tích-phản-biện-lý-thuyết-thực-nghiệm-lab-2--poster-a2)
+6. [Hệ thống Đăng ký Thực nghiệm W&B & Kiểm toán Nguồn gốc (Provenance)](#6-hệ-thống-đăng-ký-thực-nghiệm-wb--kiểm-toán-nguồn-gốc-provenance)
+7. [Bản đồ Toàn bộ Tài liệu Chuyên sâu (`docs/*.md`) & Tài liệu Tham khảo](#7-bản-đồ-toàn-bộ-tài-liệu-chuyên-sâu-docsmd--tài-liệu-tham-khảo)
+
+---
+
+## 1. Kiến trúc Hệ thống, Cấu trúc Mã nguồn & Thư viện Phụ trợ
+
+### 1.1. Sơ đồ Kiến trúc Toàn Hệ thống
+
+```mermaid
+flowchart LR
+    subgraph Data["1. Luồng Dữ liệu OCIL (1-Pass, 0-Replay)"]
+        D1["CIFAR-100 (uoft-cs/cifar100)"]
+        D2["DTD (tanganke/dtd)"]
+        D3["FGVC-Aircraft (HF Split)"]
+    end
+
+    subgraph Core["2. Lõi F-OAL Tự Hiện thực (src/foal/)"]
+        B["FrozenViT (ViT-B/16, ∇θ = 0)"]
+        FF["Feature Fusion (12-Block CLS Avg + LN, d=768)"]
+        SP["Smooth Projection φ(x) = σ(hP) ∈ (0,1)^D"]
+        RLS["OnlineRidgeRLS (Woodbury float64, R_t & W_t)"]
+        B --> FF --> SP --> RLS
+    end
+
+    subgraph Lab2["3. Mở rộng Phản biện & Giải pháp Lab 2"]
+        FD1["BalancedOnlineRidgeRLS (FD1: Weighted Woodbury + Norm Calib.)"]
+        FD2["Trace-Scaled Adaptive Ridge (FD2: γ_auto không cần val)"]
+        SP --> FD1
+        SP --> FD2
+    end
+
+    subgraph Eval["4. Đánh giá, Kiểm toán & Học liệu"]
+        M["Metrics (A_bar, A_last, F_past, F_code)"]
+        WB["W&B Project (4 Public Reports + Provenance v0)"]
+        PT["Portrait A2 Poster (.pptx)"]
+    end
+
+    Data --> B
+    RLS --> M
+    FD1 --> M
+    FD2 --> M
+    M --> WB
+    M --> PT
+```
+
+### 1.2. Tổ chức Thư mục Cốt lõi (Chi tiết xem [`docs/repository_structure.md`](docs/repository_structure.md))
+
+* **[`src/foal/`](src/foal/) — Lõi thuật toán tự hiện thực hoàn toàn từ mô tả toán học của bài báo:**
+  * [`backbone.py`](src/foal/backbone.py) & [`feature_fusion.py`](src/foal/feature_fusion.py): Nạp ViT-B/16 đóng băng và hợp nhất trung bình cộng CLS token qua 12 khối Transformer kèm `LayerNorm` cuối ($d_{\text{in}} = 768$).
+  * [`projection.py`](src/foal/projection.py): Phép chiếu ngẫu nhiên cố định $\boldsymbol{\phi}(x) = \sigma(\mathbf{h}\mathbf{P})$ hỗ trợ 3 chế độ kiểm soát phương sai (`P0` Gaussian chuẩn, `P1` Official Uniform, `P2` Gaussian khớp phương sai).
+  * [`rls.py`](src/foal/rls.py) & [`model.py`](src/foal/model.py): Bộ phân loại giải tích `OnlineRidgeRLS` cập nhật đệ quy bằng đồng nhất thức Woodbury và `torch.linalg.solve` ở độ chính xác kép `float64`, mở rộng cột phân loại động khi có lớp mới.
+  * [`critical_analysis.py`](src/foal/critical_analysis.py): Module độc lập của **Lab 2** chứa `BalancedOnlineRidgeRLS` (`FD1`), tự hiệu chỉnh chính quy hóa theo vết `compute_trace_scaled_gamma` (`FD2`), bộ sinh luồng mất cân bằng mũ Long-Tail và nhiễu cảm biến tất định.
+  * [`baselines/`](src/foal/baselines/) & [`dataset_adapters/`](src/foal/dataset_adapters/): Các baseline đối chứng (`Experience Replay`, `Official LwF`, `Adapted LwF`) và bộ nạp tự động từ Hugging Face cho DTD & FGVC-Aircraft.
+* **[`configs/`](configs/) · [`scripts/`](scripts/) · [`notebooks/`](notebooks/) · [`results/`](results/) · [`poster/`](poster/) · [`tests/`](tests/) · [`docs/`](docs/):** Tách biệt hoàn toàn cấu hình YAML, CLI scripts, notebooks GPU, kết quả JSON/CSV đã kiểm toán, Poster A2 và bộ kiểm thử đơn vị.
+
+### 1.3. Phân định Minh bạch Thư viện Phụ trợ Tái sử dụng (External Dependencies)
+Tuân thủ quy tắc hiện thực của môn học, các thư viện ngoài chỉ phục vụ hạ tầng tensor, nạp dữ liệu/trọng số tiền huấn luyện và ghi nhận thực nghiệm:
+* **`torch`, `torchvision`:** Phép toán ma trận/tensor, biến đổi kích thước ảnh và `DataLoader`.
+* **`timm`:** Tải trọng số ViT-B/16 tiền huấn luyện đóng băng (`vit_base_patch16_224.augreg2_in21k_ft_in1k` và `vit_base_patch16_224.augreg_in1k`).
+* **`datasets` (Hugging Face):** Tải tự động `uoft-cs/cifar100`, `tanganke/dtd`, `Multimodal-Fatima/FGVC_Aircraft_train` & `_test` trực tiếp bằng code, không cần chuẩn bị thủ công.
+* **`wandb`, `PyYAML`, `numpy`, `pytest`, `matplotlib`, `pandas`:** Quản lý cấu hình, theo dõi thực nghiệm, kiểm thử tự động và xuất biểu đồ phân tích (không tham gia vào lõi thuật toán cập nhật F-OAL).
+
+---
+
+## 2. Hướng dẫn Cài đặt & Chạy Lại Nhanh (Quick Start)
+
+Yêu cầu **Python 3.10+** (hướng dẫn đầy đủ từng tham số xem tại [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)):
 
 ```bash
-# 1. Cài đặt môi trường (Python 3.10+)
+# 1. Khởi tạo môi trường ảo & cài đặt thư viện
 python -m venv .venv
 # Windows: .venv\Scripts\Activate.ps1 | Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 
-# 2. Chạy unit tests
-python -m pytest -q
+# 2. Chạy bộ kiểm thử đơn vị CPU-safe (tương đương GitHub Actions CI, không cần dữ liệu GPU cục bộ)
+python -m pytest -q \
+  --ignore=tests/test_checkpoint_roundtrip.py \
+  --ignore=tests/test_rls_real_features.py \
+  --ignore=tests/test_vit_transforms.py
 
-# 3. Chạy Smoke Test end-to-end (smoke verified: CPU, 2 tasks, không cần W&B key, không ghi đè kết quả chính thức)
+# 3. Chạy Smoke Test đầu-cuối trên CPU (~45 giây, 2 tasks, không cần W&B API key, không ghi đè results/)
 python -m scripts.reproduce_cifar100 --mode smoke
 
-# 4. Chạy Full CIFAR-100 (full execution supported: pipeline đầy đủ 10 tasks; khuyến nghị GPU T4/A100)
+# 4. Chạy Full Reproduction CIFAR-100 (10 tasks x 10 lớp, khuyến nghị GPU T4/A100)
 python -m scripts.reproduce_cifar100 --mode full --config configs/c3_d_bilinear_raw.yaml --seed 42
+
+# 5. Chạy thực nghiệm Phản biện & Giải pháp Lab 2 (Long-Tail E1 + Scaling/Double-Descent E3) & Xuất Poster A2
+python -m scripts.run_lab2_longtail --dataset cifar100 --seeds 42 123 2026
+python -m scripts.run_lab2_scaling_sensitivity --dataset cifar100 --seeds 42 123 2026
+python -m scripts.build_poster_assets && python -m scripts.build_poster_a2_pptx
 ```
 
-* **Phân biệt trạng thái xác minh:** **`smoke verified`** (đã chạy pass end-to-end trên CPU qua `--mode smoke`), **`full execution supported`** (pipeline full 10 tasks sẵn sàng chạy qua `--mode full` khi có GPU), và **`numerical reproduction verified`** (các kết quả số liệu GPU chính thức đã kiểm toán & lưu ở `results/` + W&B Mục 14.4–15).
-* Chi tiết cài đặt, tải tự động `uoft-cs/cifar100` (Hugging Face / `torchvision`), tái tạo bảng/biểu đồ (`scripts/analyze_cifar100_multiseed.py`, `scripts/generate_headline_final_analysis.py`) và bảng ánh xạ W&B Project / Report xem tại **Mục 14**, **Mục 15** và [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md).
+* **Phân biệt rõ 3 mức độ xác minh:**
+  1. **`smoke verified`:** Đã kiểm chứng chạy thông suốt đầu-cuối trên CPU qua `--mode smoke`.
+  2. **`full execution supported`:** Toàn bộ scripts/notebooks 10 tasks sẵn sàng thực thi lại từ đầu khi có GPU.
+  3. **`numerical reproduction verified`:** Mọi số liệu báo cáo đều được xuất từ các lượt chạy thực tế trên GPU/CPU đã kiểm toán SHA256 trong `results/` và đồng bộ công khai trên W&B.
 
 ---
 
-### 1.1. Tóm tắt nghiên cứu
+## 3. Cơ sở Lý thuyết & Nền tảng Toán học F-OAL
 
-F-OAL là một phương pháp **Online Class-Incremental Learning (OCIL)** được đề xuất nhằm giải quyết hiện tượng **Catastrophic Forgetting**, đồng thời giảm thời gian huấn luyện và chi phí bộ nhớ GPU.
+### 3.1. Bài toán Online Class-Incremental Learning (OCIL)
+Trong bối cảnh **OCIL**, dữ liệu đến tuần tự theo luồng các mini-batch $\mathcal{D}_1 \to \mathcal{D}_2 \to \dots \to \mathcal{D}_t$ với $\mathcal{D}_t = (\mathbf{X}_t, \mathbf{Y}_t)$ thuộc các tập lớp mở rộng dần qua $K$ giai đoạn (ví dụ CIFAR-100 gồm $K = 10$ tasks $\times$ $10$ lớp mới/task). Mô hình bị ràng buộc nghiêm ngặt bởi hai điều kiện:
+1. **Học một lượt (*One-pass*):** Mỗi mẫu $(\mathbf{x}_i, y_i)$ chỉ đi qua mô hình đúng một lần duy nhất.
+2. **Không lưu mẫu cũ (*Exemplar-free / Zero-replay*):** Không lưu ảnh cũ vào bộ đệm để huấn luyện lại nhằm tiết kiệm bộ nhớ và bảo vệ quyền riêng tư dữ liệu.
 
-Khác với những phương pháp Deep Learning truyền thống dựa trên Backpropagation, F-OAL sử dụng một **Vision Transformer (ViT) đã được pre-train và đóng băng**, kết hợp với **Feature Fusion**, **Smooth Projection** và **Analytic Classifier**. Bộ phân loại được cập nhật bằng **Recursive Least Squares (RLS)**, không cần tính gradient hay lưu lại các mẫu huấn luyện cũ để replay.
+Các phương pháp huấn luyện bằng lan truyền ngược (*Backpropagation*) trong OCIL thường rơi vào **Quên thảm khốc (*Catastrophic Forgetting*)** do gradient của mini-batch mới ghi đè trọng số của các lớp cũ (*recency bias*). F-OAL giải quyết tận gốc vấn đề này bằng cách chuyển bài toán cập nhật bộ phân loại sang **nghiệm đóng đệ quy của bài toán Hồi quy Ridge tuyến tính** trên không gian đặc trưng đóng băng.
 
-Ý tưởng cốt lõi của nghiên cứu là chuyển việc huấn luyện bộ phân loại từ một bài toán tối ưu lặp bằng Gradient Descent sang một bài toán **Ridge Regression có nghiệm giải tích**. Nhờ khả năng cập nhật nghiệm theo từng mini-batch, F-OAL có thể tiếp nhận dữ liệu mới liên tục mà không cần truy cập lại toàn bộ dữ liệu trước đó.
+### 3.2. Ba Khối Biểu diễn Tuyến Xuôi (*Forward-Only Feature Pipeline*)
 
-Kết quả thực nghiệm trên sáu bộ dữ liệu cho thấy F-OAL đạt độ chính xác cạnh tranh với nhiều phương pháp hiện có, đặc biệt nổi bật trên các bộ dữ liệu fine-grained, đồng thời có thời gian huấn luyện ngắn và mức sử dụng GPU tương đối thấp.
+1. **Frozen Pre-trained ViT-B/16 & Feature Fusion (`Eq. 2`):**
+   Toàn bộ tham số của backbone Vision Transformer ($L = 12$ khối) được đóng băng hoàn toàn ($\nabla_\theta = 0$). Để thu nhận đồng thời thông tin kết cấu cục bộ ở các tầng nông và ngữ nghĩa trừu tượng ở tầng sâu, F-OAL lấy trung bình cộng vector `[CLS]` đầu ra của cả 12 khối rồi chuẩn hóa qua `LayerNorm` cuối:
+   $$\mathbf{h}(x) = \mathrm{LayerNorm}\!\left(\frac{1}{L}\sum_{\ell=1}^{L} \mathbf{h}^{(\ell)}_{\text{CLS}}(x)\right) \in \mathbb{R}^{d_{\text{in}}}, \qquad d_{\text{in}} = 768$$
+2. **Smooth Projection (`Eq. 3`):**
+   Vector $\mathbf{h}(x)$ được chiếu qua một ma trận ngẫu nhiên **khởi tạo một lần duy nhất rồi giữ cố định** $\mathbf{P} \in \mathbb{R}^{d_{\text{in}} \times D}$ (cấu hình chuẩn $D = 1{,}000$), theo sau bởi hàm kích hoạt Sigmoid:
+   $$\boldsymbol{\phi}(x) = \sigma(\mathbf{h}(x)\mathbf{P}) \in (0, 1)^D$$
+   > **Đính chính quan trọng từ kiểm toán của nhóm (`C1` & `L3`):** Bài báo gốc (Mục 3.1, trang 4) ghi các phần tử của $\mathbf{P}$ lấy từ phân phối chuẩn mà bỏ sót hệ số chuẩn hóa phương sai theo chiều đầu vào $1/d_{\text{in}}$. Nếu dùng $\mathcal{N}(0, 1)$, hơn $81\%$ đầu ra Sigmoid bị bão hòa cứng tại $0$ hoặc $1$; để Sigmoid hoạt động trong vùng trơn hiệu quả, phương sai bắt buộc phải tuân theo quy luật $\sigma_P^2 = \Theta(1/d_{\text{in}})$ (như $\mathcal{U}(-1/\sqrt{d_{\text{in}}}, +1/\sqrt{d_{\text{in}}})$ trong code tác giả).
+3. **Analytic Classifier dựa trên Hồi quy Ridge (`Eq. 4–5`):**
+   Gọi $\boldsymbol{\Phi} \in \mathbb{R}^{V \times D}$ là ma trận đặc trưng tích lũy của toàn bộ $V$ mẫu đã quan sát và $\mathbf{Y} \in \{0, 1\}^{V \times C}$ là ma trận nhãn One-Hot. Trọng số tối ưu toàn cục đạt được từ bài toán lồi chặt ($\gamma > 0$, cấu hình chuẩn $\gamma = 1.0$):
+   $$\hat{\mathbf{W}} = \arg\min_{\mathbf{W} \in \mathbb{R}^{D \times C}} \left(\|\mathbf{Y} - \boldsymbol{\Phi}\mathbf{W}\|_F^2 + \gamma\|\mathbf{W}\|_F^2\right) = (\boldsymbol{\Phi}^\top\boldsymbol{\Phi} + \gamma\mathbf{I}_D)^{-1}\boldsymbol{\Phi}^\top\mathbf{Y}$$
 
----
+### 3.3. Cập nhật Đệ quy Bình phương Tối thiểu Woodbury RLS (`Eq. 10–13`)
+Thay vì lưu trữ $\boldsymbol{\Phi}$ và $\mathbf{Y}$ qua thời gian, F-OAL chỉ duy trì **ma trận hiệp phương sai nghịch đảo (Autocorrelation / Precision Matrix)** $\mathbf{R}_t = (\gamma\mathbf{I}_D + \sum_{i=1}^{t}\mathbf{H}_i^\top\mathbf{H}_i)^{-1} \in \mathbb{R}^{D \times D}$ (khởi tạo $\mathbf{R}_0 = \gamma^{-1}\mathbf{I}_D$) và ma trận trọng số $\mathbf{W}_t \in \mathbb{R}^{D \times C_t}$. Khi mini-batch mới $(\mathbf{H}_t \in \mathbb{R}^{S \times D}, \mathbf{Y}_t \in \mathbb{R}^{S \times C_t})$ cỡ $S$ xuất hiện (nếu có lớp mới, ghép thêm các cột $\mathbf{0}$ vào $\mathbf{W}_{t-1}$):
 
-## 2. Bối cảnh và bài toán nghiên cứu
+$$\mathbf{R}_t = \mathbf{R}_{t-1} - \mathbf{R}_{t-1}\mathbf{H}_t^\top\left(\mathbf{I}_S + \mathbf{H}_t\mathbf{R}_{t-1}\mathbf{H}_t^\top\right)^{-1}\mathbf{H}_t\mathbf{R}_{t-1}$$
 
-### 2.1. Class-Incremental Learning
+$$\mathbf{W}_t = \mathbf{W}_{t-1} + \mathbf{R}_t\mathbf{H}_t^\top\left(\mathbf{Y}_t - \mathbf{H}_t\mathbf{W}_{t-1}\right)$$
 
-Trong Machine Learning truyền thống, mô hình thường được huấn luyện trên một tập dữ liệu cố định, chứa đầy đủ các lớp cần dự đoán. Tuy nhiên, trong nhiều ứng dụng thực tế, các lớp dữ liệu mới có thể xuất hiện sau khi mô hình đã được triển khai.
-
-**Class-Incremental Learning (CIL)** giải quyết tình huống mô hình phải liên tục học thêm các lớp mới mà vẫn duy trì khả năng nhận biết những lớp đã học.
-
-Ví dụ, ở giai đoạn đầu, một mô hình phân loại hình ảnh được huấn luyện trên 10 lớp đầu tiên của CIFAR-100. Ở giai đoạn tiếp theo, mô hình được cung cấp dữ liệu của 10 lớp mới. Sau khi hoàn thành giai đoạn thứ hai, mô hình phải phân loại được cả 20 lớp thay vì chỉ 10 lớp gần nhất.
-
-Quá trình này tiếp tục cho đến khi mô hình học đủ 100 lớp.
-
-Khó khăn lớn nhất của CIL là **Catastrophic Forgetting**: khi học dữ liệu mới, những thay đổi trong tham số mô hình có thể làm suy giảm hiệu suất dự đoán trên các lớp cũ.
-
-### 2.2. Online Class-Incremental Learning
-
-**Online Class-Incremental Learning (OCIL)** bổ sung thêm ràng buộc về cách dữ liệu được cung cấp. Thay vì có toàn bộ dữ liệu của một task để huấn luyện qua nhiều epoch, mô hình tiếp nhận dữ liệu dưới dạng các mini-batch liên tiếp và thông thường chỉ được học trên mỗi mẫu một lần.
-
-Ta có thể biểu diễn luồng huấn luyện như sau:
-
-$$
-\mathcal D_1\rightarrow\mathcal D_2
-\rightarrow\cdots\rightarrow\mathcal D_t
-$$
-
-Với mỗi mini-batch:
-
-$$
-\mathcal D_t=(X_t,Y_t)
-$$
-
-Trong đó, $X_t$ là dữ liệu đầu vào và $Y_t$ là nhãn tương ứng.
-
-Khi mini-batch mới xuất hiện, mô hình không được truy cập lại dữ liệu của những mini-batch đã xử lý trước đó.
-
-Cần lưu ý rằng **Online Learning không đồng nghĩa với Unsupervised Learning**. Trong thiết lập OCIL của F-OAL, dữ liệu huấn luyện vẫn có nhãn. Từ *online* nhấn mạnh tính tuần tự và giới hạn số lần truy cập dữ liệu.
-
-### 2.3. Những hạn chế của các phương pháp trước đây
-
-Một hướng phổ biến để giảm Catastrophic Forgetting là **Experience Replay**, trong đó hệ thống lưu một tập nhỏ các mẫu dữ liệu cũ và sử dụng lại chúng khi học task mới. Phương pháp này có thể duy trì hiệu suất tốt nhưng cần bộ nhớ bổ sung, tăng chi phí huấn luyện và có thể gây ra vấn đề riêng tư khi dữ liệu cũ phải được lưu trữ.
-
-Các phương pháp **Exemplar-Free** không yêu cầu lưu dữ liệu cũ để replay, nhưng thường gặp khó khăn trong việc cân bằng khả năng học lớp mới và duy trì độ chính xác trên lớp cũ.
-
-Một hướng tiếp cận khác là **Analytic Continual Learning (ACL)**, sử dụng các nghiệm giải tích thay cho quá trình tối ưu bằng Backpropagation. Tuy nhiên, những phương pháp ACL trước đó thường cần giai đoạn huấn luyện nền hoặc xử lý dữ liệu theo từng task lớn, gây khó khăn khi áp dụng trực tiếp vào luồng dữ liệu online.
-
-F-OAL được đề xuất nhằm khắc phục các hạn chế trên bằng cách xây dựng một phương pháp **Exemplar-Free, Forward-Only và cập nhật trực tiếp theo mini-batch**.
+* **Tính bất biến theo thứ tự & cỡ lô (*Exact Joint Equivalence*):** Ví dụ vô hướng đơn giản với $D=1, \gamma=1, R_0=1, W_0=0$: sau mẫu $(H_1=1, Y_1=1)$ ta có $R_1 = 1/2, W_1 = 1/2$; sau mẫu $(H_2=1, Y_2=0)$ ta có $R_2 = 1/3, W_2 = 1/3$ — trùng khít tuyệt đối với nghiệm giải gộp toàn tập $W^* = \frac{1\cdot 1 + 1\cdot 0}{1^2 + 1^2 + 1} = \frac{1}{3}$ mà không cần lưu lại mẫu thứ nhất.
+* **Bộ nhớ & Độ phức tạp thực tế (Đính chính `Eq. 14` của bài báo):** Hai ma trận trạng thái chiếm bộ nhớ cố định $\mathcal{O}(D^2 + DC)$ ($\approx 7.63\text{ MB}$ cho $\mathbf{R}$ ở `float64`, $D=1{,}000$). Chi phí cập nhật $\mathbf{R}_t$ trên mỗi mini-batch cỡ $S$ thực chất là $\Theta(D^2 S + DS^2 + S^3)$ (**hoàn toàn độc lập với số lớp $C$**, đính chính lỗi in nhầm biến $C$ trong `Eq. 14` trang 5 của bài báo gốc).
 
 ---
 
-## 3. Mục tiêu và đóng góp của F-OAL
+## 4. Giai đoạn I — Kết quả Tái lập Thực nghiệm & Giải mã Chênh lệch Đa Tập Dữ Liệu
 
-F-OAL hướng đến ba mục tiêu chính: duy trì độ chính xác khi học thêm lớp mới, giảm thời gian huấn luyện và giảm mức tiêu thụ bộ nhớ GPU.
+### 4.1. Chuỗi Chẩn đoán C0 $\to$ C3: Giải mã Khoảng cách $-11.65\text{ pp}$ với Mã nguồn Tác giả
+Ở lượt chạy tái lập độc lập đầu tiên từ mô tả chữ của bài báo trên CIFAR-100 (`seed=42`, Run [`2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv)), mô hình đạt $\bar{A} = 79.33\%$, thấp hơn $-11.65\text{ pp}$ so với lượt chạy mã gốc tác giả (`90.98%`, Run [`3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232)). Thay vì sao chép code tác giả, nhóm thiết kế chuỗi thí nghiệm kiểm soát từng nhân tố (**`C0–C3`**, chi tiết tại [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) và [`docs/CIFAR100_PREPROCESSING_AUDIT.md`](docs/CIFAR100_PREPROCESSING_AUDIT.md)) và xác minh lặp lại trên cả **DTD** lẫn **FGVC-Aircraft**:
 
-Đóng góp đầu tiên là mở rộng **Analytic Continual Learning** sang bối cảnh **Online Class-Incremental Learning**, trong đó dữ liệu xuất hiện tuần tự và chỉ được xử lý một lần.
+| Bậc Chẩn đoán | Nhân tố Cô lập (Thay đổi đúng 1 biến) | CIFAR-100 $\bar{A}$ | DTD $\bar{A}$ | FGVC-Aircraft $\bar{A}$ | Phát hiện Khoa học Cốt lõi |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **`C1-P0` (Ban đầu)** | $\mathbf{P} \sim \mathcal{N}(0, 1)$, ViT `augreg_in1k` | `79.33%` | `62.20%` | `31.04%` | **$>81\%$ đầu ra Sigmoid bão hòa cứng** ($\text{Std}(\mathbf{h}\mathbf{P}) \approx 19.3\text{–}20.7$). |
+| **`C1-P1` (Chuẩn phương sai)** | Đổi $\mathbf{P} \sim \mathcal{U}(\pm 1/\sqrt{768})$ (`0.00%` bão hòa) | `83.28%` *(+3.95)* | `78.68%` *(+16.48)* | `49.82%` *(+18.78)* | `C1-P2` Gaussian cùng phương sai $\mathcal{N}(0, \frac{1}{3\cdot 768})$ cho kết quả trùng khít (`83.26%`, `78.68%`, `49.95%`). |
+| **`C2-B1` (Chuẩn Backbone)** | Đổi sang `augreg2_in21k_ft_in1k` (như `timm` mặc định của tác giả) | `91.77%` *(+8.49)* | `85.83%` *(+7.15)* | `64.46%` *(+14.64)* | Tiền huấn luyện ImageNet-21K quyết định chất lượng phân tách đặc trưng đóng băng. |
+| **`C3` (Chuẩn Tiền xử lý)** | Nội suy ảnh + Raw `[0,1]` khớp code tác giả (`Max abs diff = 0.0`) | **`90.40%`** *(C3-D)* | **`85.08%`** *(A0 s42)* | **`64.63%`** *(C3-E)* | Khớp hoàn toàn giao thức gốc; phần chênh nhỏ còn lại (`< 0.7 pp`) thuần túy do khác `seed` (`42` vs `0`). |
 
-Đóng góp thứ hai là sử dụng một **Frozen Pre-trained Encoder** kết hợp **Feature Fusion** và **Smooth Projection** nhằm tạo ra biểu diễn đặc trưng có chất lượng mà không cần Fine-tuning toàn bộ mạng.
+*(Ngoài ra, kiểm toán **`C0`** phát hiện code tác giả chia độ quên cho $T = 10$ gồm cả task cuối luôn có độ quên bằng $0$, làm $F_{\text{code}} = \frac{9}{10} F_{\text{past}}$; repo tính song song cả hai chỉ số để đối sánh minh bạch).*
 
-Đóng góp thứ ba là sử dụng **Recursive Least Squares** để cập nhật Analytic Classifier theo từng mini-batch. Cơ chế này giúp duy trì nghiệm tối ưu của Ridge Regression trên toàn bộ dữ liệu đã quan sát mà không cần lưu lại các mẫu gốc.
+### 4.2. Kết quả Headline Comparison (Table 2 — CIFAR-100 & DTD, `seed=42`)
 
-Cuối cùng, nghiên cứu cung cấp kết quả thực nghiệm nhằm đánh giá độ chính xác, mức độ quên, thời gian huấn luyện và bộ nhớ GPU so với những phương pháp CIL/OCIL trước đó.
+| Tập dữ liệu | Phương pháp | Replay Buffer | $\bar{A}$ (Nhóm) | $\bar{A}$ (Paper) | $A_{10}$ (Nhóm) | $F_{\text{past}}$ (Nhóm) | W&B Run | Nhận định Kiểm định |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **CIFAR-100** | *Official Author Code (`seed=0`)* | 0 | `90.98%` | `91.1%` | `85.84%` | `5.17%` | [`3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | Mốc đối chứng mã gốc `liuyuchen-cz/F-OAL @ 73e4ac1`. |
+| **CIFAR-100** | **F-OAL Clean-Room (`C3-D`)** | **0** | **`90.40%`** | **`91.1%`** | **`85.73%`** | **`5.16%`** | [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Tái lập thành công lợi thế vượt trội cả về độ chính xác, tốc độ (`229s`) và bộ nhớ. |
+| **CIFAR-100** | Experience Replay (`ER`) | 5,000 | `86.67%` | `90.1%` | `79.79%` | `16.74%` | [`xlcme1c3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3) | Dù lưu 5,000 ảnh cũ vẫn kém F-OAL `-3.73 pp` $\bar{A}$ và quên gấp `3.2×`. |
+| **CIFAR-100** | Official-Protocol `LwF` (`SGD`) | 0 | `46.29%` | `69.3%` | `23.34%` | `0.41%`* | [`c5pjewk4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4) | *Độ cứng nhắc thảm khốc (*under-learning*): không học được task mới nên $F_{\text{past}}$ thấp giả tạo. |
+| **CIFAR-100** | Adapted `LwF` (`AdamW`) | 0 | `29.63%` | `69.3%` | `11.21%` | `94.99%` | [`ifl3rz2u`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u) | *Recency collapse*: chỉ nhớ task vừa học, xóa sạch các task cũ. |
+| **DTD** | **F-OAL Clean-Room (`A0`)** | **0** | **`85.08%`** | **`82.8%`** | **`76.06%`** | **`8.61%`** | [`nyukb6j0`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nyukb6j0) | Vượt con số bài báo `+2.28 pp` (trung bình 3 seeds đạt **`85.85 ± 0.92%`**). |
+| **DTD** | `ER` / `Official LwF` / `Adapted LwF` | 5,000 / 0 | `53.00%` / `15.40%` / `25.00%` | `61.3%` / `40.9%` | `38.94%` / `8.56%` / `8.62%` | `29.74%` / `0.90%` / `90.90%` | [`q6pm84ej`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q6pm84ej) · [`0068ne1c`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0068ne1c) · [`uga0pme6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/uga0pme6) | Trên tập mẫu nhỏ ($40$ mẫu/lớp), SGD/AdamW 1-pass suy sụp nặng so với nghiệm giải tích RLS. |
 
----
+### 4.3. Kết quả Table 4 Ablation Đa Seed (3 Seeds `42, 123, 2026` × 4 Cấu hình × 3 Tập Dữ Liệu = 36 Runs)
 
-## 4. Kiến trúc và phương pháp đề xuất
+| Cấu hình Ablation | FF | SP | **CIFAR-100** $\bar{A}$ *(Paper: 91.1)* | **DTD** $\bar{A}$ *(Paper: 82.8)* | **FGVC-Aircraft** $\bar{A}$ *(Paper: 62.2)* |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **`A0` — Full F-OAL** | ✓ | ✓ | **`90.59 ± 0.16%`** | **`85.85 ± 0.92%`** | **`64.22 ± 3.70%`** |
+| **`A1` — Without Feature Fusion** | ✗ | ✓ | `90.23 ± 0.11%` *(-0.36 pp)* | `82.93 ± 0.95%` *(-2.93 pp)* | `62.98 ± 3.68%` *(-1.24 pp)* |
+| **`A2` — Without Smooth Projection** | ✓ | ✗ | `90.58 ± 0.18%` *(-0.01 pp)* | `79.32 ± 1.97%` *(-6.53 pp)* | `60.40 ± 4.16%` *(-3.82 pp)* |
+| **`A3` — Without Both (Linear RLS)** | ✗ | ✗ | `90.16 ± 0.21%` *(-0.43 pp)* | `75.24 ± 1.26%` *(-10.61 pp)* | `57.75 ± 3.97%` *(-6.46 pp)* |
 
-Kiến trúc F-OAL gồm hai thành phần chính: **Frozen Encoder** và **Analytic Classifier**.
-
-Dữ liệu đầu vào được xử lý bởi Vision Transformer. Những đặc trưng trung gian từ các transformer block được kết hợp bằng Feature Fusion, sau đó biến đổi qua Smooth Projection. Vector đặc trưng cuối cùng được đưa vào Analytic Classifier để dự đoán lớp.
-
-### 4.1. Frozen Pre-trained Encoder
-
-F-OAL sử dụng **ViT-B được pre-train trên ImageNet-1K** làm backbone. Toàn bộ tham số của bộ trích xuất đặc trưng được giữ cố định trong quá trình học tăng dần.
-
-Với ảnh đầu vào $x$, encoder tạo ra vector đặc trưng:
-
-$$
-h=\phi(x)
-$$
-
-Trong đó, $\phi$ là hàm trích xuất đặc trưng cố định.
-
-Việc đóng băng encoder giúp giảm nhu cầu lưu các activation phục vụ Backpropagation và loại bỏ chi phí tính gradient cho backbone trong giai đoạn học tăng dần.
-
-Ngoài ra, vì tham số encoder không thay đổi, biểu diễn của một ảnh cũ cũng không bị thay đổi do quá trình Fine-tuning trên dữ liệu mới.
-
-Tuy nhiên, điều này không có nghĩa mô hình hoàn toàn không thể quên. Bộ phân loại vẫn thay đổi, và độ chính xác trên các lớp cũ vẫn có thể suy giảm khi bổ sung lớp mới.
-
-### 4.2. Feature Fusion
-
-Thay vì chỉ sử dụng đặc trưng từ transformer block cuối cùng, F-OAL khai thác các đặc trưng trung gian từ nhiều block của ViT.
-
-Giả sử ViT có $L$ transformer block, với đặc trưng sau block thứ $i$ là $h_i$. Feature Fusion có thể được biểu diễn bằng:
-
-$$
-h_{\text{fusion}}
-=
-\frac{1}{L}\sum_{i=1}^{L}h_i
-$$
-
-Mục tiêu của cơ chế này là kết hợp thông tin từ các mức biểu diễn khác nhau. Những transformer block trung gian có thể chứa thông tin bổ sung cho đặc trưng cuối cùng, qua đó cải thiện khả năng phân biệt giữa các lớp.
-
-Feature Fusion đặc biệt có ý nghĩa với các bộ dữ liệu **Fine-Grained Classification**, nơi nhiều lớp có đặc điểm thị giác tương đối giống nhau.
-
-### 4.3. Smooth Projection
-
-Sau Feature Fusion, đặc trưng được đưa qua một phép chiếu tuyến tính ngẫu nhiên, kết hợp với hàm kích hoạt Sigmoid:
-
-$$
-z=\sigma(h_{\text{fusion}}P)
-$$
-
-Trong đó:
-
-- $P$ là ma trận chiếu ngẫu nhiên.
-- $\sigma$ là hàm Sigmoid.
-- $z$ là vector đặc trưng cuối cùng để huấn luyện bộ phân loại.
-
-**Điểm quan trọng là $P$ chỉ được khởi tạo một lần, sau đó giữ cố định trong toàn bộ quá trình học.** Các phần tử của $P$ được lấy mẫu từ một phân phối chuẩn.
-
-Vì vậy, Smooth Projection không được tối ưu bằng Backpropagation. Nó đóng vai trò biến đổi đặc trưng sang một không gian mới, có thêm tính phi tuyến nhờ hàm Sigmoid.
-
-Trong thực nghiệm chính, F-OAL sử dụng **1.000 chiều** cho đặc trưng đầu ra của phép chiếu.
-
-Việc lựa chọn phép chiếu cố định giúp bảo đảm không gian đặc trưng không thay đổi giữa các task, một điều kiện quan trọng để duy trì nghiệm Recursive Least Squares trên dữ liệu tích lũy.
-
-### 4.4. Analytic Classifier
-
-**Analytic Classifier (AC)** là bộ phân loại tuyến tính học ánh xạ từ đặc trưng sang nhãn One-Hot.
-
-Giả sử có $N$ mẫu, đặc trưng có $D$ chiều và tổng cộng $C$ lớp. Ta ký hiệu:
-
-$$
-H\in\mathbb R^{N\times D}
-$$
-
-$$
-Y\in\mathbb R^{N\times C}
-$$
-
-$$
-W\in\mathbb R^{D\times C}
-$$
-
-Trong đó, $H$ là ma trận đặc trưng, $Y$ là ma trận nhãn One-Hot và $W$ là trọng số của bộ phân loại.
-
-Đầu ra dự đoán được tính bằng:
-
-$$
-\hat Y=HW
-$$
-
-Không giống bộ phân loại Neural Network được huấn luyện bằng Cross-Entropy và Backpropagation, Analytic Classifier trong F-OAL giải bài toán **Ridge Regression**:
-
-$$
-\boxed{
-W^*=
-\arg\min_W
-\left(
-\|HW-Y\|_F^2+\gamma\|W\|_F^2
-\right)
-}
-$$
-
-Trong đó, $\|\cdot\|_F$ là Frobenius Norm và $\gamma$ là hệ số L2 Regularization.
-
-Nghiệm tối ưu có dạng:
-
-$$
-\boxed{
-W^*=(H^TH+\gamma I)^{-1}H^TY
-}
-$$
-
-Công thức này có thể được suy ra bằng cách lấy đạo hàm của hàm mục tiêu theo $W$ rồi cho đạo hàm bằng 0.
-
-Đây là **Closed-Form Solution**, cho phép xác định nghiệm tối ưu của hàm mục tiêu Least Squares mà không cần thực hiện nhiều bước Gradient Descent.
-
-Tuy nhiên, nếu tính trực tiếp công thức này, hệ thống cần sử dụng toàn bộ dữ liệu đã quan sát. Vì vậy, F-OAL áp dụng Recursive Least Squares để cập nhật nghiệm theo mini-batch.
+> **Quy luật Khoa học Xuyên Tập Dữ Liệu:** Trên **CIFAR-100** (vật thể tự nhiên trùng miền với ImageNet-21K), CLS tầng cuối đã gần như khả tách tuyến tính nên `FF + SP` chỉ cộng thêm `+0.43 pp`. Ngược lại, khi lệch sang miền kết cấu bề mặt (**DTD**) hoặc hình thái tinh (**FGVC-Aircraft**), hợp nhất đặc trưng đa tầng (`FF`) và mở rộng phi tuyến theo Định lý Cover (`SP`) đóng vai trò sống còn, mang lại mức tăng ròng **`+10.61 ± 0.50 pp`** trên DTD và **`+6.46 ± 0.43 pp`** trên FGVC-Aircraft.
 
 ---
 
-## 5. Recursive Least Squares (RLS)
+## 5. Giai đoạn II — Phân tích Phản biện Lý thuyết, Thực nghiệm Lab 2 & Poster A2
 
-### 5.1. Ý tưởng cốt lõi
+Toàn bộ cơ sở chứng minh định lý xem tại [`docs/CRITICAL_ANALYSIS_REPORT.md`](docs/CRITICAL_ANALYSIS_REPORT.md) và báo cáo thực nghiệm 152 runs xem tại [`docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md`](docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md) ([W&B Report Lab 2](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Ph%C3%A2n-t%C3%ADch-Ph%E1%BA%A3n-bi%E1%BB%87n-L%C3%BD-thuy%E1%BA%BFt-Th%E1%BB%B1c-nghi%E1%BB%87m-Lab-2-Long-Tail-Scaling--VmlldzoxODM1OTE5Mg)).
 
-**Recursive Least Squares** cho phép cập nhật nghiệm Ridge Regression khi có dữ liệu mới mà không cần giải lại toàn bộ bài toán từ đầu.
+### 5.1. Ba Điểm Mạnh Được Bảo Chứng (`S1–S3`) & Các Lỗi Nội Tại Phát Hiện Trong Bài Báo Gốc
+* **Ba điểm mạnh thực chất:** **(S1)** Đồng nhất thức Woodbury bảo toàn nghiệm tối ưu toàn cục một lượt không thiên lệch recency gradient; **(S2)** Bộ nhớ trạng thái cố định $\mathcal{O}(D^2 + DC)$ không phụ thuộc độ dài luồng dữ liệu, loại bỏ hoàn toàn backward pass ($\sim 70\%$ FLOPs); **(S3)** Cộng hưởng `FF + SP` đặc biệt hiệu quả khi chuyển miền sang bài toán kết cấu và phân loại tinh.
+* **Năm sai sót toán học / bất nhất nội tại được nhóm phát hiện trong PDF NeurIPS 2024:** **(1)** `Eq. (1)` trang 4 viết ngược thứ tự hợp hàm $B_1(B_2(x))$; **(2)** `Eq. (14)–(15)` trang 5 viết nhầm chi phí cập nhật $\mathbf{R}$ phụ thuộc số lớp $C$ thay vì $\Theta(D^2 S + DS^2 + S^3)$; **(3)** Số liệu FGVC-Aircraft tự mâu thuẫn giữa Mục 4.4 (`66.2%`), Table 2/4 (`62.2%`) và Table 6 (`61.1%`); **(4)** Mục 3.1 thiếu hệ số phương sai $1/d_{\text{in}}$ cho ma trận $\mathbf{P}$; **(5)** Mục 4.3 khẳng định phương sai cực nhỏ không cần báo cáo thanh sai số, trái ngược hướng dẫn NeurIPS Checklist #7.
 
-Giả sử tại thời điểm $t$, mô hình đã tiếp nhận các mini-batch:
+### 5.2. Trục Chính I (`L1` & `FD1`): Sụp đổ Lớp Hiếm Long-Tail OCIL & Giải pháp `BalancedOnlineRidgeRLS` (54 Runs)
+* **Phản biện lý thuyết (`Theorem L1`):** Mục 4.6 & Figure 3 của bài báo khẳng định chuẩn cột $\|\hat{\mathbf{w}}_c\|_2$ tự động đồng đều chống thiên lệch. Phép giải tích Sherman–Morrison chứng minh tính chất này **chỉ đúng khi $N_1 = \dots = N_C$**: dưới hàm mục tiêu bình phương nhãn $\{0, 1\}$ và nền kích hoạt dương $\sigma(\mathbf{h}\mathbf{P}) \in (0, 1)^D$, lớp hiếm $c$ bị $V - N_c$ mẫu âm kéo về $0$ khiến $\|\hat{\mathbf{w}}_c\|_2 \propto N_c$.
+* **Giải pháp 1 lượt, 0-replay (`FD1` — [`BalancedOnlineRidgeRLS`](src/foal/critical_analysis.py)):** Nhân trọng số tần suất nghịch đảo nhân quả $\omega_i = (N_{\text{ref}} / \hat{N}_{y_i}^{(t)})^\beta$ trực tiếp qua phép biến đổi $\tilde{\mathbf{x}}_i = \sqrt{\omega_i}\boldsymbol{\phi}_i$ trong cập nhật Woodbury (`FD1a`), kết hợp chuẩn hóa lũy thừa cột lúc suy luận $\hat{\mathbf{w}}_c / \|\hat{\mathbf{w}}_c\|_2^\tau$ (`FD1b`).
+* **Chứng minh thực nghiệm (CIFAR-100, 60,000 ảnh, seeds `42, 123, 2026`):** Khi $\rho = N_{\max}/N_{\min} = 100$, Vanilla F-OAL (`g34o8awx`) có $r(\|\hat{\mathbf{w}}_c\|_2, N_c) = +0.89$, làm nhóm 1/3 lớp hiếm sụp đổ **$-60.84\text{ pp}$** (`87.48%` $\to$ `26.64%`). Chỉ riêng chuẩn hóa suy luận `FD1b` (`kafjjzio`, **0 chi phí train**) khôi phục **`+28.50 pp`** (`55.14%`); kết hợp `FD1a+b` (`fqahbyt4`) khôi phục **`+42.67 pp` Tail Recall (`69.31 ± 1.62%`)** và **`+13.32 pp` $\bar{A}$ (`86.11 ± 0.17%`)** mà không lưu bất kỳ mẫu cũ nào.
 
-$$
-(H_1,Y_1),\ldots,(H_t,Y_t)
-$$
+### 5.3. Trục Chính II (`L2` & `FD2`): Quy Luật $\Theta(D^2)$, Đỉnh Double-Descent & Tự Hiệu Chỉnh `FD2` (98 Runs)
+* **Phản biện lý thuyết (`Critique L2`):** (i) Mở rộng chiều $D$ vấp phải bức tường chi phí bậc hai $\Theta(D^2)$; (ii) Khi tổng số mẫu nhỏ ($V \approx D$, như DTD $V=1{,}600$ hay Aircraft $V=3{,}334$), phổ Marchenko–Pastur sinh ra các trị riêng cực nhỏ $\sigma_r \to 0^+$. Nếu chọn $\gamma \ll 1$, bộ lọc Tikhonov $\frac{\sigma_r}{\sigma_r^2 + \gamma}$ khuếch đại nhiễu lên $\frac{1}{2\sqrt{\gamma}}$ gây nổ chuẩn $\|\hat{\mathbf{W}}\|_F$ (giải thích trực tiếp cú sập xuống `22.4%` ở Table 6 bài báo gốc).
+* **Giải pháp không tham số (`FD2` — [`compute_trace_scaled_gamma`](src/foal/critical_analysis.py)):** Tự động định cỡ $\gamma_{\text{auto}} = \gamma_0 \cdot \frac{\mathrm{tr}(\boldsymbol{\Phi}_1^\top\boldsymbol{\Phi}_1)}{0.25 V_1 D_{\text{ref}}} \cdot \max(1, D/V_{\text{est}})$ ngay sau Task 1 mà không cần tách tập validation.
+* **Chứng minh thực nghiệm:** Lũy thừa thời gian RLS thực nghiệm đạt **$\alpha = 2.11 \approx 2.00$** (`nbr04hu5`: `D=6000` chậm gấp `35.6×` và tốn `274.66 MB` chỉ đổi lấy `+0.77 pp` $\bar{A}$). Ở chế độ ít mẫu $V = 1{,}600$ (`kyj36qk9`), đúng tại ngưỡng nội suy $D = 2{,}000 \approx V$ với $\gamma = 10^{-3}$, chuẩn $\|\hat{\mathbf{W}}\|_F$ **nổ gấp `16×` lên `155.0`** kéo $A_{10}$ sập xuống **`72.64%`**; công thức tự động `FD2` triệt tiêu hoàn toàn đỉnh suy biến và đạt $\bar{A}$ cao nhất toàn lưới (**`88.19%`** ở $D = 4{,}000$).
 
-Nghiệm Ridge Regression trên toàn bộ dữ liệu đã quan sát là:
+### 5.4. Các Điểm Yếu Đã Chứng Minh Còn Lại Ghi Nhận Tại `README.md` (`L3` & Độ Quên $F_{\text{past}}$)
+Theo quy định của mục *Empirical Demonstration* (đưa 2 trục điểm yếu + giải pháp nổi bật nhất lên Poster A2 và ghi nhận đầy đủ các điểm yếu đã chứng minh còn lại tại `README.md`), nhóm báo cáo chi tiết **2 phát hiện bổ trợ đã chứng minh thực nghiệm**:
+1. **Khuyết định luật tỷ lệ phương sai $\sigma_P^2 = \Theta(1/d_{\text{in}})$ gây bão hòa cứng hàm Sigmoid trên cả 3 bộ dữ liệu (`L3`):**
+   * Vì vector đầu ra `LayerNorm` có $\|\mathbf{h}\|_2^2 \approx d_{\text{in}} = 768$, khởi tạo $\mathbf{P} \sim \mathcal{N}(0, 1)$ đẩy độ lệch chuẩn tiền kích hoạt lên $\approx 19.3\text{–}20.7$, làm bão hòa cứng **`81.03%`** đơn vị trên CIFAR-100 (mất **$-3.95\text{ pp}$**, [`qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) vs [`6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z)), bão hòa **`82.32%`** trên DTD (mất **$-16.48\text{ pp}$**, [`u7apoirr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u7apoirr) vs [`qel56wwv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qel56wwv)), và bão hòa **`81.25%`** trên FGVC-Aircraft (mất **$-18.78\text{ pp}$**, [`do82b0k3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/do82b0k3) vs [`bemgqzjf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/bemgqzjf)). Áp đặt quy luật phương sai $\sigma_P^2 = 1/(3d_{\text{in}})$ đưa tỷ lệ bão hòa về đúng `0.00%` trên mọi phân phối (`P1`, `P2`).
+2. **Thiên lệch che lấp độ quên của công thức $F_{\text{past}}$ (*Underlearning Masks Forgetting*):**
+   * Từ đồng nhất thức phân rã $\Delta F_{\text{past}} = \Delta\overline{\text{Peak}} - \Delta\overline{\text{Final}}$ (chứng minh vi mô trên ma trận $10 \times 10$ của DTD tại [`docs/Limitations_2.md`](docs/Limitations_2.md)), mô hình học yếu ở giai đoạn đầu (như `A2/A3` khi tắt `SP`, hoặc `Official LwF`) có đỉnh ban đầu thấp nên hiệu số quên nhỏ giả tạo, chứng minh không bao giờ được đánh giá $F$ tách rời khỏi $\bar{A}$ và $A_{\text{last}}$.
 
-$$
-W_t^*=
-\left(
-\gamma I+\sum_{i=1}^{t}H_i^TH_i
-\right)^{-1}
-\left(
-\sum_{i=1}^{t}H_i^TY_i
-\right)
-$$
+### 5.5. Poster Khoa học Khổ Dọc `Portrait A2` (`420.0 mm × 594.0 mm`, 1 Slide `.pptx`)
 
-Ta định nghĩa ma trận:
+* **Tải file PowerPoint `.pptx` gốc (1 slide chuẩn in A2):** **[`poster/F-OAL_Critical_Analysis_Poster_A2.pptx`](poster/F-OAL_Critical_Analysis_Poster_A2.pptx)**
+* **Kịch bản thuyết trình 3.5 phút & 12 câu hỏi vấn đáp:** **[`docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md`](docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md)**
 
-$$
-\boxed{
-R_t=
-\left(
-\gamma I+\sum_{i=1}^{t}H_i^TH_i
-\right)^{-1}
-}
-$$
-
-Ma trận $R_t$ lưu thông tin thống kê tích lũy từ các đặc trưng đã quan sát dưới dạng nghịch đảo của ma trận Gram có regularization.
-
-Điều cần phân biệt là **$R_t$ không lưu toàn bộ thông tin nhãn**. Quan hệ giữa đặc trưng và nhãn được duy trì kết hợp thông qua trọng số bộ phân loại $W_t$.
-
-### 5.2. Công thức cập nhật RLS
-
-Khi mini-batch mới $(H_t,Y_t)$ xuất hiện, F-OAL sử dụng hai công thức cập nhật.
-
-Đầu tiên là cập nhật $R_t$:
-
-$$
-\boxed{
-R_t=R_{t-1}
--R_{t-1}H_t^T
-(I+H_tR_{t-1}H_t^T)^{-1}
-H_tR_{t-1}
-}
-$$
-
-Công thức này được suy ra từ **Woodbury Matrix Identity**, cho phép cập nhật nghịch đảo ma trận khi có thêm dữ liệu.
-
-Sau đó, trọng số bộ phân loại được cập nhật:
-
-$$
-\boxed{
-W_t=W_{t-1}
-+R_tH_t^T(Y_t-H_tW_{t-1})
-}
-$$
-
-Trong công thức thứ hai, $W_{t-1}$ là trọng số cũ, $H_tW_{t-1}$ là dự đoán trên mini-batch mới và $Y_t-H_tW_{t-1}$ là sai số dự đoán.
-
-Khác với Gradient Descent, phép điều chỉnh này không sử dụng learning rate nhân với gradient của hàm Loss. Thay vào đó, hệ số cập nhật được xác định từ ma trận $R_t$, nhằm duy trì nghiệm Least Squares trên dữ liệu tích lũy.
-
-Với hệ số regularization $\gamma>0$, trạng thái có thể được khởi tạo:
-
-$$
-R_0=\gamma^{-1}I,\qquad W_0=0
-$$
-
-Trong cấu hình chính của F-OAL, tác giả sử dụng $\gamma=1$, nên $R_0=I$.
-
-### 5.3. Ví dụ tính toán
-
-Xét một bài toán hồi quy đơn giản với một đặc trưng, một đầu ra và hệ số regularization $\gamma=1$.
-
-Khởi tạo:
-
-$$
-R_0=1,\qquad W_0=0
-$$
-
-Mini-batch đầu tiên có:
-
-$$
-H_1=1,\qquad Y_1=1
-$$
-
-Khi đó:
-
-$$
-R_1=1-\frac{1}{1+1}=\frac12
-$$
-
-Và:
-
-$$
-W_1=0+\frac12(1-0)=\frac12
-$$
-
-Tiếp theo, mini-batch thứ hai có:
-
-$$
-H_2=1,\qquad Y_2=0
-$$
-
-Ta cập nhật:
-
-$$
-R_2=\frac12-\frac{(1/2)^2}{1+1/2}
-=\frac13
-$$
-
-$$
-W_2=\frac12+\frac13\left(0-\frac12\right)
-=\frac13
-$$
-
-Nếu gom cả hai mẫu lại và giải Ridge Regression trực tiếp, ta nhận được:
-
-$$
-W^*=
-\frac{1\cdot1+1\cdot0}{1^2+1^2+1}
-=\frac13
-$$
-
-Như vậy, nghiệm được cập nhật tuần tự bằng RLS bằng với nghiệm tính từ toàn bộ dữ liệu.
-
-**Ý nghĩa:** RLS duy trì nghiệm tối ưu của bài toán Ridge Regression mà không cần lưu lại các mẫu đã xử lý, miễn là không gian đặc trưng và hàm mục tiêu được giữ cố định. Ví dụ này minh họa cơ chế cập nhật ở dạng đơn giản, không phải toàn bộ bài toán phân loại nhiều lớp của F-OAL.
-
-### 5.4. Học thêm lớp mới
-
-Khi một task mới xuất hiện, số lượng lớp tăng lên. F-OAL mở rộng ma trận trọng số $W$ bằng cách thêm các cột mới được khởi tạo bằng 0.
-
-Ví dụ, nếu ban đầu có ba lớp:
-
-$$
-W\in\mathbb R^{1000\times3}
-$$
-
-Và task tiếp theo bổ sung hai lớp, trọng số được mở rộng thành:
-
-$$
-W'\in\mathbb R^{1000\times5}
-$$
-
-Các cột cũ được giữ lại, còn hai cột mới được khởi tạo bằng 0 trước khi cập nhật RLS.
-
-Ma trận $R$ không cần mở rộng vì số chiều đặc trưng vẫn là 1.000:
-
-$$
-R\in\mathbb R^{1000\times1000}
-$$
-
-Cơ chế này cho phép F-OAL học thêm lớp mới mà không phải huấn luyện lại toàn bộ mô hình.
-
-### 5.5. Vì sao RLS giúp hạn chế Catastrophic Forgetting?
-
-Thay vì chỉ tối ưu trên mini-batch gần nhất, RLS duy trì nghiệm của hàm mục tiêu:
-
-$$
-\boxed{
-W_t^*=
-\arg\min_W
-\left[
-\sum_{i=1}^{t}\|H_iW-Y_i\|_F^2
-+\gamma\|W\|_F^2
-\right]
-}
-$$
-
-Hàm mục tiêu này tính đến tất cả mini-batch đã xuất hiện.
-
-Vì thế, dưới giả định đặc trưng được giữ cố định và các phép toán được thực hiện chính xác, cập nhật RLS cho nghiệm tương đương với Ridge Regression huấn luyện trên toàn bộ dữ liệu tích lũy.
-
-Tuy nhiên, **tính tương đương về nghiệm tối ưu không bảo đảm độ chính xác trên lớp cũ sẽ không suy giảm**. Các lớp mới vẫn có thể gây nhầm lẫn với lớp cũ, đặc biệt khi đặc trưng trích xuất chưa đủ khả năng phân biệt chúng.
+![Xem trước Poster Khoa học Portrait A2](poster/F-OAL_Critical_Analysis_Poster_A2_preview.png)
 
 ---
 
-## 6. Phân tích thời gian và bộ nhớ
-
-Ưu điểm quan trọng của F-OAL là loại bỏ Backpropagation trong quá trình học tăng dần.
-
-Đối với mạng Neural Network thông thường, quá trình huấn luyện cần lưu những giá trị trung gian để tính gradient và cập nhật tham số. Với F-OAL, encoder được đóng băng và quá trình huấn luyện chỉ cần thực hiện Forward Pass, sau đó cập nhật các ma trận của Analytic Classifier.
-
-Nếu $D$ là số chiều đặc trưng và $C$ là số lớp, hai ma trận trạng thái chính có kích thước:
-
-$$
-R\in\mathbb R^{D\times D},
-\qquad
-W\in\mathbb R^{D\times C}
-$$
-
-Vì vậy, lượng bộ nhớ bổ sung dành cho các ma trận này có độ phức tạp:
-
-$$
-O(D^2+DC)
-$$
-
-Trong cấu hình $D=1000$, ma trận $R$ chứa một triệu phần tử, tương đương khoảng 4 MB nếu lưu bằng float32. Tuy nhiên, đây chỉ là bộ nhớ của riêng $R$, chưa bao gồm ViT, các activation phục vụ Forward Pass và những tensor khác.
-
-Với mini-batch có kích thước $B$, phép cập nhật RLS dựa trên Woodbury cần các phép nhân ma trận với chi phí chính thường ở mức $O(BD^2+B^3)$, cùng những phép toán liên quan đến bộ phân loại. Khi $B$ nhỏ, việc cập nhật có thể hiệu quả hơn so với giải lại nghiệm trên toàn bộ dữ liệu.
-
-Một giới hạn quan trọng là **bộ nhớ của $R$ tăng theo bình phương số chiều đặc trưng**. Nếu tăng $D$ quá lớn, lợi thế bộ nhớ có thể giảm đáng kể.
-
----
-
-## 7. Thực nghiệm và kết quả
-
-### 7.1. Thiết lập thực nghiệm
-
-F-OAL được đánh giá trên sáu bộ dữ liệu gồm CIFAR-100, CORe50, FGVCAircraft, DTD, Tiny-ImageNet và Country211.
-
-Các phương pháp so sánh sử dụng backbone ViT-B đã pre-train trên ImageNet-1K. Đối với F-OAL, cấu hình chính sử dụng batch size 10, số chiều đặc trưng sau phép chiếu là 1.000 và hệ số regularization $\gamma=1$.
-
-Tác giả thực hiện các thí nghiệm trên một GPU **NVIDIA RTX 4070 Ti 12 GB**, và báo cáo kết quả trung bình của ba lần chạy.
-
-Các phương pháp được đánh giá theo ba chỉ số chính:
-
-**Average Accuracy ($A_{\text{avg}}$)** phản ánh độ chính xác trung bình trong quá trình học tăng dần.
-
-**Last Accuracy ($A_{\text{last}}$)** phản ánh độ chính xác sau khi hoàn thành task cuối cùng.
-
-**Forgetting Rate ($F$)** đo mức suy giảm độ chính xác trên các task cũ so với kết quả tốt nhất đã từng đạt được trước đó.
-
-Hai chỉ số Accuracy càng cao càng tốt, trong khi Forgetting Rate càng thấp càng tốt.
-
-### 7.2. Kết quả độ chính xác
-
-Bảng sau trình bày kết quả Average Accuracy từ Table 2 của paper:
-
-| Dataset | F-OAL | Baseline tốt nhất ngoài F-OAL |
-|---|---:|---:|
-| CIFAR-100 | 91,1% | 92,4% — DVC |
-| CORe50 | 96,3% | 97,1% — DVC |
-| FGVCAircraft | 62,2% | 55,6% — SCR |
-| DTD | 82,8% | 76,0% — EASE |
-| Tiny-ImageNet | 91,2% | 92,0% — EASE |
-| Country211 | 24,4% | 17,8% — SLCA |
-
-Kết quả cho thấy F-OAL đặc biệt nổi bật trên FGVCAircraft, DTD và Country211. Trên FGVCAircraft, phương pháp đạt 62,2%, cao hơn SCR 6,6 điểm phần trăm. Trên DTD, F-OAL vượt EASE 6,8 điểm phần trăm.
-
-Tuy nhiên, F-OAL không phải phương pháp có độ chính xác cao nhất trên mọi dataset. DVC đạt kết quả cao hơn trên CIFAR-100 và CORe50, còn EASE nhỉnh hơn trên Tiny-ImageNet.
-
-Điều này cho thấy thế mạnh của F-OAL không chỉ nằm ở Accuracy tuyệt đối mà ở **sự cân bằng giữa độ chính xác, tốc độ huấn luyện và chi phí bộ nhớ**.
-
-*Lưu ý khi trích dẫn:* Section 4.4 của paper ghi độ chính xác trên FGVCAircraft là 66,2%, nhưng Table 2 và Table 4 ghi 62,2%. Trong báo cáo này, số liệu 62,2% được lấy từ bảng kết quả chính.
-
-### 7.3. Forgetting Rate
-
-Trên CIFAR-100, F-OAL có:
-
-| Chỉ số | Kết quả |
-|---|---:|
-| Average Accuracy | 91,1% |
-| Last Accuracy | 86,5% |
-| Forgetting Rate | 5,5% |
-
-Trong khi đó, DVC có Forgetting Rate 8,2% trên cùng dataset.
-
-Kết quả cho thấy F-OAL có khả năng hạn chế việc quên kiến thức cũ trong thiết lập thực nghiệm của paper.
-
-Tuy vậy, Forgetting Rate không nên được đánh giá riêng lẻ. Một mô hình có độ chính xác thấp vẫn có thể có mức giảm độ chính xác nhỏ. Vì thế, cần kết hợp Forgetting Rate với Average Accuracy và Last Accuracy khi so sánh các phương pháp.
-
-### 7.4. Thời gian huấn luyện
-
-Theo Table 3, thời gian huấn luyện, bao gồm trích xuất đặc trưng, được báo cáo như sau:
-
-| Dataset | F-OAL | ER | EASE |
-|---|---:|---:|---:|
-| CIFAR-100 | 261 giây | 652 giây | 383 giây |
-| FGVCAircraft | 16 giây | 40 giây | 147 giây |
-| DTD | 8 giây | 21 giây | 139 giây |
-| Tiny-ImageNet | 507 giây | 1.315 giây | 638 giây |
-
-Trên CIFAR-100, F-OAL nhanh hơn ER khoảng 2,5 lần. Trên DTD, F-OAL nhanh hơn EASE khoảng 17,4 lần trong cấu hình thực nghiệm được báo cáo.
-
-Lợi thế này đến từ việc không cần Backpropagation qua ViT và không cần cập nhật toàn bộ mạng trong mỗi mini-batch.
-
-### 7.5. Bộ nhớ GPU
-
-Theo Figure 2, F-OAL có **Peak GPU Memory khoảng 1,9 GB** trên CIFAR-100 với batch size 10.
-
-Một số phương pháp dựa trên Experience Replay sử dụng nhiều bộ nhớ hơn, chẳng hạn ER khoảng 6,3 GB và iCaRL khoảng 7,5 GB trong cùng thiết lập đo.
-
-Tuy nhiên, F-OAL không phải phương pháp dùng ít VRAM nhất trong tất cả baseline. Một số phương pháp exemplar-free khác có kết quả bộ nhớ thấp hơn. Vì vậy, kết luận chính xác là **F-OAL đạt độ chính xác cao với mức sử dụng GPU tương đối thấp**, không phải luôn tối thiểu hóa VRAM.
-
----
-
-## 8. Ablation Study
-
-Ablation Study được thực hiện để kiểm tra mức đóng góp của từng thành phần trong mô hình.
-
-### 8.1. Feature Fusion và Smooth Projection
-
-Theo Table 4, kết quả trên DTD như sau:
-
-| Feature Fusion | Smooth Projection | Average Accuracy |
-|---|---|---:|
-| Có | Có | 82,8% |
-| Không | Có | 80,5% |
-| Có | Không | 79,3% |
-| Không | Không | 71,2% |
-
-Khi sử dụng cả Feature Fusion và Smooth Projection, độ chính xác đạt 82,8%. Khi loại bỏ cả hai thành phần, độ chính xác giảm xuống 71,2%, tương ứng mức giảm 11,6 điểm phần trăm.
-
-Kết quả này cho thấy việc kết hợp đặc trưng từ nhiều transformer block và biến đổi sang không gian đặc trưng mới có thể cải thiện đáng kể hiệu suất trên bộ dữ liệu DTD.
-
-Tuy nhiên, ảnh hưởng của các thành phần không giống nhau trên mọi dataset. Ví dụ, trên Tiny-ImageNet, một số cấu hình loại bỏ thành phần vẫn cho độ chính xác tương đương hoặc nhỉnh hơn cấu hình đầy đủ.
-
-### 8.2. Vai trò của Analytic Classifier
-
-Tác giả so sánh Analytic Classifier với một Fully Connected Classifier có cấu trúc tương tự nhưng được cập nhật bằng Backpropagation.
-
-Trong thí nghiệm trên CIFAR-100, mô hình sử dụng Analytic Classifier đạt 91,1% Average Accuracy, trong khi cấu hình thay thế bằng Fully Connected Classifier được báo cáo đạt 32,4%.
-
-Kết quả cho thấy cơ chế cập nhật RLS đóng vai trò rất quan trọng trong hiệu suất của F-OAL ở thiết lập OCIL được nghiên cứu.
-
-Tuy nhiên, kết quả này **không chứng minh Backpropagation nói chung kém hơn RLS trong mọi bài toán**. Đây là so sánh giữa hai cấu hình cụ thể trong cùng điều kiện thực nghiệm.
-
----
-
-## 9. Đánh giá ưu điểm và hạn chế
-
-### 9.1. Ưu điểm
-
-**Thứ nhất, giảm Catastrophic Forgetting.** RLS duy trì nghiệm của bài toán Ridge Regression trên dữ liệu tích lũy, từ đó hạn chế tình trạng bộ phân loại chỉ tối ưu quá mức cho các lớp vừa xuất hiện.
-
-**Thứ hai, không cần Experience Replay.** F-OAL không yêu cầu lưu ảnh cũ để huấn luyện lại. Thay vào đó, thông tin thống kê từ dữ liệu đã quan sát được duy trì thông qua các ma trận trạng thái.
-
-**Thứ ba, huấn luyện nhanh.** Vì backbone và phép chiếu đều cố định, quá trình học tăng dần chủ yếu gồm Forward Pass và các phép toán ma trận.
-
-**Thứ tư, tiết kiệm bộ nhớ.** Không cần lưu gradient và trạng thái tối ưu cho toàn bộ ViT trong giai đoạn học tăng dần, qua đó giảm nhu cầu sử dụng GPU.
-
-**Thứ năm, có cơ sở toán học rõ ràng.** Phương pháp dựa trên Ridge Regression và Woodbury Matrix Identity, cho phép chứng minh tính tương đương giữa nghiệm cập nhật tuần tự và nghiệm giải trên dữ liệu tích lũy.
-
-### 9.2. Hạn chế
-
-**Phụ thuộc vào pre-trained encoder.** Đây là giới hạn quan trọng nhất. F-OAL giả định encoder đã học được biểu diễn đủ tốt cho những lớp sẽ xuất hiện. Nếu dữ liệu mới khác biệt nhiều so với dữ liệu pre-training, việc chỉ cập nhật bộ phân loại tuyến tính có thể không đủ.
-
-**Không thích nghi biểu diễn đặc trưng.** Vì ViT và ma trận chiếu đều cố định, mô hình không thể học thêm những đặc trưng thị giác mới thông qua Fine-tuning trong quá trình học tăng dần.
-
-**Chi phí ma trận tăng theo số chiều đặc trưng.** Ma trận $R$ có kích thước $D\times D$, nên bộ nhớ dành cho ma trận này tăng theo $O(D^2)$.
-
-**Yêu cầu dữ liệu có nhãn.** F-OAL là phương pháp Online Supervised Learning. Nếu chỉ nhận được $X$ mà không có nhãn $Y$, mô hình không thể trực tiếp thực hiện bước cập nhật bộ phân loại theo công thức RLS của paper. Việc kết hợp Pseudo-Labeling hoặc Self-Supervised Learning sẽ là một hướng nghiên cứu mở rộng.
-
-**Chưa giải quyết đầy đủ dữ liệu mất cân bằng.** Khi dữ liệu có phân phối long-tailed hoặc các lớp nhận số lượng mẫu rất khác nhau, chỉ cập nhật classifier có thể chưa đủ để đạt hiệu suất tốt. Tác giả cũng đề cập đây là hướng nghiên cứu tương lai.
-
-**Lợi thế tài nguyên phụ thuộc vào mô hình pre-trained có sẵn.** F-OAL tiết kiệm tài nguyên trong giai đoạn học tăng dần, nhưng không loại bỏ chi phí tính toán đã được sử dụng để pre-train encoder ban đầu.
-
-**Nghiệm giải tích không bảo đảm không quên tuyệt đối về mặt dự đoán.** Tính tương đương với joint Ridge Regression chỉ áp dụng cho hàm mục tiêu Least Squares dưới những giả định đã xác định. Nó không đồng nghĩa với việc độ chính xác của từng lớp cũ luôn được duy trì.
-
----
-
-## 10. Khả năng tái hiện thực nghiệm
-
-Đối với phạm vi một dự án môn Nhập môn Machine Learning, có thể ưu tiên tái hiện F-OAL trên **CIFAR-100** trước khi mở rộng sang những dataset khác.
-
-CIFAR-100 được chia thành 10 task, mỗi task gồm 10 lớp. Mô hình phải học tuần tự qua 10 task và sau mỗi task phải phân loại được tất cả lớp đã xuất hiện.
-
-Cấu hình cần cố gắng giữ nhất quán với paper gồm ViT-B pre-trained trên ImageNet-1K, batch size 10, kích thước Smooth Projection 1.000 chiều và hệ số regularization $\gamma=1$.
-
-Nhóm có thể sử dụng mã nguồn chính thức do tác giả công bố để giảm rủi ro triển khai sai thuật toán.
-
-Trong giai đoạn đầu, cần xác nhận mô hình có thể tải checkpoint ViT, chạy trích xuất đặc trưng và cập nhật Analytic Classifier bằng RLS. Sau đó thực hiện thí nghiệm CIFAR-100 đầy đủ, lưu lại các chỉ số Accuracy, Forgetting Rate, thời gian huấn luyện và Peak GPU Memory.
-
-Kết quả tham chiếu trên CIFAR-100 của paper là Average Accuracy 91,1%, Last Accuracy 86,5% và Forgetting Rate 5,5%.
-
-Nếu có thêm thời gian, nhóm có thể thực hiện Ablation Study bằng cách lần lượt loại bỏ Feature Fusion hoặc Smooth Projection để đánh giá vai trò của các thành phần.
-
-**Về tài nguyên**, paper sử dụng GPU RTX 4070 Ti 12 GB và báo cáo mức sử dụng VRAM của F-OAL khoảng 1,9 GB trên CIFAR-100. Vì vậy, việc sử dụng Kaggle hoặc Google Colab để tái hiện phương pháp chính là hướng khả thi, mặc dù thời gian chạy và khả năng cấp GPU không được bảo đảm.
-
-Các kết quả tái hiện cần được báo cáo trung thực, bao gồm phiên bản thư viện, checkpoint sử dụng, random seed, cấu hình GPU và những khác biệt giữa môi trường thực nghiệm của nhóm với môi trường của tác giả.
-
----
-
-## 11. Hướng nghiên cứu mở rộng
-
-Một hướng mở rộng đáng chú ý là kết hợp F-OAL với **Semi-Supervised Learning hoặc Self-Supervised Learning** để giảm sự phụ thuộc vào nhãn của dữ liệu online.
-
-Trong các hệ thống thực tế, dữ liệu có thể xuất hiện liên tục nhưng nhãn không phải lúc nào cũng được cung cấp ngay lập tức. Do đó, việc kết hợp cơ chế phát hiện lớp mới, tạo pseudo-label và cập nhật bộ phân loại giải tích có thể mở rộng phạm vi ứng dụng của phương pháp.
-
-Một hướng khác là cho phép encoder thích nghi có kiểm soát với phân phối dữ liệu mới. Tuy nhiên, điều này tạo ra thách thức vì khi không gian đặc trưng thay đổi, những thống kê đã lưu trong $R$ không còn trực tiếp tương ứng với biểu diễn mới. Một phương pháp mở rộng cần giải quyết vấn đề đồng bộ hoặc hiệu chỉnh những thống kê cũ.
-
-Ngoài ra, có thể nghiên cứu các phương pháp giảm kích thước hoặc xấp xỉ ma trận $R$ để cải thiện khả năng mở rộng khi số chiều đặc trưng lớn.
-
-Đây là những hướng đề xuất dựa trên phân tích hạn chế của F-OAL, **không phải các cải tiến đã được chứng minh trong paper gốc**.
-
----
-
-## 12. Kết luận
-
-F-OAL đề xuất một hướng tiếp cận hiệu quả cho **Online Class-Incremental Learning**, kết hợp khả năng biểu diễn của mô hình pre-trained với phương pháp học giải tích dựa trên Recursive Least Squares.
-
-Điểm khác biệt chính so với nhiều phương pháp Continual Learning truyền thống là F-OAL không sử dụng Backpropagation để cập nhật mô hình trong giai đoạn học tăng dần. Thay vào đó, phương pháp giữ cố định encoder và cập nhật một bộ phân loại tuyến tính thông qua các phép toán đại số.
-
-Nhờ cơ chế RLS, bộ phân loại có thể duy trì nghiệm Ridge Regression trên dữ liệu tích lũy mà không cần lưu các mẫu huấn luyện cũ để replay. Điều này giúp giảm chi phí bộ nhớ, rút ngắn thời gian học và hạn chế một phần hiện tượng Catastrophic Forgetting.
-
-Kết quả thực nghiệm cho thấy F-OAL có độ chính xác cạnh tranh, đặc biệt tốt trên một số bộ dữ liệu fine-grained, đồng thời sử dụng tài nguyên tính toán tương đối thấp.
-
-Tuy nhiên, phương pháp vẫn phụ thuộc mạnh vào chất lượng của pre-trained encoder, yêu cầu dữ liệu có nhãn và chưa giải quyết toàn diện bài toán thích nghi biểu diễn hoặc dữ liệu mất cân bằng.
-
-**Đóng góp quan trọng nhất của F-OAL là chứng minh rằng, khi có một không gian đặc trưng cố định đủ tốt, việc học lớp mới có thể được thực hiện hiệu quả bằng các phương pháp giải tích thay vì nhất thiết phải cập nhật toàn bộ mạng bằng Backpropagation.**
-
-Đối với môn Nhập môn Machine Learning, paper có giá trị nghiên cứu vì kết nối nhiều kiến thức nền tảng như **Linear Regression, Ridge Regression, Regularization, Matrix Algebra, Recursive Least Squares, Transfer Learning và Continual Learning** trong một hệ thống hoàn chỉnh.
-
----
-
-## 13. Tài liệu tham khảo
-
-[1] Zhuang, H., Liu, Y., He, R., Tong, K., Zeng, Z., Chen, C., Wang, Y., & Chau, L.-P. (2024). *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning*. Advances in Neural Information Processing Systems, 37, 41517–41538. [NeurIPS Proceedings](https://proceedings.neurips.cc/paper_files/paper/2024/hash/48ffa38c13078d6ce26b328e7f373243-Abstract-Conference.html).
-
-[2] Zhuang, H., et al. (2024). *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning*. [Full Paper PDF](https://papers.neurips.cc/paper_files/paper/2024/file/48ffa38c13078d6ce26b328e7f373243-Paper-Conference.pdf).
-
-[3] Liu, Y., et al. *F-OAL: Official Implementation*. [GitHub Repository](https://github.com/liuyuchen-cz/F-OAL).
-
-[4] ICORE Conference Portal. *Advances in Neural Information Processing Systems (NeurIPS)*. ICORE2026 Rank A*. [Official Conference Ranking](https://portal.core.edu.au/conf-ranks/98/).
-
-
----
-
-## 14. Experiment Tracking, Core Scope & Reproducibility
-
-### 14.1. Lựa chọn Phạm vi (Core Scope) & Lý do chọn CIFAR-100
-Dự án lựa chọn **Core Scope** theo chuẩn HCMUS Lab Book: tập trung tái lập đầy đủ hai thí nghiệm trọng tâm trên **CIFAR-100** (10 tasks $\times$ 10 lớp, 1-pass online stream): (1) **Headline Comparison** (F-OAL vs. Experience Replay và LwF, Table 2) và (2) **Table 4 Ablation Study** (cô lập Feature Fusion và Smooth Projection trên 3 seed `42`, `123`, `2026`), thay thế phần còn lại bằng chuỗi phân tích chẩn đoán tự thiết kế (**C0–C3**) để giải thích chính xác nguyên nhân chênh lệch với mã nguồn tác giả (`liuyuchen-cz/F-OAL`). CIFAR-100 được chọn làm bộ dữ liệu chính vì có kích thước chuẩn (50,000 train / 10,000 test), xuất hiện trong cả Table 2, Table 3 và Table 4 của bài báo gốc, cho phép kiểm chứng đồng thời độ chính xác, mức độ quên và tính ổn định đa seed trong giới hạn tài nguyên GPU Colab/Kaggle. Ngoài ra, nhóm thực hiện mở rộng kiểm chứng trên **DTD** và **FGVC-Aircraft** (chi tiết phạm vi thực tế ở bảng dưới).
-
-### 14.2. Quick Start (Cài đặt & Chạy lại)
-Yêu cầu **Python 3.10+** (chi tiết đầy đủ xem tại [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)):
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1 | Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-python -m pytest -v
-
-# Chạy smoke test nhanh (2 tasks, 20 mẫu/task, không cần W&B key, lưu riêng ở results/smoke_cifar100_seed42/):
-python -m scripts.reproduce_cifar100 --mode smoke
-
-# Chạy full C3-D (seed 42) hoặc Multi-Seed Table 4 Ablation (seeds 42, 123, 2026):
-python -m scripts.reproduce_cifar100 --mode full --config configs/c3_d_bilinear_raw.yaml --seed 42
-python -m scripts.run_cifar100_multiseed_ablation --seeds 42 123 2026
-```
-Tất cả dataset (`uoft-cs/cifar100`, `tanganke/dtd`, `Multimodal-Fatima/FGVC_Aircraft_train` / `_test`) và trọng số pre-trained được tải tự động từ Hugging Face bằng code (`src/foal/datasets.py`, `src/foal/dataset_adapters/`), không cần chuẩn bị thủ công. Loader CIFAR-100 và DTD giữ đường dự phòng `torchvision.datasets` (cùng dữ liệu gốc) chỉ dùng khi không tải được từ Hugging Face; loader FGVC-Aircraft không có dự phòng, tải lỗi thì dừng. Ba notebook lịch sử (`foal_c1_projection_controlled.ipynb`, `foal_table4_ablation_controlled.ipynb`, `foal_dtd_ablation_colab.ipynb`) tải bằng `torchvision.datasets` như lúc chạy; ô đầu mỗi notebook ghi chú điều này.
-
-### 14.3. External Dependencies and Reuse
-Các thư viện phụ trợ được tái sử dụng để phục vụ hạ tầng dữ liệu, backbone và theo dõi thực nghiệm (tách biệt hoàn toàn với phần lõi thuật toán F-OAL do nhóm tự triển khai trong `src/foal/`):
-* **`torch` & `torchvision`:** Khung tính toán tensor, biến đổi ảnh chuẩn (`Resize`, `ToTensor`) và bộ nạp dữ liệu (`DataLoader`).
-* **`timm`:** Nạp trọng số ViT-B pre-trained đóng băng (`vit_base_patch16_224.augreg_in1k`, `vit_base_patch16_224.augreg2_in21k_ft_in1k`).
-* **`datasets` (Hugging Face):** Tải tự động `uoft-cs/cifar100`, `tanganke/dtd` và `Multimodal-Fatima/FGVC_Aircraft_train` / `_test` trực tiếp trong code.
-* **`wandb`:** Ghi nhận cấu hình, metrics, learning curves và Provenance Artifacts lên project `hcmus-foal-reproduction`.
-* **`PyYAML`, `numpy`, `pytest`:** Đọc cấu hình YAML, xử lý mảng/seed, và kiểm thử tự động.
-* **`matplotlib`, `pandas`:** Vẽ hình và tổng hợp bảng kết quả trong các script phân tích (`scripts/generate_*`, `scripts/analyze_*`); không dùng trong phần thuật toán.
-* **Phần thuật toán do nhóm tự triển khai từ mô tả toán học của paper (`src/foal/`):** Trích xuất và trung bình CLS token qua 12 blocks (`FrozenViT` / `feature_fusion.py`), phép chiếu ngẫu nhiên `SmoothProjection` (`projection.py`), bộ phân loại giải tích `OnlineRidgeRLS` cập nhật theo công thức Woodbury (`rls.py`), và pipeline `FOALModel` (`model.py`).
-
-### 14.4. Bảng Ánh xạ Thực nghiệm (Experiment → Script/Notebook → W&B Run URL → Purpose)
-
-#### A. Main Experiments (CIFAR-100 Headline Comparison & Official Reference)
-| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
+## 6. Hệ thống Đăng ký Thực nghiệm W&B & Kiểm toán Nguồn gốc (Provenance)
+
+### 6.1. CIFAR-100 — Headline Comparison, Official Reference & Provenance Artifacts (`v0`)
+
+| Thực nghiệm | Script / Notebook | W&B Run (`state=finished`) | Phân loại Nguồn gốc & Minh chứng |
+| :--- | :--- | :---: | :--- |
+| **F-OAL Official Reference (`seed=0`)** | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | Chạy mã gốc `liuyuchen-cz/F-OAL @ 73e4ac1` ($\bar{A}=90.98\%$, $A_{10}=85.84\%$). |
+| **F-OAL Initial Rebuild (`seed=42`)** | [`scripts/train.py`](scripts/train.py) / [`notebooks/foal_cifar100_full_reproduction.ipynb`](notebooks/foal_cifar100_full_reproduction.ipynb) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | Bản tái lập đầu tiên ($\bar{A}=79.33\%$), khởi phát chuỗi chẩn đoán `C0–C3`. |
+| **F-OAL Aligned `C3-D` (`seed=42`)** | [`scripts/train.py`](scripts/train.py) (`configs/c3_d_bilinear_raw.yaml`) | [Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | `ONLINE_TRAINING` · Artifact `c3_d_bilinear_raw_results:v0` (`SHA256: 903456d6...`). |
+| **Experience Replay (`B=5000`, `s42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) (`configs/headline/er_cifar100.yaml`) | [Run `xlcme1c3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3) | `POST_HOC_IMPORT` · Artifact `headline_er_provenance_bundle:v0` (`SHA256: 190a5870...`). |
+| **Official-Protocol `LwF` (`s42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) (`configs/headline/lwf_cifar100_official_protocol.yaml`) | [Run `c5pjewk4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4) | `POST_HOC_IMPORT` · Artifact `headline_official_lwf_provenance_bundle:v0` (`SHA256: d47e5755...`). |
+| **Adapted `LwF` (`AdamW`, `s42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) (`configs/headline/lwf_cifar100.yaml`) | [Run `ifl3rz2u`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u) | `POST_HOC_IMPORT` · Artifact `headline_adapted_lwf_provenance_bundle:v0` (`SHA256: 9b612893...`). |
+| **10-Task Progression Curve** | [`scripts/create_wandb_accuracy_progression_run.py`](scripts/create_wandb_accuracy_progression_run.py) | [Run `nceap43w`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nceap43w) | `ANALYSIS_ONLY` (`job_type="analysis"`) — tổng hợp đường cong 10 tasks của 4 phương pháp. |
+
+### 6.2. CIFAR-100 — Multi-Seed Table 4 Ablation (12 Runs) & Chẩn đoán C1–C3
+
+| Nhóm Thực nghiệm | Script / Notebook | Danh sách W&B Runs Chính thức (`state=finished`) | Kết quả Chính |
 | :--- | :--- | :--- | :--- |
-| **F-OAL Official Reference (`seed=0`)** | [`notebooks/foal_official_cifar100_reproduction.ipynb`](notebooks/foal_official_cifar100_reproduction.ipynb) | [Run `3eca8232`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3eca8232) | Chạy mã nguồn gốc `liuyuchen-cz/F-OAL @ 73e4ac1` ($\bar{A}=90.98\%$, $A_{10}=85.84\%$) làm mốc đối chứng. |
-| **F-OAL Initial Rebuild (`seed=42`)** | [`scripts/train.py`](scripts/train.py) / [`notebooks/foal_cifar100_full_reproduction.ipynb`](notebooks/foal_cifar100_full_reproduction.ipynb) | [Run `2cdeiptv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2cdeiptv) | Bản tái lập ban đầu ($\bar{A}=79.33\%$), làm bộc lộ khoảng cách $-11.65\text{ pp}$ dẫn tới chuỗi phân tích C1–C3. |
-| **F-OAL Aligned C3-D (`seed=42`, Full)** | [`scripts/train.py`](scripts/train.py) (`configs/c3_d_bilinear_raw.yaml`) | [Run `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Bản tái lập chuẩn hóa theo giao thức gốc ($\bar{A}=90.40\%$, $A_{10}=85.73\%$, $F_{\text{past}}=5.16\%$, `ONLINE_TRAINING`). |
-| **Experience Replay (`B=5000`, `seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `xlcme1c3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xlcme1c3) | Baseline Replay ($\bar{A}=86.67\%$, $A_{10}=79.79\%$, $F_{\text{past}}=16.74\%$, `POST_HOC_IMPORT`). |
-| **Official-Protocol LwF (`seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `c5pjewk4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c5pjewk4) | Baseline LwF SGD + Dynamic Weighting ($\bar{A}=46.29\%$, $A_{10}=23.34\%$, `POST_HOC_IMPORT`). |
-| **Adapted LwF (`AdamW`, `seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_cifar100_headline_final.ipynb`](notebooks/foal_cifar100_headline_final.ipynb) | [Run `ifl3rz2u`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ifl3rz2u) | Baseline LwF AdamW minh họa hiện tượng recency collapse ($F_{\text{past}}=94.99\%$, `POST_HOC_IMPORT`). |
+| **Table 4 `seed=42` (`A0–A3`)** | [`scripts/ablation.py`](scripts/ablation.py) | A0 [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) · A1 [`shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l) · A2 [`rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk) · A3 [`k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | `90.40%` / `90.10%` / `90.38%` / `89.92%`. |
+| **Table 4 `seed=123` (`A0–A3`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) | A0 [`g32wwf9a`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g32wwf9a) · A1 [`4lqkxf9f`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4lqkxf9f) · A2 [`q3d9rei2`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q3d9rei2) · A3 [`cvo857q3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/cvo857q3) | `90.68%` / `90.29%` / `90.63%` / `90.27%`. |
+| **Table 4 `seed=2026` (`A0–A3`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) | A0 [`9uinxzzr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9uinxzzr) · A1 [`0wotm3e8`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0wotm3e8) · A2 [`6oxn4ioz`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6oxn4ioz) · A3 [`w0e0h1od`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/w0e0h1od) | `90.69%` / `90.29%` / `90.72%` / `90.29%`. |
+| **`C1` Projection (`P0, P1, P2`)** | [`scripts/run_c1_diagnostics.py`](scripts/run_c1_diagnostics.py) | P0 [`qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) · P1 [`6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z) · P2 [`hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | Khử `81.03%` bão hòa Sigmoid (`+3.95 pp`). |
+| **`C2` Backbone (`B0` vs `B1`)** | [`scripts/run_c2_diagnostics.py`](scripts/run_c2_diagnostics.py) | B0 [`3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6) · B1 [`ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | `augreg_in1k` $\to$ `augreg2_in21k_ft_in1k` (`+8.49 pp`). |
+| **`C3` Preprocessing (`B, C, D`)** | [`scripts/run_c3_diagnostics.py`](scripts/run_c3_diagnostics.py) | C3-B [`ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3) · C3-C [`4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h) · C3-D [`3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | `C3-D` khớp bitwise với tensor đầu vào code gốc. |
 
-#### B. Main Experiment 2: Table 4 Ablation & Multi-Seed (CIFAR-100, Seeds `42, 123, 2026` — 12 Runs Completed)
-| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
+### 6.3. Mở rộng Đa Tập Dữ Liệu — DTD & FGVC-Aircraft (42 Runs Chính thức)
+
+| Tập dữ liệu & Hạng mục | Script / Notebook | Danh sách W&B Runs Chính thức (`state=finished`) | Tóm tắt Định lượng |
 | :--- | :--- | :--- | :--- |
-| **Table 4 `seed=42` (`A0, A1, A2, A3`)** | [`scripts/ablation.py`](scripts/ablation.py) / [`notebooks/foal_table4_ablation_controlled.ipynb`](notebooks/foal_table4_ablation_controlled.ipynb) | [A0 `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5), [A1 `shl4p10l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/shl4p10l), [A2 `rkedlkkk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkedlkkk), [A3 `k01pp8st`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k01pp8st) | Cô lập đóng góp của FF ($+0.30\text{ pp}$) và SP ($+0.02\text{ pp}$) ở `seed=42`. |
-| **Table 4 `seed=123` (`Full, No-FF, No-SP, Neither`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) / [`notebooks/foal_cifar100_multiseed_ablation.ipynb`](notebooks/foal_cifar100_multiseed_ablation.ipynb) | [Full `g32wwf9a`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g32wwf9a), [No-FF `4lqkxf9f`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4lqkxf9f), [No-SP `q3d9rei2`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q3d9rei2), [Neither `cvo857q3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/cvo857q3) | Kiểm định tính ổn định của Table 4 trên `seed=123` (`Mean±Std` tổng hợp ở [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](docs/CIFAR100_MULTISEED_ABLATION_REPORT.md)). |
-| **Table 4 `seed=2026` (`Full, No-FF, No-SP, Neither`)** | [`scripts/run_cifar100_multiseed_ablation.py`](scripts/run_cifar100_multiseed_ablation.py) / [`notebooks/foal_cifar100_multiseed_ablation.ipynb`](notebooks/foal_cifar100_multiseed_ablation.ipynb) | [Full `9uinxzzr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9uinxzzr), [No-FF `0wotm3e8`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0wotm3e8), [No-SP `6oxn4ioz`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6oxn4ioz), [Neither `w0e0h1od`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/w0e0h1od) | Hoàn tất bộ 12 runs đa seed (`Full = 90.59 ± 0.16%`, `No-FF = 90.23 ± 0.11%`, `No-SP = 90.58 ± 0.18%`, `Neither = 90.16 ± 0.21%`). |
+| **DTD Official (`seed=0`)** | [`notebooks/foal_official_dtd_reproduction.ipynb`](notebooks/foal_official_dtd_reproduction.ipynb) | [Run `c9yyo08r`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c9yyo08r) | $\bar{A} = 85.04\%$, $A_{10} = 75.94\%$ (40 lớp, 10 tasks). |
+| **DTD Table 4 (`3 seeds × A0–A3`)** | [`notebooks/foal_dtd_ablation_colab.ipynb`](notebooks/foal_dtd_ablation_colab.ipynb) | A0: [`nyukb6j0`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nyukb6j0), [`munb2s1x`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/munb2s1x), [`hdrhmlo7`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hdrhmlo7)<br>A1: [`l0avdaso`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/l0avdaso), [`giu86cr7`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/giu86cr7), [`ff4y0s7i`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ff4y0s7i)<br>A2: [`xwtx7ibk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xwtx7ibk), [`b4zu17cf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/b4zu17cf), [`rr92acgq`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rr92acgq)<br>A3: [`wmhz0kcs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/wmhz0kcs), [`ad85oywu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ad85oywu), [`i1bm2km4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/i1bm2km4) | A0 `85.85 ± 0.92%`; tổng lợi ích `FF + SP` đạt **`+10.61 ± 0.50 pp`**. |
+| **DTD `C1–C3` & Baselines** | [`scripts/run_c1_dtd_diagnostics.py`](scripts/run_c1_dtd_diagnostics.py) · [`notebooks/foal_dtd_headline_final.ipynb`](notebooks/foal_dtd_headline_final.ipynb) | C1: [`u7apoirr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u7apoirr), [`qel56wwv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qel56wwv), [`ccn9l0sh`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ccn9l0sh) · C2: [`4i3yehho`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4i3yehho), [`drgbs8xm`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/drgbs8xm) · C3: [`mwxf525w`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/mwxf525w), [`smz0h0zu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/smz0h0zu), [`7gvtu924`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/7gvtu924) · Baselines: [`q6pm84ej`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q6pm84ej), [`0068ne1c`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0068ne1c), [`uga0pme6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/uga0pme6) | C1 `+16.48 pp`, C2 `+7.15 pp`, C3 chênh `0.05 pp`; F-OAL vượt ER `+32.08 pp`. |
+| **Aircraft Official (`seed=0`)** | [`docs/aircraft_provenance/`](docs/aircraft_provenance/) | [Run `9ko84fxj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9ko84fxj) | $\bar{A} = 61.91\%$, $A_{10} = 53.67\%$ (sát paper `62.2% / 54.0%`). |
+| **Aircraft Table 4 (`3 seeds × A0–A3`)** | [`scripts/run_aircraft_ablation.py`](scripts/run_aircraft_ablation.py) | A0: [`2qksp3kv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qksp3kv), [`m1kze328`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/m1kze328), [`2qqecl0m`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qqecl0m)<br>A1: [`4fsupq4x`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4fsupq4x), [`0n4xc8ap`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0n4xc8ap), [`no2junlu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/no2junlu)<br>A2: [`yezjox78`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/yezjox78), [`37254a6g`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/37254a6g), [`tp4fd91q`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/tp4fd91q)<br>A3: [`gclk75xs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/gclk75xs), [`ergopmva`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ergopmva), [`n8s1hjzc`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/n8s1hjzc) | A0 `64.22 ± 3.70%`; tổng lợi ích `FF + SP` đạt **`+6.46 ± 0.43 pp`**. |
+| **Aircraft `C1–C3` (`seed=42`)** | [`scripts/run_c1_aircraft_diagnostics.py`](scripts/run_c1_aircraft_diagnostics.py) | C1: [`do82b0k3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/do82b0k3), [`bemgqzjf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/bemgqzjf), [`72oidkep`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/72oidkep) · C2: [`rkgjxdvs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkgjxdvs) · C3: [`k0m9djvw`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k0m9djvw), [`z64dog21`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/z64dog21), [`mb7h3mz9`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/mb7h3mz9) | C1 `+18.78 pp`, C2 `+14.64 pp`, 5 biến thể C3 chỉ lệch `0.51 pp`. |
 
-#### C. Additional Controlled Analyses (`C1–C3` & `Analysis-only`)
-| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
-| :--- | :--- | :--- | :--- |
-| **C1: Projection Initialization (`P0, P1, P2`)** | [`scripts/run_c1_diagnostics.py`](scripts/run_c1_diagnostics.py) / [`notebooks/foal_c1_projection_controlled.ipynb`](notebooks/foal_c1_projection_controlled.ipynb) | [P0 `qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k), [P1 `6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z), [P2 `hsgsvb6p`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hsgsvb6p) | Chứng minh bão hòa Sigmoid từ $\mathcal{N}(0,1)$ làm giảm $-3.95\text{ pp}$ (`79.33%` $\to$ `83.28%`). |
-| **C2: Backbone Alignment (`B0` vs. `B1`)** | [`scripts/run_c2_diagnostics.py`](scripts/run_c2_diagnostics.py) / [`notebooks/foal_c2_backbone_controlled.ipynb`](notebooks/foal_c2_backbone_controlled.ipynb) | [B0 `3oiftwg6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3oiftwg6), [B1 `ne1p16b5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ne1p16b5) | Cô lập tác động của checkpoint `augreg2_in21k_ft_in1k` vs `augreg_in1k` ($+8.49\text{ pp}$: `83.28%` $\to$ `91.77%`). |
-| **C3: Preprocessing Alignment (`B, C, D`)** | [`scripts/run_c3_diagnostics.py`](scripts/run_c3_diagnostics.py) / [`notebooks/foal_c3_preprocessing_controlled.ipynb`](notebooks/foal_c3_preprocessing_controlled.ipynb) | [C3-B `ts2wh4e3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ts2wh4e3), [C3-C `4m4uir7h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4m4uir7h), [C3-D `3v53tmq5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/3v53tmq5) | Xác minh `Bilinear + Raw [0,1]` (`C3-D`) khớp bitwise với code gốc (`Max abs diff = 0.0`). |
-| **Analysis-Only: 10-Task Progression** | [`scripts/create_wandb_accuracy_progression_run.py`](scripts/create_wandb_accuracy_progression_run.py) | [Run `nceap43w`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nceap43w) | Run tổng hợp (`job_type="analysis"`, không phải training) vẽ đường cong 10 tasks từ 4 runs chính. |
+### 6.4. Lab 2 — Critical Analysis & Empirical Demonstration (`tag: lab2-empirical-demo`)
 
-#### D. Cross-Dataset Extension (`DTD` & `FGVC-Aircraft`)
-Dữ liệu tải từ Hugging Face: DTD `tanganke/dtd` ([`src/foal/dataset_adapters/dtd.py`](src/foal/dataset_adapters/dtd.py)), FGVC-Aircraft `Multimodal-Fatima/FGVC_Aircraft_train` / `_test` ([`src/foal/dataset_adapters/fgvc_aircraft.py`](src/foal/dataset_adapters/fgvc_aircraft.py)). Report W&B: [CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/--VmlldzoxODI2NDExMA), [DTD](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/--VmlldzoxODI3ODAxMQ), [FGVC-Aircraft](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/--VmlldzoxODI3NTM0Mg).
+| Thực nghiệm Lab 2 | Script / Module | W&B Run (`state=finished`) | Phát hiện Định lượng & Ý nghĩa |
+| :--- | :--- | :---: | :--- |
+| **E1 — Vanilla F-OAL Long-Tail (`3 seeds`)** | [`scripts/run_lab2_longtail.py`](scripts/run_lab2_longtail.py) | [Run `g34o8awx`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g34o8awx) | Tương quan $r(\|\hat{\mathbf{w}}_c\|_2, N_c) = +0.89$; nhóm lớp hiếm sụp đổ **$-60.84\text{ pp}$** ở $\rho = 100$. |
+| **E1 — Norm Calibration `FD1b` (`3 seeds`)** | [`src/foal/critical_analysis.py`](src/foal/critical_analysis.py) | [Run `kafjjzio`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kafjjzio) | Chuẩn hóa cột lúc suy luận ($\tau = 0.70$, **0 chi phí train**) khôi phục **`+28.50 pp`** Tail Recall. |
+| **E1 — Balanced Woodbury `FD1a+b` (`3 seeds`)** | [`src/foal/critical_analysis.py`](src/foal/critical_analysis.py) | [Run `fqahbyt4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/fqahbyt4) | Khôi phục **`+42.67 pp`** Tail Recall (`69.31%`) và **`+13.32 pp`** $\bar{A}$ (`86.11%`) với **0 mẫu lưu trữ**. |
+| **E3A — Quadratic $\Theta(D^2)$ Scaling (`3 seeds`)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `nbr04hu5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nbr04hu5) | Đính chính lỗi `Eq. (14)`: mũ thời gian RLS $\alpha = 2.11$ (`D=6000` chậm gấp `35.6×`, ma trận $\mathbf{R}$ tăng `36.0×`). |
+| **E3B — Sample-Rich Grid ($V=50{,}000$)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `1bns4np4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/1bns4np4) | Đối chứng dư xác định ($V \gg D$): phổ trị riêng cách xa $0$, ổn định trên toàn dải $\gamma \in [10^{-3}, 1]$. |
+| **E3B — Double-Descent & `FD2` ($V=1{,}600$)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `kyj36qk9`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kyj36qk9) | Bắt trọn đỉnh nổ chuẩn $\|\hat{\mathbf{W}}\|_F = 155.0$ tại $D = 2{,}000 \approx V$; `FD2` đạt $\bar{A}$ cao nhất toàn lưới (`88.19%`). |
 
-| Experiment | Script / Notebook | W&B Run URL | Purpose / What it demonstrates |
-| :--- | :--- | :--- | :--- |
-| **DTD Official Reference (`seed=0`)** | [`notebooks/foal_official_dtd_reproduction.ipynb`](notebooks/foal_official_dtd_reproduction.ipynb) | [Run `c9yyo08r`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/c9yyo08r) | Chạy mã gốc `liuyuchen-cz/F-OAL @ 73e4ac1` trên DTD 40 lớp, 10 task ($\bar{A}=85.04\%$, $A_{10}=75.94\%$). |
-| **DTD Table 4 Ablation (3 seed × A0–A3, 12 runs)** | [`notebooks/foal_dtd_ablation_colab.ipynb`](notebooks/foal_dtd_ablation_colab.ipynb) / [`scripts/train.py`](scripts/train.py) (`configs/dtd/dtd_a*.yaml`) | A0: [s42 `nyukb6j0`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nyukb6j0), [s123 `munb2s1x`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/munb2s1x), [s2026 `hdrhmlo7`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/hdrhmlo7)<br>A1: [s42 `l0avdaso`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/l0avdaso), [s123 `giu86cr7`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/giu86cr7), [s2026 `ff4y0s7i`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ff4y0s7i)<br>A2: [s42 `xwtx7ibk`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/xwtx7ibk), [s123 `b4zu17cf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/b4zu17cf), [s2026 `rr92acgq`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rr92acgq)<br>A3: [s42 `wmhz0kcs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/wmhz0kcs), [s123 `ad85oywu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ad85oywu), [s2026 `i1bm2km4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/i1bm2km4) | Đóng góp FF và SP trên DTD: A0 $85.85 \pm 0.92\%$; bỏ FF $-2.93 \pm 0.07$ pp, bỏ SP $-6.53 \pm 1.05$ pp (so cặp trong từng seed, trung bình 3 seed). Chi tiết: [`docs/dtd_ablation_report.md`](docs/dtd_ablation_report.md). |
-| **DTD C1: Projection Initialization** | [`scripts/run_c1_dtd_diagnostics.py`](scripts/run_c1_dtd_diagnostics.py) / [`notebooks/foal_c1_projection_controlled_dtd.ipynb`](notebooks/foal_c1_projection_controlled_dtd.ipynb) | [P0 `u7apoirr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u7apoirr), [P1 `qel56wwv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qel56wwv), [P2 `ccn9l0sh`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ccn9l0sh) | Khởi tạo $\mathcal{N}(0,1)$ làm bão hòa sigmoid (82.32%), $\bar{A}$ thấp hơn `official_uniform` 16.48 pp. |
-| **DTD C2: Backbone Alignment** | [`scripts/run_c2_dtd_diagnostics.py`](scripts/run_c2_dtd_diagnostics.py) / [`notebooks/foal_c2_backbone_controlled_dtd.ipynb`](notebooks/foal_c2_backbone_controlled_dtd.ipynb) | [B0 `4i3yehho`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4i3yehho), [B1 `drgbs8xm`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/drgbs8xm) | Đổi `augreg_in1k` → `augreg2_in21k_ft_in1k`: $+7.15$ pp $\bar{A}$. |
-| **DTD C3: Preprocessing (A–D)** | [`scripts/run_c3_dtd_diagnostics.py`](scripts/run_c3_dtd_diagnostics.py) / [`notebooks/foal_c3_preprocessing_controlled_dtd.ipynb`](notebooks/foal_c3_preprocessing_controlled_dtd.ipynb) | [A `drgbs8xm`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/drgbs8xm), [B `mwxf525w`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/mwxf525w), [C `smz0h0zu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/smz0h0zu), [D `7gvtu924`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/7gvtu924) | Bốn cách tiền xử lý chỉ chênh 0.05 pp $\bar{A}$ ở seed 42 (C3-A dùng lại run C2-B1). |
-| **DTD Baselines (`seed=42`)** | [`scripts/train_baseline.py`](scripts/train_baseline.py) / [`notebooks/foal_dtd_headline_final.ipynb`](notebooks/foal_dtd_headline_final.ipynb) | [ER `q6pm84ej`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/q6pm84ej), [LwF official `0068ne1c`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0068ne1c), [LwF adapted `uga0pme6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/uga0pme6) | So sánh mô tả với F-OAL A0 seed 42 (85.08%): ER 53.00%, LwF official-protocol 15.40%, LwF adapted 25.00%. |
-| **Aircraft Official Reference (`seed=0`)** | Mã gốc chạy trên Kaggle, log và kernel ở [`docs/aircraft_provenance/`](docs/aircraft_provenance/) | [Run `9ko84fxj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/9ko84fxj) | Chạy mã gốc không sửa: $\bar{A}=61.91\%$, $A_{10}=53.67\%$ (paper 62.2 / 54.0). |
-| **Aircraft Table 4 Ablation (3 seed × A0–A3, 12 runs)** | [`scripts/run_aircraft_ablation.py`](scripts/run_aircraft_ablation.py) (`configs/aircraft/aircraft_a*.yaml`) | A0: [s42 `2qksp3kv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qksp3kv), [s123 `m1kze328`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/m1kze328), [s2026 `2qqecl0m`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qqecl0m)<br>A1: [s42 `4fsupq4x`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/4fsupq4x), [s123 `0n4xc8ap`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/0n4xc8ap), [s2026 `no2junlu`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/no2junlu)<br>A2: [s42 `yezjox78`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/yezjox78), [s123 `37254a6g`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/37254a6g), [s2026 `tp4fd91q`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/tp4fd91q)<br>A3: [s42 `gclk75xs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/gclk75xs), [s123 `ergopmva`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ergopmva), [s2026 `n8s1hjzc`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/n8s1hjzc) | A0 $64.22 \pm 3.70\%$ (paper 62.2); bỏ FF $-1.24 \pm 0.49$ pp, bỏ SP $-3.82 \pm 0.78$ pp (so cặp trong từng seed, trung bình 3 seed). Chi tiết: [`docs/aircraft_ablation_report_vi.md`](docs/aircraft_ablation_report_vi.md). |
-| **Aircraft C1: Projection Initialization** | [`scripts/train.py`](scripts/train.py) (`configs/aircraft/c1_*.yaml`) + [`scripts/run_c1_aircraft_diagnostics.py`](scripts/run_c1_aircraft_diagnostics.py) | [P0 `do82b0k3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/do82b0k3), [P1 `bemgqzjf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/bemgqzjf), [P2 `72oidkep`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/72oidkep) | `official_uniform` hơn $\mathcal{N}(0,1)$ 18.78 pp; N(0,1) làm 81.25% đầu ra sigmoid bão hòa. |
-| **Aircraft C2: Backbone Alignment** | [`scripts/train.py`](scripts/train.py) (`configs/aircraft/c2_b1_augreg2_in21k_ft_in1k.yaml`) | [B0 = C1-P1 `bemgqzjf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/bemgqzjf), [B1 `rkgjxdvs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkgjxdvs) | Đổi checkpoint ViT: $+14.64$ pp $\bar{A}$. |
-| **Aircraft C3: Preprocessing (A–E)** | [`scripts/train.py`](scripts/train.py) (`configs/aircraft/c3_*.yaml`) | [A `rkgjxdvs`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rkgjxdvs), [B `k0m9djvw`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/k0m9djvw), [C `z64dog21`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/z64dog21), [D `mb7h3mz9`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/mb7h3mz9), [E = A0 s42 `2qksp3kv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/2qksp3kv) | Năm cách tiền xử lý chênh 0.51 pp; giữ LANCZOS thô (E) theo mã tác giả. |
-
-#### E. Pilot Runs & Failed / Crashed Runs (Không tính là Full Reproduction)
-* **Pilot Runs (chạy giới hạn `max_tasks` / `limit_train_per_task` để kiểm thử):** [`172e2y2y`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/172e2y2y), [`b4bao7ql`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/b4bao7ql), [`euwibfmj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/euwibfmj), [`zzzeg0k6`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/zzzeg0k6), [`ixsoajxj`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/ixsoajxj), [`no13lg4t`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/no13lg4t) — chỉ là pilot kiểm thử kỹ thuật, không dùng báo cáo kết quả full.
-* **Failed / Crashed Runs (đã được thay thế):** [`97nxs96l`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/97nxs96l) (`failed` — thay thế bằng `xlcme1c3`) và [`jh6dbi0h`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/jh6dbi0h) (`crashed` — thay thế bằng `u449ge40`).
-* **Lượt DTD ngoài cohort chính:** [`rce44mi0`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/rce44mi0) (bản đồng bộ trùng số với `nyukb6j0`), [`u449ge40`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u449ge40) (không giới hạn 40 mẫu/lớp, $\bar{A}=87.20\%$). Không tính vào thống kê 3 seed.
-
-* **Tài liệu kỹ thuật liên quan:** [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](docs/CIFAR100_MULTISEED_ABLATION_REPORT.md) | [`docs/CIFAR100_PREPROCESSING_AUDIT.md`](docs/CIFAR100_PREPROCESSING_AUDIT.md) | [`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) | [`docs/hcmus_core_scope_matrix.md`](docs/hcmus_core_scope_matrix.md) | [`README_IMPLEMENTATION.md`](README_IMPLEMENTATION.md)
-
-### 14.5. Script Directory (Phân loại nhanh `scripts/`)
-* **Entry Points & Training:** `scripts/reproduce_cifar100.py` (launcher `smoke`/`full`), `scripts/train.py` (F-OAL chính), `scripts/train_baseline.py` (ER / LwF), `scripts/ablation.py`, `scripts/run_cifar100_multiseed_ablation.py`, `scripts/run_seeds.py`.
-* **Evaluation & Diagnostics:** `scripts/evaluate.py`, `scripts/run_c1_diagnostics.py`, `scripts/run_c2_diagnostics.py`, `scripts/run_c3_diagnostics.py`, `scripts/verify_official_transform.py`, `scripts/check_fairness.py`.
-* **Analysis & Visualization:** `scripts/analyze_cifar100_multiseed.py`, `scripts/analyze_c1_results.py`, `scripts/generate_headline_final_analysis.py`, `scripts/generate_table4_analysis.py`, `scripts/generate_table4_paper_vs_reproduction.py`, `scripts/generate_c1_tables_and_plots.py`, `scripts/generate_c2_analysis.py`, `scripts/generate_c3_analysis.py`, `scripts/generate_task_accuracy_heatmaps.py`, `scripts/generate_standardized_charts.py`, `scripts/summarize_runs.py`.
-* **W&B Utilities & Forensic Audits:** `scripts/backfill_wandb_provenance.py`, `scripts/import_headline_to_wandb.py`, `scripts/import_c1_to_wandb.py`, `scripts/normalize_wandb_comparison_metrics.py`, `scripts/create_wandb_accuracy_progression_run.py`, `scripts/audit_*.py`, `scripts/verify_*_zip.py`, `scripts/run_forensic_matrix_audit.py`.
-* **Legacy Generators (lịch sử, dùng một lần):** `scripts/create_c1_notebook.py`, `scripts/create_c2_notebook.py`, `scripts/create_c3_notebook.py`, `scripts/create_table4_notebook.py`, `scripts/update_docs.py`, `scripts/update_docs_wandb.py`.
+### 6.5. Minh bạch Kiểm toán & Giới hạn Khả năng Tái lập Chính xác
+* **Các lượt chạy Pilot / Thử nghiệm lịch sử ngoài thống kê chính:** Các pilot kiểm thử giới hạn mẫu (`172e2y2y`, `b4bao7ql`, `euwibfmj`, `zzzeg0k6`, `ixsoajxj`, `no13lg4t`), lượt chạy đầy đủ partition DTD ngoài giao thức 40 mẫu/lớp (`u449ge40`, $\bar{A}=87.20\%$), bản đồng bộ trùng (`rce44mi0`), và 2 lượt lỗi lịch sử đã được thay thế (`97nxs96l` failed $\to$ thay bằng `xlcme1c3`; `jh6dbi0h` crashed $\to$ thay bằng `u449ge40`) được lưu giữ nguyên vẹn trên project để đảm bảo tính minh bạch nhật ký nhưng không gộp vào các bảng thống kê chính thức.
+* **Giới hạn Provenance của 4 source runs CIFAR-100 (`seed=42`):** Chi tiết kiểm toán đầy đủ tại [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md) và [`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md): (1) Cả 4 runs gốc có `source_worktree_dirty=True` lúc chạy trên Colab; (2) Ba baselines CIFAR-100 (`xlcme1c3`, `c5pjewk4`, `ifl3rz2u`) thuộc loại `POST_HOC_IMPORT` từ kết quả GPU Colab đã xác minh SHA256 (thiếu `original_stdout_log` trực tiếp lúc train). Mọi thao tác bổ sung Artifact hay chuẩn hóa khóa hiển thị `summary/*_pct` đều có bản sao lưu bất biến kèm `.sha256` trong `results/headline_analysis/wandb_provenance_backups/` và `results/lab2_empirical/wandb_backups/`.
 
 ---
 
-## 15. Experiment Tracking and Provenance
+## 7. Bản đồ Toàn bộ Tài liệu Chuyên sâu (`docs/*.md`) & Tài liệu Tham khảo
 
-* **W&B Project:** [hcmus-foal-reproduction](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction) (`https://forge.coreweave.com`)
-* **W&B Report chính thức:** [F-OAL: Tái lập kết quả và phân tích thực nghiệm trên bộ dữ liệu CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
-* **Tài liệu Audit & Remediation:**
-  * [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md) — Kiểm toán nguồn gốc runs, phân biệt bằng chứng gốc và dữ liệu import hậu kiểm.
-  * [`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md) — Báo cáo bổ sung `provenance_remediation`, Artifact bundles, backup snapshots và đối chiếu BEFORE/AFTER.
+### 7.1. Chỉ mục Báo cáo Khoa học trong `docs/`
 
-### Bảng ánh xạ W&B Runs & Provenance Artifacts (CIFAR-100)
+| Nhóm Chủ đề | Tài liệu Chuyên sâu | Nội dung Cốt lõi |
+| :--- | :--- | :--- |
+| **Quản trị & Tuân thủ Đề bài** | [`docs/TEACHER_COMPLIANCE_CHECKLIST.md`](docs/TEACHER_COMPLIANCE_CHECKLIST.md)<br>[`docs/hcmus_core_scope_matrix.md`](docs/hcmus_core_scope_matrix.md)<br>[`docs/repository_structure.md`](docs/repository_structure.md) | Checklist 13 tiêu chí chấm điểm HCMUS, ma trận phạm vi bắt buộc/mở rộng và cấu trúc toàn bộ kho mã nguồn. |
+| **Tái lập & Kiểm toán CIFAR-100** | [`docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md`](docs/CIFAR100_FINAL_REPRODUCTION_REPORT.md)<br>[`docs/CIFAR100_MULTISEED_ABLATION_REPORT.md`](docs/CIFAR100_MULTISEED_ABLATION_REPORT.md)<br>[`docs/CIFAR100_PREPROCESSING_AUDIT.md`](docs/CIFAR100_PREPROCESSING_AUDIT.md)<br>[`docs/original_vs_ours_protocol.md`](docs/original_vs_ours_protocol.md) | Báo cáo Headline Comparison, phân tích đa seed Table 4 (`42, 123, 2026`), kiểm toán khớp bitwise `C3-D` và đối chiếu từng dòng lệnh với code tác giả. |
+| **Mở rộng Đa Miền: DTD & Aircraft** | [`docs/dtd_ablation_report.md`](docs/dtd_ablation_report.md)<br>[`docs/Limitations.md`](docs/Limitations.md) · [`docs/Limitations_2.md`](docs/Limitations_2.md)<br>[`docs/aircraft_ablation_report_vi.md`](docs/aircraft_ablation_report_vi.md) | Phân tích giai thừa $2 \times 2$ trên DTD & FGVC-Aircraft, kiểm định thống kê cặp và chứng minh định lý *Nghịch lý Độ quên khi tắt Smooth Projection*. |
+| **Kiểm toán Pháp y W&B** | [`docs/WANDB_PROVENANCE_AUDIT.md`](docs/WANDB_PROVENANCE_AUDIT.md)<br>[`docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md`](docs/WANDB_PROVENANCE_REMEDIATION_REPORT.md) | Hồ sơ kiểm toán nguồn gốc các runs W&B, bảng đối chiếu checksum SHA256 của toàn bộ Provenance Artifacts (`v0`). |
+| **Critical Analysis, Lab 2 & Poster** | [`docs/CRITICAL_ANALYSIS_REPORT.md`](docs/CRITICAL_ANALYSIS_REPORT.md)<br>[`docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md`](docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md)<br>[`docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md`](docs/POSTER_WORKSHOP_DEFENSE_GUIDE.md) | Chứng minh toán học `S1–S3`, `L1–L3`, giải pháp 0-replay `FD1–FD3`, báo cáo 152 runs Lab 2 và cẩm nang thuyết trình & phản biện Poster A2. |
 
-| Method | W&B Run ID | Provenance Classification | W&B Artifact (`v0`) | Type | `bundle_sha256` |
-| :--- | :---: | :--- | :--- | :--- | :--- |
-| **F-OAL (C3-D)** | `3v53tmq5` | `ONLINE_TRAINING` *(artifact gắn post-hoc)* | `c3_d_bilinear_raw_results:v0` | `evaluation` | `903456d64538af7c5550ac4468efd844149753ef7a405ab9cde6836e939dca05` |
-| **Experience Replay (`B=5000`)** | `xlcme1c3` | `POST_HOC_IMPORT` | `headline_er_provenance_bundle:v0` | `provenance_results` | `190a5870a34471ed417e9a7800d1c978b79b0f756973870cc0497872db998491` |
-| **Official-Protocol LwF** | `c5pjewk4` | `POST_HOC_IMPORT` | `headline_official_lwf_provenance_bundle:v0` | `provenance_results` | `d47e57555e4b1367de0363e08aaab47ed5612557410416dd134244f721f6a628` |
-| **Adapted LwF (`AdamW`)** | `ifl3rz2u` | `POST_HOC_IMPORT` | `headline_adapted_lwf_provenance_bundle:v0` | `provenance_results` | `9b612893419141bdd911d4fb7eff77a9d6dd5b15e9fd8fd73c9f08b42093d2f8` |
-
-*(Run `nceap43w` là `ANALYSIS_ONLY`, dùng để tổng hợp đường cong 10-task từ 4 runs trên.)*
-
-### Hướng dẫn kiểm tra dữ liệu thực nghiệm
-1. Mở W&B Project và truy cập từng Run ID hoặc tab **Artifacts** để kiểm tra `run.config['provenance_remediation']` và `artifact.metadata` (chứa SHA256 từng file và `bundle_sha256`).
-2. Đối chiếu `summary.json`, `task_matrix.csv`, `metrics.json`, `metadata.json`, `task_accuracy.csv` trong các Artifact với các file cục bộ tại `results/c3_full_gpu_verified/`, `results/headline_full_gpu_verified/`, `results/headline_official_lwf_verified/` và `configs/headline/`.
-3. Xem lịch sử snapshot bất biến trước khi ghi tại `results/headline_analysis/wandb_provenance_backups/`.
-
-### Giới hạn về khả năng tái lập chính xác
-* **Dirty worktree:** Cả 4 source runs đều có `source_worktree_dirty=True` và `uncommitted_diff_status="MISSING"`, nên `source_code_base_commit` không chứng minh toàn bộ mã nguồn thực thi khớp 100% với commit đó.
-* **Bằng chứng 3 baselines (`POST_HOC_IMPORT`):** `xlcme1c3`, `c5pjewk4`, `ifl3rz2u` không được W&B tracking trực tiếp khi training; thiếu `original_stdout_log` và `original_cli_command` (`output.log` trên W&B được tạo khi import hậu kiểm, không phải stdout gốc). Các file YAML đều có trong ZIP Colab nhưng `config_execution_verified=False` (chưa xác minh trực tiếp cấu hình runtime, không có nghĩa cấu hình sai).
-* **Phạm vi dữ liệu:** Các bằng chứng W&B đã kiểm toán ở trên áp dụng cho **CIFAR-100** (`seed=42`), không đại diện cho khả năng tái lập trên toàn bộ các bộ dữ liệu khác của bài báo gốc.
-
----
-
-## 16. Critical Analysis, Empirical Demonstration (Lab 2) & Poster A2
-
-Phần này tổng hợp kết quả chặng **Critical Analysis** ([`docs/CRITICAL_ANALYSIS_REPORT.md`](docs/CRITICAL_ANALYSIS_REPORT.md)), **Empirical Demonstration** ([`docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md`](docs/LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md)) và **Poster khổ dọc `Portrait A2`** ([`poster/F-OAL_Critical_Analysis_Poster_A2.pptx`](poster/F-OAL_Critical_Analysis_Poster_A2.pptx)). Toàn bộ các lượt chạy thực nghiệm mới của Lab 2 được ghi nhận trên cùng W&B project công khai `hcmus-foal-reproduction` và gắn bộ nhãn riêng **`lab2-empirical-demo`**, **`critical-analysis`** để tách bạch hoàn toàn với giai đoạn Reproduction.
-
-### 16.1. Bảng Ánh Xạ Thực Nghiệm Lab 2 (`tag: lab2-empirical-demo`)
-
-| Thực nghiệm Lab 2 | Script / Module | W&B Run URL | Phát hiện Định lượng & Ý nghĩa Khoa học |
-| :--- | :--- | :--- | :--- |
-| **E1 — Vanilla F-OAL Long-Tail (`3 seeds`)** | [`scripts/run_lab2_longtail.py`](scripts/run_lab2_longtail.py) | [Run `g34o8awx`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g34o8awx) | Bác bỏ tính tổng quát của Figure 3 bài báo gốc: tương quan $r(\|\hat{\mathbf{w}}_c\|_2, N_c) = +0.89$; nhóm lớp hiếm sụp đổ **$-60.84\text{ pp}$** (`87.48% -> 26.64%`) ở $\rho = 100$. |
-| **E1 — Norm Calibration `FD1b` (`3 seeds`)** | [`src/foal/critical_analysis.py`](src/foal/critical_analysis.py) | [Run `kafjjzio`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kafjjzio) | Chuẩn hóa biên độ cột lúc suy luận ($\tau = 0.70$, **0 chi phí train, 0 replay**) khôi phục **$+28.50\text{ pp}$** Tail Accuracy (`26.64% -> 55.14%`). |
-| **E1 — Balanced Woodbury `FD1a+b` (`3 seeds`)** | [`src/foal/critical_analysis.py`](src/foal/critical_analysis.py) | [Run `fqahbyt4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/fqahbyt4) | Cập nhật Woodbury nhân quả có trọng số tần suất nghịch đảo + chuẩn hóa cột khôi phục **$+42.67\text{ pp}$** Tail Accuracy (`69.31%`) và **$+13.32\text{ pp}$** $\bar{A}$ (`86.11%`) với 0 mẫu lưu trữ. |
-| **E3A — Quadratic $\Theta(D^2)$ Scaling (`3 seeds`)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `nbr04hu5`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nbr04hu5) | Đính chính lỗi Eq. (14) của bài báo: thời gian RLS thực tế có mũ $\alpha = 2.11$ khớp sát $\Theta(D^2)$ (`D=6000` chậm gấp `35.6x`, ma trận $\mathbf{R}$ tăng `36.0x`). |
-| **E3B — Sample-Rich $(D \times \gamma)$ Grid ($V=50{,}000$)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `1bns4np4`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/1bns4np4) | Đối chứng dư xác định ($V \gg D$): phổ trị riêng cách xa $0$ nên bền vững trên toàn dải $\gamma \in [10^{-3}, 1]$. |
-| **E3B — Double-Descent & `FD2` ($V=1{,}600$)** | [`scripts/run_lab2_scaling_sensitivity.py`](scripts/run_lab2_scaling_sensitivity.py) | [Run `kyj36qk9`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kyj36qk9) | Bắt trọn đỉnh nổ chuẩn Marchenko–Pastur tại $D = 2{,}000 \approx V$ ($\|\hat{\mathbf{W}}\|_F = 155.0$, $A_{10}$ sập còn `72.64%`); công thức không tham số `FD2` ($\gamma_{\text{auto}}$) đạt $\bar{A}$ cao nhất toàn lưới (`88.19%` tại $D = 4{,}000$). |
-
-### 16.2. Các Điểm Yếu Đã Chứng Minh Bổ Sung Ngoài Hai Trục Chính Trên Poster A2
-
-Theo quy định của mục *Empirical Demonstration* (chọn 2 điểm yếu nổi bật nhất đưa lên Poster A2, mô tả các điểm yếu đã chứng minh còn lại tại `README.md` kèm bằng chứng), nhóm ghi nhận đầy đủ **Điểm yếu thứ 3 (`L3`)** dưới đây:
-
-1. **Khuyết định luật tỷ lệ phương sai $\sigma_P^2 = \Theta(1/d_{\text{in}})$ gây bão hòa cứng hàm Sigmoid trên cả 3 bộ dữ liệu:**
-   * *Cơ sở lý thuyết:* Mục 3.1 (trang 4) của bài báo mô tả ma trận chiếu $\mathbf{P}$ lấy mẫu từ phân phối chuẩn mà không chuẩn hóa phương sai theo chiều đặc trưng đầu vào $d_{\text{in}} = 768$. Vì đầu ra `LayerNorm` của ViT có $\|\mathbf{h}\|_2^2 \approx d_{\text{in}}$, khởi tạo $\mathcal{N}(0, 1)$ đẩy độ lệch chuẩn tiền kích hoạt lên $\text{Std}(\mathbf{h}\mathbf{P}) \approx 19.3\text{–}20.7$, làm hơn **$81\%$** đơn vị rơi vào vùng bão hòa chết $\sigma(u) \in [0, 0.01) \cup (0.99, 1]$.
-   * *Bằng chứng thực nghiệm xuyên tập dữ liệu:* Khởi tạo $\mathcal{N}(0, 1)$ gây bão hòa `81.03%` và làm mất **$-3.95\text{ pp}$ trên CIFAR-100** ([`qw78us1k`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qw78us1k) vs [`6whrot4z`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/6whrot4z)), bão hòa `82.32%` và mất **$-16.48\text{ pp}$ trên DTD** ([`u7apoirr`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/u7apoirr) vs [`qel56wwv`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/qel56wwv)), và bão hòa `81.25%` làm mất **$-18.78\text{ pp}$ trên FGVC-Aircraft** ([`do82b0k3`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/do82b0k3) vs [`bemgqzjf`](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/bemgqzjf)). Áp đặt định luật phương sai $\sigma_P^2 = 1/(3 d_{\text{in}})$ đưa bão hòa về đúng `0.00%` bất kể phân phối là Uniform hay Gaussian (`P2`).
-2. **Thiên lệch che lấp độ quên của công thức $F_m$ (Eq. 17–18) & Mâu thuẫn nội tại trong bài báo gốc:**
-   * *Cơ sở lý thuyết & Bằng chứng:* Đồng nhất thức $\Delta F_{\text{past}} = \Delta\overline{\text{Peak}} - \Delta\overline{\text{Final}}$ khiến các mô hình học kém ban đầu có độ quên thấp giả tạo (*Underlearning Artificially Masks Forgetting* — chứng minh chi tiết trên DTD tại [`docs/Limitations_2.md`](docs/Limitations_2.md), giải thích vì sao ở Table 2 bài báo LwF có $F = 1.3\%$ dù $\bar{A}$ chỉ đạt $69.3\%$). Ngoài ra, kiểm toán phát hiện Eq. (1) trang 4 viết ngược hợp hàm $B_1(B_2(x))$ và số liệu FGVC-Aircraft trong bài báo tự mâu thuẫn giữa Mục 4.4 (`66.2%`), Table 2/4 (`62.2%`) và Table 6 (`61.1%`).
+### 7.2. Tài liệu Tham khảo
+1. **Zhuang, H., Liu, Y., He, R., Tong, K., Zeng, Z., Chen, C., Wang, Y., & Chau, L.-P. (2024).** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning*. Advances in Neural Information Processing Systems (NeurIPS), 37, 41517–41538.
+2. **Huo, Z., Gu, B., & Huang, H. (2018).** *Training Neural Networks Using Features Replay*. ICML 2018, pp. 2098–2106.
+3. **Cover, T. M. (1965).** *Geometrical and Statistical Properties of Systems of Linear Inequalities with Applications in Pattern Recognition*. IEEE Transactions on Electronic Computers, EC-14(3), 326–334.
+4. **Marchenko, V. A., & Pastur, L. A. (1967).** *Distribution of Eigenvalues for Some Sets of Random Matrices*. Mathematics of the USSR-Sbornik, 1(4), 457–483.
+5. **Menon, A. K., Jayasumana, S., Rawat, A. S., Jain, H., Veit, A., & Kumar, S. (2021).** *Long-Tail Learning via Logit Adjustment*. ICLR 2021.

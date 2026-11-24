@@ -1,15 +1,19 @@
 # F-OAL CIFAR-100 Scientific Reproduction & Forensic Audit Report
 
-**Course Requirement:** Introduction to Machine Learning — HCMUS (Reproduction Project)  
-**Lead Auditor & Author:** Senior ML Research Engineer & Scientific Reproducibility Auditor  
-**Project Workspace:** `D:\Nhập môn ML\Paper`  
-**Target Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024, pp. 1–14)  
-**Official Repository:** [`https://github.com/liuyuchen-cz/F-OAL`](https://github.com/liuyuchen-cz/F-OAL)  
-**Group Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)  
-**Development Branch:** `experiment/headline-comparison`  
-**Base Stable Commit:** `747b828` (Merged Table 4 Ablation Suite)  
-**Execution Commit (Official LwF GPU):** `c3dd3f2` (Descendant of preflight commit `33c058b`)  
-**Audit Status:** `CIFAR100_REPORT_READY_WITH_LIMITATIONS`  
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Multi-Seed Table 4](CIFAR100_MULTISEED_ABLATION_REPORT.md) | [Kiểm toán C3](CIFAR100_PREPROCESSING_AUDIT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+> *(Ghi chú tích hợp: Toàn bộ kết quả dưới đây đã được kiểm toán và hợp nhất đầy đủ vào nhánh chính `main`).*
+
+**Course Requirement:** Introduction to Machine Learning — HCMUS (Reproduction Project)
+**Lead Auditor & Author:** Senior ML Research Engineer & Scientific Reproducibility Auditor
+**Project Workspace:** `D:\Nhập môn ML\Paper`
+**Target Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024, pp. 1–14)
+**Official Repository:** [`https://github.com/liuyuchen-cz/F-OAL`](https://github.com/liuyuchen-cz/F-OAL)
+**Group Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)
+**Development Branch:** `experiment/headline-comparison`
+**Base Stable Commit:** `747b828` (Merged Table 4 Ablation Suite)
+**Execution Commit (Official LwF GPU):** `c3dd3f2` (Descendant of preflight commit `33c058b`)
+**Audit Status:** `CIFAR100_REPORT_READY_WITH_LIMITATIONS`
 
 ---
 
@@ -66,7 +70,7 @@ A discrepancy in earlier project documentation erroneously described Feature Fus
 
 ## 3. Execution Commit Provenance & Verification
 
-The results archive `foal_cifar100_official_lwf_results.zip` recorded execution commit `c3dd3f23fbf2d8d94d481ec75daceb860190118e`. 
+The results archive `foal_cifar100_official_lwf_results.zip` recorded execution commit `c3dd3f23fbf2d8d94d481ec75daceb860190118e`.
 
 ### Lineage & Code Diff Audit (`33c058b` vs. `c3dd3f2`):
 - Commit `33c058b` was the preflight-verified commit containing the complete implementations of:
@@ -180,7 +184,7 @@ All final numerical artifacts and figures are versioned in [`results/headline_an
 
 ## 9. Conclusion & Transition to DTD and FGVC-Aircraft
 
-The CIFAR-100 reproduction phase is concluded with documented limitations (**`CIFAR100_REPORT_READY_WITH_LIMITATIONS`**). 
+The CIFAR-100 reproduction phase is concluded with documented limitations (**`CIFAR100_REPORT_READY_WITH_LIMITATIONS`**).
 
 The team moves to multi-dataset validation under [`docs/team_parallel_dataset_plan.md`](../docs/team_parallel_dataset_plan.md):
 - **Member A (DTD Track):** `experiment/dtd-reproduction` (40 classes, 10 tasks $\times$ 4 classes). Test whether Smooth Projection prevents representation collapse when ViT features lack linear separability (paper reports $-11.6\text{ pp}$ drop without SP).

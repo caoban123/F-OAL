@@ -1,0 +1,620 @@
+{
+  "created_at_utc": "2026-11-24T15:36:53.332021+00:00",
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "existing_lab2_report_before": null,
+  "project": "hcmus-foal-reproduction",
+  "runs_before": [
+    {
+      "planned_additions": {
+        "comparison/average_incremental_accuracy_pct": 90.98279365079364,
+        "summary/average_incremental_accuracy": 0.9098279365079364,
+        "summary/average_incremental_accuracy_pct": 90.98279365079364,
+        "summary/forgetting_official_code_pct": 4.6899999999999995,
+        "summary/forgetting_past_tasks_pct": 5.166666666666667,
+        "summary/last_accuracy_pct": 85.83999999999999
+      },
+      "run_id": "3eca8232",
+      "run_name": "official_foal_cifar100_seed0",
+      "summary": {
+        "average_incremental_accuracy": 0.9098279365079364,
+        "forgetting": 0.051666666666666666,
+        "last_accuracy": 0.8583999999999999,
+        "official_forgetting_10_tasks": 0.0469,
+        "stage": 10,
+        "stage_avg_accuracy": 0.8583999999999999,
+        "total_duration_seconds": 3056.24
+      }
+    },
+    {
+      "planned_additions": {
+        "comparison/average_incremental_accuracy_pct": 85.0376507936508,
+        "summary/average_incremental_accuracy_pct": 85.0376507936508,
+        "summary/forgetting_official_code_pct": 6.563,
+        "summary/forgetting_past_tasks_pct": 7.292222222222222,
+        "summary/last_accuracy_pct": 75.93799999999999
+      },
+      "run_id": "c9yyo08r",
+      "run_name": "official_foal_dtd_seed0",
+      "summary": {
+        "average_incremental_accuracy": 0.850376507936508,
+        "average_incremental_accuracy_pct": 85.0376507936508,
+        "forgetting": 0.07292222222222222,
+        "forgetting_pct": 7.292222222222222,
+        "last_accuracy": 0.7593799999999999,
+        "last_accuracy_pct": 75.93799999999999,
+        "official_forgetting_10_tasks": 0.06563,
+        "official_forgetting_10_tasks_pct": 6.563,
+        "stage": 10,
+        "stage_avg_accuracy": 0.7593799999999999,
+        "stage_avg_accuracy_pct": 75.93799999999999,
+        "total_duration_seconds": 142.07
+      }
+    },
+    {
+      "planned_additions": {
+        "summary/average_incremental_accuracy_pct": 86.67026984126984,
+        "summary/forgetting_official_code_pct": 15.07,
+        "summary/forgetting_past_tasks_pct": 16.744444444444444,
+        "summary/last_accuracy_pct": 79.79
+      },
+      "run_id": "xlcme1c3",
+      "run_name": "headline_er_replay_buffer5000_seed42",
+      "summary": {
+        "average_incremental_accuracy_so_far": 86.67026984126984,
+        "comparison/average_incremental_accuracy_pct": 86.67026984126984,
+        "comparison/forgetting_past_tasks_pct": 16.744444444444444,
+        "fig2_headline_final_foal_vs_baselines": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig2_headline_final_foal_vs_baselines_11_56411efd75b4dbce6e94.png",
+          "sha256": "56411efd75b4dbce6e9476ebd57abff1dd1f717a132b04270d2e3dd462f10709",
+          "size": 101543,
+          "width": 2400
+        },
+        "fig3_headline_final_adapted_vs_official_lwf": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig3_headline_final_adapted_vs_official_lwf_12_7c942b38b6a735b2becd.png",
+          "sha256": "7c942b38b6a735b2becdff69dfa19760bc9178bc969d22fc8ff41a11a36ed79f",
+          "size": 239507,
+          "width": 2700
+        },
+        "fig6_headline_final_forgetting_comparison": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig6_headline_final_forgetting_comparison_13_6cd59f98bbdac7b188ea.png",
+          "sha256": "6cd59f98bbdac7b188ea64d2bfd365225f24a63b0308f7a121171dc2a8d45ae9",
+          "size": 134920,
+          "width": 2700
+        },
+        "final/average_incremental_accuracy": 86.67026984126984,
+        "final/forgetting_official_code": 15.07,
+        "final/forgetting_past_tasks": 16.744444444444444,
+        "final/last_accuracy": 79.79,
+        "final/training_time_seconds": 626.8460602170003,
+        "final_task_accuracies/task_01": 70.3,
+        "final_task_accuracies/task_02": 72.7,
+        "final_task_accuracies/task_03": 79.5,
+        "final_task_accuracies/task_04": 80.4,
+        "final_task_accuracies/task_05": 83.1,
+        "final_task_accuracies/task_06": 81.6,
+        "final_task_accuracies/task_07": 83.7,
+        "final_task_accuracies/task_08": 77.60000000000001,
+        "final_task_accuracies/task_09": 73.8,
+        "final_task_accuracies/task_10": 95.2,
+        "stage_accuracy": 79.78999999999999,
+        "task": 10,
+        "task_accuracy_matrix": {
+          "_latest_artifact_path": "wandb-client-artifact://xkcvh8jjfs9o7jcncfwcop3uhnmeda3rv58ycm32h1yyt77jadodkxhlbu62amyrt55wwai3o3zop2idf99r5veoohnhkremaob537rgpczwh80z9jsf593u7z7ypjk1:latest/task_accuracy_matrix.table.json",
+          "_type": "table-file",
+          "artifact_path": "wandb-client-artifact://jwfvbp7rs0jb86uao4bug2s0u03z46jbd29vqu95ptivnuc7toqwz0jqzcbhr3yf7y2jng3pygrqhr9v79p9wwqom7hp5hspfxh6re3wchdwzb1s8icfy3exjzb6wz2s/task_accuracy_matrix.table.json",
+          "log_mode": "IMMUTABLE",
+          "ncols": 11,
+          "nrows": 10,
+          "path": "media/table/task_accuracy_matrix_10_2fc277368fcf67ab4540.table.json",
+          "sha256": "2fc277368fcf67ab4540bb15a67b8f90342b581a0c8fc4ce97098d43b30269eb",
+          "size": 760
+        }
+      }
+    },
+    {
+      "planned_additions": {
+        "summary/average_incremental_accuracy_pct": 46.29349206349207,
+        "summary/forgetting_official_code_pct": 0.37000000000000033,
+        "summary/forgetting_past_tasks_pct": 1.2528558437610272e-16,
+        "summary/last_accuracy_pct": 23.34
+      },
+      "run_id": "c5pjewk4",
+      "run_name": "headline_lwf_official_protocol_seed42",
+      "summary": {
+        "average_incremental_accuracy_so_far": 46.29349206349206,
+        "comparison/average_incremental_accuracy_pct": 46.29349206349207,
+        "comparison/forgetting_past_tasks_pct": 1.2528558437610272e-16,
+        "fig2_headline_final_foal_vs_baselines": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig2_headline_final_foal_vs_baselines_11_56411efd75b4dbce6e94.png",
+          "sha256": "56411efd75b4dbce6e9476ebd57abff1dd1f717a132b04270d2e3dd462f10709",
+          "size": 101543,
+          "width": 2400
+        },
+        "fig3_headline_final_adapted_vs_official_lwf": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig3_headline_final_adapted_vs_official_lwf_12_7c942b38b6a735b2becd.png",
+          "sha256": "7c942b38b6a735b2becdff69dfa19760bc9178bc969d22fc8ff41a11a36ed79f",
+          "size": 239507,
+          "width": 2700
+        },
+        "fig6_headline_final_forgetting_comparison": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig6_headline_final_forgetting_comparison_13_6cd59f98bbdac7b188ea.png",
+          "sha256": "6cd59f98bbdac7b188ea64d2bfd365225f24a63b0308f7a121171dc2a8d45ae9",
+          "size": 134920,
+          "width": 2700
+        },
+        "final/average_incremental_accuracy": 46.29349206349207,
+        "final/forgetting_official_code": 0.37000000000000033,
+        "final/forgetting_past_tasks": 1.2528558437610272e-16,
+        "final/last_accuracy": 23.34,
+        "final/training_time_seconds": 646.3514009749993,
+        "final_task_accuracies/task_01": 86.4,
+        "final_task_accuracies/task_02": 79.9,
+        "final_task_accuracies/task_03": 37,
+        "final_task_accuracies/task_04": 23,
+        "final_task_accuracies/task_05": 5.8999999999999995,
+        "final_task_accuracies/task_06": 0.8999999999999999,
+        "final_task_accuracies/task_07": 0.3,
+        "final_task_accuracies/task_08": 0,
+        "final_task_accuracies/task_09": 0,
+        "final_task_accuracies/task_10": 0,
+        "stage_accuracy": 23.34,
+        "task": 10,
+        "task_accuracy_matrix": {
+          "_latest_artifact_path": "wandb-client-artifact://ec79t0rsyq47r8wtevn0krxlsuf3m2e7z7lyq3vk80g9gz6yru9hh4guqpkm572emxzcwr7xtnxls12qulbqyi0s81heoh93180gbu54ikeu3dnd7h6wu9hzhvvkopdl:latest/task_accuracy_matrix.table.json",
+          "_type": "table-file",
+          "artifact_path": "wandb-client-artifact://arha7ighg4ean5wfabyru8kf5jga6l3gswqrhb6600g505dolm47m8avwux0z1zlwb89fza6q6vxrzbzr4dlx11jkw99dc5co63k5mc51i6d2sdd9dh213ty1bcz2mnx/task_accuracy_matrix.table.json",
+          "log_mode": "IMMUTABLE",
+          "ncols": 11,
+          "nrows": 10,
+          "path": "media/table/task_accuracy_matrix_10_927c40ed69b4bc642601.table.json",
+          "sha256": "927c40ed69b4bc642601c95d7ee89ac6c70eb695b80bab3d1231d5330b317290",
+          "size": 739
+        }
+      }
+    },
+    {
+      "planned_additions": {
+        "summary/average_incremental_accuracy_pct": 29.629496031746033,
+        "summary/forgetting_official_code_pct": 85.49,
+        "summary/forgetting_past_tasks_pct": 94.98888888888888,
+        "summary/last_accuracy_pct": 11.21
+      },
+      "run_id": "ifl3rz2u",
+      "run_name": "headline_lwf_adapted_adamw_seed42",
+      "summary": {
+        "average_incremental_accuracy_so_far": 29.629496031746033,
+        "comparison/average_incremental_accuracy_pct": 29.629496031746033,
+        "comparison/forgetting_past_tasks_pct": 94.98888888888888,
+        "fig2_headline_final_foal_vs_baselines": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig2_headline_final_foal_vs_baselines_11_56411efd75b4dbce6e94.png",
+          "sha256": "56411efd75b4dbce6e9476ebd57abff1dd1f717a132b04270d2e3dd462f10709",
+          "size": 101543,
+          "width": 2400
+        },
+        "fig3_headline_final_adapted_vs_official_lwf": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig3_headline_final_adapted_vs_official_lwf_12_7c942b38b6a735b2becd.png",
+          "sha256": "7c942b38b6a735b2becdff69dfa19760bc9178bc969d22fc8ff41a11a36ed79f",
+          "size": 239507,
+          "width": 2700
+        },
+        "fig6_headline_final_forgetting_comparison": {
+          "_type": "image-file",
+          "format": "png",
+          "height": 1500,
+          "path": "media/images/fig6_headline_final_forgetting_comparison_13_6cd59f98bbdac7b188ea.png",
+          "sha256": "6cd59f98bbdac7b188ea64d2bfd365225f24a63b0308f7a121171dc2a8d45ae9",
+          "size": 134920,
+          "width": 2700
+        },
+        "final/average_incremental_accuracy": 29.629496031746033,
+        "final/forgetting_official_code": 85.49,
+        "final/forgetting_past_tasks": 94.98888888888888,
+        "final/last_accuracy": 11.21,
+        "final/training_time_seconds": 629.5167602739989,
+        "final_task_accuracies/task_01": 0,
+        "final_task_accuracies/task_02": 0,
+        "final_task_accuracies/task_03": 0,
+        "final_task_accuracies/task_04": 0,
+        "final_task_accuracies/task_05": 0,
+        "final_task_accuracies/task_06": 0,
+        "final_task_accuracies/task_07": 0,
+        "final_task_accuracies/task_08": 0,
+        "final_task_accuracies/task_09": 14.3,
+        "final_task_accuracies/task_10": 97.8,
+        "stage_accuracy": 11.21,
+        "task": 10,
+        "task_accuracy_matrix": {
+          "_latest_artifact_path": "wandb-client-artifact://3cbilmayjpo0lraotd0aoto4k645mg0z1l7aic7zexxlgsfnmwt02hxwzrp4ktwr1e8czmvhv3ap96bzio31lj91vslpy2lo7f80rsebp1nm96yodam5wt0mutxpm6c2:latest/task_accuracy_matrix.table.json",
+          "_type": "table-file",
+          "artifact_path": "wandb-client-artifact://wg1tdcn38t5qznxihcv9k77x9ydj79xoxe57oiesc5q1bcep01v2b2vopqlv5e6ykqjt0426qfaz0cvxtmdxw5j60fi2ij9khmpprx32mkuviafrdcr8tq0rb1wh0nzh/task_accuracy_matrix.table.json",
+          "log_mode": "IMMUTABLE",
+          "ncols": 11,
+          "nrows": 10,
+          "path": "media/table/task_accuracy_matrix_10_45e51659484c0aedb716.table.json",
+          "sha256": "45e51659484c0aedb716afabdb5654f4aafcd94e68117218d33f8b72d5f298b8",
+          "size": 719
+        }
+      }
+    }
+  ],
+  "workspaces_before": [
+    {
+      "displayName": "Caoban170106's workspace",
+      "id": "VmlldzoxODIzOTE5OA==",
+      "name": "nw-nwusercaoban170106-w",
+      "spec": {
+        "libraryExpanded": true,
+        "section": {
+          "customRunColors": {},
+          "customRunNames": {},
+          "name": "",
+          "openRunSet": 0,
+          "openViz": true,
+          "panelBankConfig": {
+            "panelPlacementOverrides": {
+              "__custom_panel__:r5utdt2l5": {
+                "orderKey": "Zz",
+                "sectionId": "zjuivxik3"
+              }
+            },
+            "sections": [
+              {
+                "__id__": "zjuivxik3",
+                "flowConfig": {
+                  "boxHeight": 602,
+                  "boxWidth": 571,
+                  "columnsPerPage": 2,
+                  "rowsPerPage": 1
+                },
+                "isOpen": false,
+                "isPanelsAuto": true,
+                "name": "01 — Table 4 | Ablation Study",
+                "panels": [
+                  {
+                    "__id__": "r5utdt2l5",
+                    "config": {
+                      "chartTitle": "Table 4 — Average Incremental Accuracy | CIFAR-100",
+                      "metrics": [
+                        "summary:summary/average_incremental_accuracy_pct"
+                      ],
+                      "overrideSeriesTitles": {
+                        "3v53tmq5:summary/average_incremental_accuracy_pct": "Full F-OAL",
+                        "k01pp8st:summary/average_incremental_accuracy_pct": "Without Both",
+                        "rkedlkkk:summary/average_incremental_accuracy_pct": "Without SP",
+                        "shl4p10l:summary/average_incremental_accuracy_pct": "Without FF"
+                      }
+                    },
+                    "isAuto": false,
+                    "viewType": "Bar Chart"
+                  },
+                  {
+                    "__id__": "rg72g9hs8",
+                    "config": {
+                      "chartTitle": "Table 4 — Incremental Accuracy | CIFAR-100",
+                      "metrics": [
+                        "stage_accuracy_pct"
+                      ],
+                      "overrideSeriesTitles": {
+                        "3v53tmq5:stage_accuracy_pct": "Full F-OAL",
+                        "k01pp8st:stage_accuracy_pct": "\tWithout Both",
+                        "rkedlkkk:stage_accuracy_pct": "\tWithout SP",
+                        "shl4p10l:stage_accuracy_pct": "Without FF"
+                      },
+                      "xAxis": "task",
+                      "xAxisFormat": "number",
+                      "yAxisTitle": "Average Incremental Accuracy (%)"
+                    },
+                    "isAuto": false,
+                    "viewType": "Run History Line Plot"
+                  }
+                ],
+                "pinned": false,
+                "sorted": 0
+              },
+              {
+                "__id__": "48q948bzp",
+                "isOpen": false,
+                "isPanelsAuto": false,
+                "name": "02 — Reproduction Alignment | C1–C3",
+                "panels": [],
+                "pinned": false,
+                "sorted": 0
+              },
+              {
+                "__id__": "sigfqqiz4",
+                "isOpen": false,
+                "isPanelsAuto": false,
+                "name": "Hidden Panels",
+                "panels": [],
+                "pinned": false,
+                "sorted": 0
+              }
+            ],
+            "settings": {
+              "showEmptySections": false,
+              "sortAlphabetically": false
+            },
+            "state": 1
+          },
+          "panelBankSectionConfig": {
+            "__id__": "vo6njwss6",
+            "isOpen": false,
+            "name": "Report Panels",
+            "panels": [],
+            "pinned": false,
+            "sorted": 0
+          },
+          "runSets": [
+            {
+              "enabled": true,
+              "expandedRowAddresses": [],
+              "filters": {
+                "filterFormat": "filterV2",
+                "filters": []
+              },
+              "grouping": [],
+              "id": "ytc2wjkjg",
+              "name": "Run set",
+              "runFeed": {
+                "columnOrder": [],
+                "columnPinned": {},
+                "columnVisible": {
+                  "run:name": false
+                },
+                "columnWidths": {},
+                "metricValences": {},
+                "onlyShowSelected": false,
+                "pageSize": 20,
+                "version": 2
+              },
+              "runNameTruncationType": "Middle",
+              "search": {
+                "query": ""
+              },
+              "searchHistory": [],
+              "selections": {
+                "bounds": [],
+                "root": 1,
+                "tree": [
+                  "zzzeg0k6",
+                  "euwibfmj",
+                  "b4bao7ql",
+                  "172e2y2y",
+                  "ts2wh4e3",
+                  "4m4uir7h",
+                  "2cdeiptv",
+                  "3eca8232",
+                  "6whrot4z",
+                  "hsgsvb6p",
+                  "3oiftwg6",
+                  "ne1p16b5",
+                  "qw78us1k"
+                ]
+              },
+              "sort": {
+                "keys": [
+                  {
+                    "ascending": false,
+                    "key": {
+                      "name": "createdAt",
+                      "section": "run"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "semanticLegendSettings": {},
+          "version": 1,
+          "workspaceSettings": {
+            "linePlot": {},
+            "scatterDefaultByWorkspaceType": true,
+            "shouldAutoGeneratePanels": false
+          }
+        },
+        "vizExpanded": false
+      }
+    },
+    {
+      "displayName": "Lqd-tk23-vothaithanh's workspace",
+      "id": "VmlldzoxODI3MTM1Ng==",
+      "name": "nw-nwuserlqdtk23vothaithanh-w",
+      "spec": {
+        "libraryExpanded": true,
+        "section": {
+          "customRunColors": {},
+          "customRunNames": {},
+          "name": "",
+          "openRunSet": 0,
+          "openViz": true,
+          "panelBankConfig": {
+            "panelPlacementOverrides": {
+              "__custom_panel__:r5utdt2l5": {
+                "orderKey": "Zz",
+                "sectionId": "zjuivxik3"
+              }
+            },
+            "sections": [
+              {
+                "__id__": "zjuivxik3",
+                "flowConfig": {
+                  "boxHeight": 602,
+                  "boxWidth": 571,
+                  "columnsPerPage": 2,
+                  "rowsPerPage": 1
+                },
+                "isOpen": true,
+                "isPanelsAuto": true,
+                "name": "01 — Table 4 | Ablation Study",
+                "panels": [
+                  {
+                    "__id__": "r5utdt2l5",
+                    "config": {
+                      "chartTitle": "Table 4 — Average Incremental Accuracy | CIFAR-100",
+                      "metrics": [
+                        "summary:summary/average_incremental_accuracy_pct"
+                      ],
+                      "overrideSeriesTitles": {
+                        "3v53tmq5:summary/average_incremental_accuracy_pct": "Full F-OAL",
+                        "k01pp8st:summary/average_incremental_accuracy_pct": "Without Both",
+                        "rkedlkkk:summary/average_incremental_accuracy_pct": "Without SP",
+                        "shl4p10l:summary/average_incremental_accuracy_pct": "Without FF"
+                      }
+                    },
+                    "isAuto": false,
+                    "viewType": "Bar Chart"
+                  },
+                  {
+                    "__id__": "rg72g9hs8",
+                    "config": {
+                      "chartTitle": "Table 4 — Incremental Accuracy | CIFAR-100",
+                      "metrics": [
+                        "stage_accuracy_pct"
+                      ],
+                      "overrideSeriesTitles": {
+                        "3v53tmq5:stage_accuracy_pct": "Full F-OAL",
+                        "k01pp8st:stage_accuracy_pct": "\tWithout Both",
+                        "rkedlkkk:stage_accuracy_pct": "\tWithout SP",
+                        "shl4p10l:stage_accuracy_pct": "Without FF"
+                      },
+                      "xAxis": "task",
+                      "xAxisFormat": "number",
+                      "yAxisTitle": "Average Incremental Accuracy (%)"
+                    },
+                    "isAuto": false,
+                    "viewType": "Run History Line Plot"
+                  }
+                ],
+                "pinned": false,
+                "sorted": 0
+              },
+              {
+                "__id__": "48q948bzp",
+                "isOpen": false,
+                "isPanelsAuto": false,
+                "name": "02 — Reproduction Alignment | C1–C3",
+                "panels": [],
+                "pinned": false,
+                "sorted": 0
+              },
+              {
+                "__id__": "sigfqqiz4",
+                "isOpen": false,
+                "isPanelsAuto": false,
+                "name": "Hidden Panels",
+                "panels": [],
+                "pinned": false,
+                "sorted": 0
+              }
+            ],
+            "settings": {
+              "showEmptySections": false,
+              "sortAlphabetically": false
+            },
+            "state": 1
+          },
+          "panelBankSectionConfig": {
+            "__id__": "vo6njwss6",
+            "isOpen": false,
+            "name": "Report Panels",
+            "panels": [],
+            "pinned": false,
+            "sorted": 0
+          },
+          "runSets": [
+            {
+              "enabled": true,
+              "expandedRowAddresses": [],
+              "filters": {
+                "filterFormat": "filterV2",
+                "filters": []
+              },
+              "grouping": [],
+              "id": "ytc2wjkjg",
+              "name": "Run set",
+              "runFeed": {
+                "columnOrder": [],
+                "columnPinned": {},
+                "columnVisible": {
+                  "run:name": false
+                },
+                "columnWidths": {},
+                "metricValences": {},
+                "onlyShowSelected": false,
+                "pageSize": 20,
+                "version": 2
+              },
+              "runNameTruncationType": "Middle",
+              "search": {
+                "query": ""
+              },
+              "searchHistory": [],
+              "selections": {
+                "bounds": [],
+                "root": 1,
+                "tree": [
+                  "zzzeg0k6",
+                  "euwibfmj",
+                  "b4bao7ql",
+                  "172e2y2y",
+                  "ts2wh4e3",
+                  "4m4uir7h",
+                  "2cdeiptv",
+                  "3eca8232",
+                  "6whrot4z",
+                  "hsgsvb6p",
+                  "3oiftwg6",
+                  "ne1p16b5",
+                  "qw78us1k"
+                ]
+              },
+              "sort": {
+                "keys": [
+                  {
+                    "ascending": false,
+                    "key": {
+                      "name": "createdAt",
+                      "section": "run"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "semanticLegendSettings": {},
+          "version": 1,
+          "workspaceSettings": {
+            "linePlot": {},
+            "scatterDefaultByWorkspaceType": true,
+            "shouldAutoGeneratePanels": false
+          }
+        },
+        "vizExpanded": false
+      }
+    }
+  ]
+}

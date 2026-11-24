@@ -1,11 +1,14 @@
 # GIẢI MÃ HIỆN TƯỢNG NGHỊCH LÝ ĐỘ QUÊN KHI LOẠI BỎ SMOOTH PROJECTION TRÊN TẬP DTD
 ## (Unraveling the Plasticity-Forgetting Paradox in Smooth Projection Ablation on DTD)
 
-> **Dự án:** Tái hiện bài báo F-OAL (*Fast Optimization-free Online Continual Learning with Analytic Classifier*, NeurIPS 2024)  
-> **Bộ môn:** Nhập môn Học máy (Introduction to Machine Learning) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)  
-> **Tài liệu tham chiếu:** [`docs/Limitations_2.md`](Limitations_2.md) | [`docs/Limitations.md`](Limitations.md)  
-> **Bộ kiểm thử pháp y tự động:** [`tests/test_dtd_forensic_verification.py::test_sp_ablation_plasticity_forgetting_paradox`](../tests/test_dtd_forensic_verification.py) (Passed)  
-> **Ngày giải trình nghiệm thu:** 10/11/2026  
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo DTD Chính thức](dtd_ablation_report.md) | [Giải trình Giới hạn DTD](Limitations.md) | [W&B Report DTD](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T%C3%A1i-l%E1%BA%ADp-th%E1%BB%B1c-nghi%E1%BB%87m-v%C3%A0-ph%C3%A2n-t%C3%ADch-ablation-tr%C3%AAn-DTD--VmlldzoxODI3ODAxMQ)
+
+
+> **Dự án:** Tái hiện bài báo F-OAL (*Fast Optimization-free Online Continual Learning with Analytic Classifier*, NeurIPS 2024)
+> **Bộ môn:** Nhập môn Học máy (Introduction to Machine Learning) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)
+> **Tài liệu tham chiếu:** [`docs/Limitations_2.md`](Limitations_2.md) | [`docs/Limitations.md`](Limitations.md)
+> **Bộ kiểm thử pháp y tự động:** [`tests/test_dtd_forensic_verification.py::test_sp_ablation_plasticity_forgetting_paradox`](../tests/test_dtd_forensic_verification.py) (Passed)
+> **Ngày giải trình nghiệm thu:** 10/11/2026
 
 ---
 
@@ -124,7 +127,7 @@ Nhìn vào bảng so sánh từng giai đoạn:
 | **Stage 10** | 40 | **$79.56\%$** | **$79.13\%$** | **$+0.44\text{ pp}$ (Hội tụ)** |
 | **Trung bình ($\bar{A}$)** | — | **$87.20\%$** | **$84.35\%$** | **$+2.85\text{ pp}$** |
 
-**Ý nghĩa:** 
+**Ý nghĩa:**
 Trong Continual Learning trực tuyến (Online Streaming), mô hình được sử dụng để phân loại mẫu liên tục trong suốt toàn bộ vòng đời, chứ không phải chỉ đợi đến tác vụ thứ 10 mới đưa vào ứng dụng.
 * Ở cấu hình A0, mô hình duy trì độ chính xác cực cao ($>91\%-94\%$) trong suốt 4 tác vụ đầu tiên (chiếm $40\%$ vòng đời).
 * Ở cấu hình A2, mô hình bị rớt phong độ ngay từ tác vụ thứ 2 ($83.75\%$).

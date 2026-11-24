@@ -1,9 +1,12 @@
 # F-OAL CIFAR-100 Multi-Seed Table 4 Ablation Study (Seeds 42, 123, 2026)
 
-**Status:** `MULTISEED_COMPLETED`  
-**Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)  
-**Branch:** `experiment/cifar100-multiseed-ablation`  
-**Archive Executed Commit:** `d7ef0974e381e75bf0175caf11fb3096c37b7c3e`  
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Headline CIFAR-100](CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+
+**Status:** `MULTISEED_COMPLETED`
+**Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL)
+**Branch:** `experiment/cifar100-multiseed-ablation`
+**Archive Executed Commit:** `d7ef0974e381e75bf0175caf11fb3096c37b7c3e`
 **Target Benchmark:** CIFAR-100 (100 classes, 10 incremental tasks × 10 classes, 1-pass online analytic learning, zero replay)
 
 ---

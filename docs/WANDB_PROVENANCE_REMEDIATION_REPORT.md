@@ -2,6 +2,9 @@
 
 ## 1. Thông tin chung & Tiến trình thực thi
 
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Kiểm toán Provenance](WANDB_PROVENANCE_AUDIT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+
+
 - **W&B Project:** `caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction`
 - **W&B Server:** `https://forge.coreweave.com`
 - **Phạm vi (Scope):** Chỉ áp dụng cho 4 source runs CIFAR-100 (`seed=42`): `3v53tmq5` (F-OAL C3-D), `xlcme1c3` (Experience Replay), `c5pjewk4` (Official-protocol LwF), `ifl3rz2u` (Adapted LwF). Toàn bộ dự án còn có các thí nghiệm C1–C3 và Table 4 ablation với 3 seed (`42`, `123`, `2026`).

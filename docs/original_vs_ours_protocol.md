@@ -1,9 +1,12 @@
 # Protocol & Code-Level Discrepancy Audit: Official F-OAL (`liuyuchen-cz/F-OAL`) vs. Our Implementation (`src/foal`)
 
+
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Headline CIFAR-100](CIFAR100_FINAL_REPRODUCTION_REPORT.md) | [Kiểm toán C3](CIFAR100_PREPROCESSING_AUDIT.md) | [W&B Report CIFAR-100](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T-i-l-p-k-t-qu-v-ph-n-t-ch-th-c-nghi-m-tr-n-b-d-li-u-CIFAR-100--VmlldzoxODI2NDExMA)
+
 * **Paper:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning* (NeurIPS 2024)
 * **Official Author Repository:** [`https://github.com/liuyuchen-cz/F-OAL`](https://github.com/liuyuchen-cz/F-OAL) — Verified Execution Commit: `73e4ac1b4c965030973a2b77f05c57c2f44f49f5` (`73e4ac1`)
 * **Our Repository:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL) — Verified GPU Execution Commit: `aad7500c425bd13ece2fd7d4d21014616344ec81` (`aad7500`)
-* **Audit Status:** **A19 Official Reproduction `VERIFIED` (`PASS`)** | **A20 Discrepancy Analysis `IN PROGRESS / PARTIAL` (Code Audit Complete; Controlled GPU Experiments `C1`–`C4` Pending)**
+* **Audit Status:** **A19 Official Reproduction `VERIFIED` (`PASS`)** | **A20 Discrepancy Analysis `COMPLETED` (Code Audit Complete; Controlled GPU Experiments `C1`–`C3` Verified & Merged to `main` — see `CIFAR100_FINAL_REPRODUCTION_REPORT.md`)**
 
 ---
 

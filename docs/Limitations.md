@@ -1,17 +1,20 @@
 # BÁO CÁO GIẢI TRÌNH VÀ KHẮC PHỤC CÁC GIỚI HẠN THỰC NGHIỆM TRÊN BỘ DỮ LIỆU DTD
 ## (Forensic Audit & Resolution of Experimental Limitations — Table 4 Ablation Track)
 
-> **Dự án:** Tái hiện bài báo F-OAL (*Fast Optimization-free Online Continual Learning with Analytic Classifier*, NeurIPS 2024)  
-> **Bộ môn:** Nhập môn Học máy (Introduction to Machine Learning) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)  
-> **Nhánh thực nghiệm:** `experiment/dtd-ablation` | **Nhóm W&B:** `table4_ablation_dtd`  
-> **Bộ kiểm thử pháp y:** [`tests/test_dtd_forensic_verification.py`](../tests/test_dtd_forensic_verification.py) (85 passed, 0 failed)  
-> **Ngày cập nhật hoàn tất:** 10/11/2026  
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo DTD Chính thức](dtd_ablation_report.md) | [Nghịch lý Độ quên DTD](Limitations_2.md) | [W&B Report DTD](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-T%C3%A1i-l%E1%BA%ADp-th%E1%BB%B1c-nghi%E1%BB%87m-v%C3%A0-ph%C3%A2n-t%C3%ADch-ablation-tr%C3%AAn-DTD--VmlldzoxODI3ODAxMQ)
+
+
+> **Dự án:** Tái hiện bài báo F-OAL (*Fast Optimization-free Online Continual Learning with Analytic Classifier*, NeurIPS 2024)
+> **Bộ môn:** Nhập môn Học máy (Introduction to Machine Learning) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)
+> **Nhánh thực nghiệm:** `experiment/dtd-ablation` | **Nhóm W&B:** `table4_ablation_dtd`
+> **Bộ kiểm thử pháp y:** [`tests/test_dtd_forensic_verification.py`](../tests/test_dtd_forensic_verification.py) (85 passed, 0 failed)
+> **Ngày cập nhật hoàn tất:** 10/11/2026
 
 ---
 
 ### TỔNG QUAN
 
-Tài liệu này cung cấp báo cáo giải trình pháp y chi tiết, bóc tách cơ chế kỹ thuật và giải quyết triệt để **4 giới hạn thực nghiệm** đã được nêu ra trong quá trình tái hiện Bảng 4 (Ablation Study) của mô hình F-OAL trên bộ dữ liệu **Describable Textures Dataset (DTD)**. 
+Tài liệu này cung cấp báo cáo giải trình pháp y chi tiết, bóc tách cơ chế kỹ thuật và giải quyết triệt để **4 giới hạn thực nghiệm** đã được nêu ra trong quá trình tái hiện Bảng 4 (Ablation Study) của mô hình F-OAL trên bộ dữ liệu **Describable Textures Dataset (DTD)**.
 
 Bốn giới hạn bao gồm:
 1. **Số lượng hạt giống ngẫu nhiên và phân rã các nguồn biến thiên.**

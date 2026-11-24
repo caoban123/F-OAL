@@ -1,8 +1,10 @@
 # PHÂN TÍCH PHẢN BIỆN LÝ THUYẾT BÀI BÁO F-OAL (MILESTONE 3: CRITICAL ANALYSIS)
 
-> **Học phần:** Nhập môn Học máy (*Introduction to Machine Learning*) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS)
+> **Điều hướng nhanh:** [← Trang chủ `README.md`](../README.md) | [Báo cáo Thực nghiệm Lab 2](LAB2_EMPIRICAL_DEMONSTRATION_REPORT.md) | [Poster A2 `.pptx`](../poster/F-OAL_Critical_Analysis_Poster_A2.pptx) | [W&B Report Lab 2](https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/reports/F-OAL-Ph%C3%A2n-t%C3%ADch-Ph%E1%BA%A3n-bi%E1%BB%87n-L%C3%BD-thuy%E1%BA%BFt-Th%E1%BB%B1c-nghi%E1%BB%87m-Lab-2-Long-Tail-Scaling--VmlldzoxODM1OTE5Mg)
+>
+> **Học phần:** Nhập môn Học máy (*Introduction to Machine Learning*) — Trường ĐHKHTN, ĐHQG-HCM (HCMUS) — Nhóm: **Nguyễn Cao Bản · Nguyễn Thái Thành · Phan Thế Phong**
 > **Bài báo đối tượng:** Huiping Zhuang*, Yuchen Liu*, Run He, Kai Tong, Ziqian Zeng, Cen Chen, Yi Wang, Lap-Pui Chau, *"F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning"*, NeurIPS 2024 (pp. 1–22).
-> **Kho lưu trữ đối chiếu:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL) (`main @ 1b2d46d`)
+> **Kho lưu trữ đối chiếu:** [`https://github.com/caoban123/F-OAL`](https://github.com/caoban123/F-OAL) (nhánh `main`)
 > **Phạm vi tài liệu:** Thực hiện trọn vẹn yêu cầu của chặng **Critical Analysis** (`/project/statement/analysis`) — bóc tách giả định ẩn, kiểm định tính chặt chẽ toán học của các mệnh đề/định lý, phân tích hàm mục tiêu và độ phức tạp tính toán; thiết lập **3 Điểm mạnh**, **3 Hạn chế lý thuyết kèm giả thuyết thực nghiệm bác bỏ được (falsifiable hypotheses)** và **3 Hướng phát triển tương ứng** làm nền tảng trực tiếp cho **Lab 2 (Empirical Demonstration)** và **Poster khổ dọc A2 (50% điểm đồ án)**.
 
 ---
