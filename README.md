@@ -40,7 +40,7 @@ Toàn bộ thực nghiệm của dự án được quản lý tập trung trên 
 ### Mục lục Nội dung
 1. [Kiến trúc Hệ thống, Cấu trúc Mã nguồn & Thư viện Phụ trợ](#1-kiến-trúc-hệ-thống-cấu-trúc-mã-nguồn--thư-viện-phụ-trợ)
 2. [Hướng dẫn Cài đặt & Chạy Lại Nhanh (Quick Start)](#2-hướng-dẫn-cài-đặt--chạy-lại-nhanh-quick-start)
-3. [Cơ sở Lý thuyết & Nền tảng Toán học F-OAL](#3-cơ-sở-lý-thuyết--nền-tảng-toán-học-f-oal)
+3. [Giới thiệu Toàn diện & Nền tảng Toán học Bài báo F-OAL (NeurIPS 2024)](#3-giới-thiệu-toàn-diện--nền-tảng-toán-học-bài-báo-f-oal-neurips-2024)
 4. [Giai đoạn I — Kết quả Tái lập Thực nghiệm & Giải mã Chênh lệch Đa Tập Dữ Liệu](#4-giai-đoạn-i--kết-quả-tái-lập-thực-nghiệm--giải-mã-chênh-lệch-đa-tập-dữ-liệu)
 5. [Giai đoạn II — Phân tích Phản biện Lý thuyết, Thực nghiệm Lab 2 & Poster A2](#5-giai-đoạn-ii--phân-tích-phản-biện-lý-thuyết-thực-nghiệm-lab-2--poster-a2)
 6. [Hệ thống Đăng ký Thực nghiệm W&B & Kiểm toán Nguồn gốc (Provenance)](#6-hệ-thống-đăng-ký-thực-nghiệm-wb--kiểm-toán-nguồn-gốc-provenance)
@@ -143,37 +143,157 @@ python -m scripts.build_poster_assets && python -m scripts.build_poster_a2_pptx
 
 ---
 
-## 3. Cơ sở Lý thuyết & Nền tảng Toán học F-OAL
+## 3. Giới thiệu Toàn diện & Nền tảng Toán học Bài báo F-OAL (NeurIPS 2024)
 
-### 3.1. Bài toán Online Class-Incremental Learning (OCIL)
-Trong bối cảnh **OCIL**, dữ liệu đến tuần tự theo luồng các mini-batch $\mathcal{D}_1 \to \mathcal{D}_2 \to \dots \to \mathcal{D}_t$ với $\mathcal{D}_t = (\mathbf{X}_t, \mathbf{Y}_t)$ thuộc các tập lớp mở rộng dần qua $K$ giai đoạn (ví dụ CIFAR-100 gồm $K = 10$ tasks $\times$ $10$ lớp mới/task). Mô hình bị ràng buộc nghiêm ngặt bởi hai điều kiện:
-1. **Học một lượt (*One-pass*):** Mỗi mẫu $(\mathbf{x}_i, y_i)$ chỉ đi qua mô hình đúng một lần duy nhất.
-2. **Không lưu mẫu cũ (*Exemplar-free / Zero-replay*):** Không lưu ảnh cũ vào bộ đệm để huấn luyện lại nhằm tiết kiệm bộ nhớ và bảo vệ quyền riêng tư dữ liệu.
+### 3.1. Hồ sơ Xuất bản & Tóm tắt Nghiên cứu
 
-Các phương pháp huấn luyện bằng lan truyền ngược (*Backpropagation*) trong OCIL thường rơi vào **Quên thảm khốc (*Catastrophic Forgetting*)** do gradient của mini-batch mới ghi đè trọng số của các lớp cũ (*recency bias*). F-OAL giải quyết tận gốc vấn đề này bằng cách chuyển bài toán cập nhật bộ phân loại sang **nghiệm đóng đệ quy của bài toán Hồi quy Ridge tuyến tính** trên không gian đặc trưng đóng băng.
+* **Tên công trình:** *F-OAL: Forward-only Online Analytic Learning with Fast Training and Low Memory Footprint in Class Incremental Learning*.
+* **Nhóm tác giả:** Huiping Zhuang\*, Yuchen Liu\*, Run He, Kai Tong, Ziqian Zeng, Cen Chen, Yi Wang và Lap-Pui Chau (*South China University of Technology, East China Normal University, Singapore Management University, The Hong Kong Polytechnic University*).
+* **Nơi công bố:** Hội nghị *Advances in Neural Information Processing Systems* lần thứ 38 (**NeurIPS 2024**, Main Conference Track, tr. 41517–41538) — Xếp hạng **A\*** theo [ICORE2026](https://portal.core.edu.au/conf-ranks/98/).
+* **Lĩnh vực:** Học máy (*Machine Learning*), Học liên tục (*Continual Learning*), Học tăng dần theo lớp trực tuyến (*Online Class-Incremental Learning — OCIL*), Thị giác máy tính (*Computer Vision*).
+* **Liên kết gốc:** [NeurIPS Proceedings](https://proceedings.neurips.cc/paper_files/paper/2024/hash/48ffa38c13078d6ce26b328e7f373243-Abstract-Conference.html) · [Full Paper PDF](https://papers.neurips.cc/paper_files/paper/2024/file/48ffa38c13078d6ce26b328e7f373243-Paper-Conference.pdf) · [Official Author GitHub (`liuyuchen-cz/F-OAL`)](https://github.com/liuyuchen-cz/F-OAL).
 
-### 3.2. Ba Khối Biểu diễn Tuyến Xuôi (*Forward-Only Feature Pipeline*)
+**Tóm tắt ý tưởng trung tâm:**
+F-OAL là một phương pháp **Online Class-Incremental Learning (OCIL)** được đề xuất nhằm giải quyết đồng thời ba thách thức lớn: hạn chế hiện tượng **Quên thảm khốc (*Catastrophic Forgetting*)**, rút ngắn tối đa thời gian huấn luyện và cắt giảm mức tiêu thụ bộ nhớ GPU. Khác với phần lớn các mô hình Deep Learning truyền thống phụ thuộc vào lan truyền ngược (*Backpropagation*) và bộ đệm phát lại (*Experience Replay*), F-OAL sử dụng một **Vision Transformer (ViT-B/16) tiền huấn luyện đóng băng hoàn toàn**, kết hợp tuần tự với **Feature Fusion**, **Smooth Projection** và một **Analytic Classifier**. Bằng cách chuyển bài toán học bộ phân loại từ tối ưu lặp bằng Gradient Descent sang bài toán **Hồi quy Ridge (*Ridge Regression*) có nghiệm đóng**, rồi cập nhật nghiệm đó theo từng mini-batch bằng **Bình phương Tối thiểu Đệ quy (*Recursive Least Squares — RLS*)**, F-OAL tiếp nhận luồng dữ liệu mới liên tục trong một lượt duyệt duy nhất mà không cần lưu giữ bất kỳ ảnh huấn luyện cũ nào.
 
-1. **Frozen Pre-trained ViT-B/16 & Feature Fusion (`Eq. 2`):**
-   Toàn bộ tham số của backbone Vision Transformer ($L = 12$ khối) được đóng băng hoàn toàn ($\nabla_\theta = 0$). Để thu nhận đồng thời thông tin kết cấu cục bộ ở các tầng nông và ngữ nghĩa trừu tượng ở tầng sâu, F-OAL lấy trung bình cộng vector `[CLS]` đầu ra của cả 12 khối rồi chuẩn hóa qua `LayerNorm` cuối:
-   $$\mathbf{h}(x) = \mathrm{LayerNorm}\!\left(\frac{1}{L}\sum_{\ell=1}^{L} \mathbf{h}^{(\ell)}_{\text{CLS}}(x)\right) \in \mathbb{R}^{d_{\text{in}}}, \qquad d_{\text{in}} = 768$$
-2. **Smooth Projection (`Eq. 3`):**
-   Vector $\mathbf{h}(x)$ được chiếu qua một ma trận ngẫu nhiên **khởi tạo một lần duy nhất rồi giữ cố định** $\mathbf{P} \in \mathbb{R}^{d_{\text{in}} \times D}$ (cấu hình chuẩn $D = 1{,}000$), theo sau bởi hàm kích hoạt Sigmoid:
-   $$\boldsymbol{\phi}(x) = \sigma(\mathbf{h}(x)\mathbf{P}) \in (0, 1)^D$$
-   > **Đính chính quan trọng từ kiểm toán của nhóm (`C1` & `L3`):** Bài báo gốc (Mục 3.1, trang 4) ghi các phần tử của $\mathbf{P}$ lấy từ phân phối chuẩn mà bỏ sót hệ số chuẩn hóa phương sai theo chiều đầu vào $1/d_{\text{in}}$. Nếu dùng $\mathcal{N}(0, 1)$, hơn $81\%$ đầu ra Sigmoid bị bão hòa cứng tại $0$ hoặc $1$; để Sigmoid hoạt động trong vùng trơn hiệu quả, phương sai bắt buộc phải tuân theo quy luật $\sigma_P^2 = \Theta(1/d_{\text{in}})$ (như $\mathcal{U}(-1/\sqrt{d_{\text{in}}}, +1/\sqrt{d_{\text{in}}})$ trong code tác giả).
-3. **Analytic Classifier dựa trên Hồi quy Ridge (`Eq. 4–5`):**
-   Gọi $\boldsymbol{\Phi} \in \mathbb{R}^{V \times D}$ là ma trận đặc trưng tích lũy của toàn bộ $V$ mẫu đã quan sát và $\mathbf{Y} \in \{0, 1\}^{V \times C}$ là ma trận nhãn One-Hot. Trọng số tối ưu toàn cục đạt được từ bài toán lồi chặt ($\gamma > 0$, cấu hình chuẩn $\gamma = 1.0$):
-   $$\hat{\mathbf{W}} = \arg\min_{\mathbf{W} \in \mathbb{R}^{D \times C}} \left(\|\mathbf{Y} - \boldsymbol{\Phi}\mathbf{W}\|_F^2 + \gamma\|\mathbf{W}\|_F^2\right) = (\boldsymbol{\Phi}^\top\boldsymbol{\Phi} + \gamma\mathbf{I}_D)^{-1}\boldsymbol{\Phi}^\top\mathbf{Y}$$
+---
 
-### 3.3. Cập nhật Đệ quy Bình phương Tối thiểu Woodbury RLS (`Eq. 10–13`)
-Thay vì lưu trữ $\boldsymbol{\Phi}$ và $\mathbf{Y}$ qua thời gian, F-OAL chỉ duy trì **ma trận hiệp phương sai nghịch đảo (Autocorrelation / Precision Matrix)** $\mathbf{R}_t = (\gamma\mathbf{I}_D + \sum_{i=1}^{t}\mathbf{H}_i^\top\mathbf{H}_i)^{-1} \in \mathbb{R}^{D \times D}$ (khởi tạo $\mathbf{R}_0 = \gamma^{-1}\mathbf{I}_D$) và ma trận trọng số $\mathbf{W}_t \in \mathbb{R}^{D \times C_t}$. Khi mini-batch mới $(\mathbf{H}_t \in \mathbb{R}^{S \times D}, \mathbf{Y}_t \in \mathbb{R}^{S \times C_t})$ cỡ $S$ xuất hiện (nếu có lớp mới, ghép thêm các cột $\mathbf{0}$ vào $\mathbf{W}_{t-1}$):
+### 3.2. Bối cảnh Bài toán: Từ Học Máy Tĩnh đến Online Class-Incremental Learning (OCIL)
 
-$$\mathbf{R}_t = \mathbf{R}_{t-1} - \mathbf{R}_{t-1}\mathbf{H}_t^\top\left(\mathbf{I}_S + \mathbf{H}_t\mathbf{R}_{t-1}\mathbf{H}_t^\top\right)^{-1}\mathbf{H}_t\mathbf{R}_{t-1}$$
+1. **Class-Incremental Learning (CIL):**
+   Trong học máy cổ điển, mô hình giả định toàn bộ tập lớp cần nhận dạng đã có mặt đầy đủ ngay từ lúc huấn luyện. Tuy nhiên, trong thế giới thực (robot tự hành, giám sát công nghiệp, thương mại điện tử), các danh mục đối tượng mới xuất hiện liên tục theo thời gian. Ở bài toán **CIL**, chẳng hạn trên CIFAR-100, mô hình ban đầu chỉ học 10 lớp đầu tiên; sang giai đoạn thứ hai, mô hình nhận thêm dữ liệu của 10 lớp mới và lúc kiểm thử phải phân biệt chính xác tất cả **20 lớp đã từng thấy** (mà không được cung cấp nhãn định danh giai đoạn — *task-agnostic inference*), tiếp diễn cho đến đủ 100 lớp. Trở ngại lớn nhất của CIL là **Catastrophic Forgetting**: việc cập nhật tham số mạng cho các lớp mới làm biến dạng vùng quyết định của các lớp cũ, khiến độ chính xác trên kiến thức quá khứ sụp đổ nhanh chóng.
+2. **Online Class-Incremental Learning (OCIL):**
+   **OCIL** đặt thêm ràng buộc khắc nghiệt về luồng dữ liệu thời gian thực: thay vì được phép lưu toàn bộ tập dữ liệu của một task để lặp lại qua hàng chục epoch (*offline CIL*), mô hình chỉ tiếp nhận một chuỗi các mini-batch tuần tự:
+   $$\mathcal{D}_1 \longrightarrow \mathcal{D}_2 \longrightarrow \cdots \longrightarrow \mathcal{D}_t, \qquad \mathcal{D}_t = (\mathbf{X}_t, \mathbf{Y}_t)$$
+   Mỗi mẫu $(\mathbf{x}_i, y_i)$ đi qua hệ thống **đúng một lần duy nhất (*one-pass*)** rồi bị loại bỏ ngay sau khi xử lý.
+   > **Lưu ý khái niệm quan trọng:** *Online Learning* trong F-OAL **không** đồng nghĩa với *Unsupervised Learning*. Dữ liệu huấn luyện trong luồng $\mathcal{D}_t$ vẫn đi kèm nhãn thực $\mathbf{Y}_t$ (*Online Supervised Learning*); tính từ *online* nhấn mạnh việc dữ liệu đến theo luồng tuần tự từng lô nhỏ và giới hạn chỉ duyệt một lần.
 
-$$\mathbf{W}_t = \mathbf{W}_{t-1} + \mathbf{R}_t\mathbf{H}_t^\top\left(\mathbf{Y}_t - \mathbf{H}_t\mathbf{W}_{t-1}\right)$$
+---
 
-* **Tính bất biến theo thứ tự & cỡ lô (*Exact Joint Equivalence*):** Ví dụ vô hướng đơn giản với $D=1, \gamma=1, R_0=1, W_0=0$: sau mẫu $(H_1=1, Y_1=1)$ ta có $R_1 = 1/2, W_1 = 1/2$; sau mẫu $(H_2=1, Y_2=0)$ ta có $R_2 = 1/3, W_2 = 1/3$ — trùng khít tuyệt đối với nghiệm giải gộp toàn tập $W^* = \frac{1\cdot 1 + 1\cdot 0}{1^2 + 1^2 + 1} = \frac{1}{3}$ mà không cần lưu lại mẫu thứ nhất.
-* **Bộ nhớ & Độ phức tạp thực tế (Đính chính `Eq. 14` của bài báo):** Hai ma trận trạng thái chiếm bộ nhớ cố định $\mathcal{O}(D^2 + DC)$ ($\approx 7.63\text{ MB}$ cho $\mathbf{R}$ ở `float64`, $D=1{,}000$). Chi phí cập nhật $\mathbf{R}_t$ trên mỗi mini-batch cỡ $S$ thực chất là $\Theta(D^2 S + DS^2 + S^3)$ (**hoàn toàn độc lập với số lớp $C$**, đính chính lỗi in nhầm biến $C$ trong `Eq. 14` trang 5 của bài báo gốc).
+### 3.3. Hạn chế của các Phương pháp Tiền nhiệm & Bốn Đóng góp của F-OAL
+
+Trước F-OAL, các công trình giải bài toán CIL / OCIL chia thành ba nhánh chính nhưng đều vướng phải những đánh đổi khó dung hòa:
+
+| Nhóm Phương pháp | Đại diện Điển hình | Lưu Ảnh Cũ (Replay) | Cần Backprop | Học 1-Pass Theo Mini-batch | Nút thắt Cốt lõi |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **1. Experience Replay** | ER, iCaRL, SCR, DVC, PCR, OCM, OnPro | Có | Có | Có | Tốn bộ nhớ lưu trữ, thời gian huấn luyện chậm do lặp lại gradient trên mẫu cũ, và **rủi ro vi phạm quyền riêng tư dữ liệu** (y tế, tài chính, sinh trắc học). |
+| **2. Exemplar-Free (Gradient)** | LwF, EWC, SLCA, EASE, LAE | Không | Có | Khó ổn định | Dưới luồng 1-pass rất dễ rơi vào hai thái cực: hoặc chỉ nhớ lớp vừa học (*recency collapse*), hoặc quá cứng nhắc không học nổi lớp mới (*catastrophic rigidity*). |
+| **3. Analytic CL Thế hệ trước** | ACIL, DS-AL | Không | Cần ở Base Phase | Chưa hỗ trợ hoàn chỉnh | Đòi hỏi một giai đoạn huấn luyện nền (*base-training*) nhiều epoch bằng Backpropagation trên một tập lớp lớn ban đầu và thường xử lý theo từng task tĩnh, khó chạy trực tiếp từ con số 0 trên luồng mini-batch online. |
+| **4. F-OAL (Bài báo nghiên cứu)** | **Zhuang et al., NeurIPS 2024** | **Không (`0`)** | **Không (`Forward-Only`)** | **Có (Từ lô đầu tiên)** | Khắc phục cả ba nút thắt nhờ kết hợp Frozen Pre-trained ViT + FF + SP với cập nhật đệ quy Woodbury RLS trực tiếp theo từng mini-batch. |
+
+Từ đó, bài báo xác lập **4 đóng góp chính**:
+1. Mở rộng thành công khung **Analytic Continual Learning (ACL)** sang bối cảnh **Online Class-Incremental Learning** một lượt duyệt, vận hành hoàn toàn tuyến xuôi (*Forward-only*) ngay từ mini-batch đầu tiên mà không cần giai đoạn huấn luyện nền.
+2. Đề xuất tổ hợp trích xuất biểu diễn không cần tinh chỉnh mạng (**Frozen Encoder + Feature Fusion + Smooth Projection**), vừa loại bỏ chi phí tính gradient trên backbone vừa khai thác hiệu quả đặc trưng đa tầng cho các bài toán phân loại tinh (*fine-grained*).
+3. Xây dựng cơ chế cập nhật **Analytic Classifier bằng Recursive Least Squares (RLS)** theo từng mini-batch nhỏ với cột phân loại mở rộng động, đảm bảo nghiệm thu được trùng khít với nghiệm Hồi quy Ridge toàn cục trên toàn bộ dữ liệu tích lũy mà không cần lưu lại mẫu gốc.
+4. Thực nghiệm toàn diện trên **6 bộ dữ liệu chuẩn** chứng minh sự cân bằng vượt trội giữa độ chính xác, tốc độ huấn luyện và mức tiêu thụ VRAM GPU.
+
+---
+
+### 3.4. Giải phẫu Chi tiết Bốn Thành phần Kiến trúc của F-OAL
+
+#### 3.4.1. Frozen Pre-trained Encoder (`ViT-B/16`)
+F-OAL sử dụng mạng **Vision Transformer cơ sở (`ViT-B/16`)** đã tiền huấn luyện làm bộ trích xuất đặc trưng và **đóng băng toàn bộ $85.8$ triệu tham số** ($\nabla_\theta = 0$) xuyên suốt quá trình học tăng dần. Thiết kế này mang lại hai lợi ích nền tảng:
+* **Triệt tiêu chi phí lan truyền ngược:** Trong huấn luyện mạng nơ-ron sâu, Backpropagation không chỉ tốn xấp xỉ gấp đôi lượng phép toán so với Forward Pass mà còn buộc GPU phải giữ lại toàn bộ đồ thị kích hoạt trung gian (*intermediate activations*) của mọi tầng để tính đạo hàm. Đóng băng encoder giải phóng hoàn toàn gánh nặng VRAM và thời gian này.
+* **Chống trôi biểu diễn (*Zero Representation Drift*):** Vì tham số encoder bất biến, vector đặc trưng của một ảnh thuộc lớp cũ hoàn toàn không bị dịch chuyển khi mô hình tiếp nhận các lớp mới — điều kiện tiên quyết để các thống kê bậc hai tích lũy ở tầng phân loại luôn giữ nguyên hiệu lực toán học. *(Lưu ý: Đóng băng encoder không đồng nghĩa mô hình miễn nhiễm hoàn toàn với sự quên, vì ranh giới quyết định của bộ phân loại vẫn thay đổi khi không gian lớp mở rộng).*
+
+#### 3.4.2. Feature Fusion (`FF` — Hợp nhất Đặc trưng Đa Tầng, `Eq. 2`)
+Thay vì chỉ lấy đầu ra của khối Transformer cuối cùng (khối thứ $L = 12$, vốn thiên về ngữ nghĩa trừu tượng toàn cục dựa trên tác vụ tiền huấn luyện gốc), F-OAL trích xuất token phân loại `[CLS]` sau mỗi khối $\ell \in \{1, \dots, L\}$ và lấy trung bình cộng trước khi đi qua tầng chuẩn hóa `LayerNorm` cuối:
+
+$$\mathbf{h}_{\text{fusion}}(x) = \mathrm{LayerNorm}\!\left(\frac{1}{L}\sum_{\ell=1}^{L} \mathbf{h}^{(\ell)}_{\text{CLS}}(x)\right) \in \mathbb{R}^{d_{\text{in}}}, \qquad d_{\text{in}} = 768$$
+
+Các khối Transformer nông và trung gian bảo lưu nhiều chi tiết hình thái cục bộ, biên cạnh và họa tiết tần số cao; nhờ đó **Feature Fusion** giúp tăng đáng kể khả năng phân biệt trên các miền dữ liệu lệch xa ImageNet hoặc đòi hỏi nhận dạng chi tiết tinh tế như phân loại dòng máy bay (**FGVC-Aircraft**) và kết cấu bề mặt (**DTD**).
+
+#### 3.4.3. Smooth Projection (`SP` — Phép chiếu Ngẫu nhiên Phi tuyến Cố định, `Eq. 3`)
+Vector $\mathbf{h}_{\text{fusion}}(x) \in \mathbb{R}^{768}$ tiếp tục được chiếu qua một ma trận trọng số ngẫu nhiên $\mathbf{P} \in \mathbb{R}^{d_{\text{in}} \times D}$ (cấu hình chính $D = 1{,}000$) kết hợp hàm kích hoạt trơn Sigmoid $\sigma(u) = (1 + e^{-u})^{-1}$:
+
+$$\boldsymbol{\phi}(x) = \sigma\!\left(\mathbf{h}_{\text{fusion}}(x)\mathbf{P}\right) \in (0, 1)^D$$
+
+* **Vai trò toán học kép của Smooth Projection:**
+  1. Theo **Định lý Cover (1965)**, phép ánh xạ phi tuyến sang không gian đặc trưng ngẫu nhiên có số chiều lớn hơn ($768 \to 1{,}000$) giúp các cụm dữ liệu phức tạp trở nên dễ phân tách tuyến tính hơn đối với bộ phân loại bình phương tối thiểu phía sau.
+  2. **$\mathbf{P}$ chỉ được khởi tạo một lần duy nhất rồi giữ cố định vĩnh viễn** qua tất cả các task: không cần Backpropagation để học $\mathbf{P}$, đồng thời bảo đảm hệ tọa độ đặc trưng $\boldsymbol{\phi}(\cdot)$ cố định tuyệt đối để cập nhật đệ quy RLS không bị mất tính tương thích giữa các giai đoạn.
+* > **Đính chính quan trọng từ kiểm toán của nhóm (`C1` & `L3`):** Ở Mục 3.1 (trang 4), bài báo viết vắn tắt các phần tử của $\mathbf{P}$ lấy mẫu từ phân phối chuẩn mà không nêu quy luật chuẩn hóa phương sai theo chiều đầu vào $1/d_{\text{in}}$. Nếu khởi tạo theo $\mathcal{N}(0, 1)$, độ lệch chuẩn tiền kích hoạt vọt lên $\approx 20$, đẩy hơn **$81\%$** phần tử rơi vào vùng bão hòa chết ($0$ hoặc $1$); trong thực tế, phương sai của $\mathbf{P}$ bắt buộc phải có bậc $\sigma_P^2 = \Theta(1/d_{\text{in}})$ (như $\mathcal{U}(-1/\sqrt{768}, +1/\sqrt{768})$ trong code tác giả) để Sigmoid vận hành trong vùng trơn giàu thông tin.
+
+#### 3.4.4. Analytic Classifier (`AC` — Bộ phân loại Giải tích Hồi quy Ridge, `Eq. 4–5`)
+Giả sử tính đến thời điểm hiện tại hệ thống đã quan sát tổng cộng $V$ mẫu thuộc $C$ lớp. Xếp chồng các vector đặc trưng thành ma trận $\boldsymbol{\Phi} \in \mathbb{R}^{V \times D}$ và các vector nhãn mã hóa One-Hot thành $\mathbf{Y} \in \{0, 1\}^{V \times C}$. Thay vì dùng hàm mất mát Cross-Entropy (không có nghiệm đóng), Analytic Classifier tìm ma trận trọng số $\mathbf{W} \in \mathbb{R}^{D \times C}$ cực tiểu hóa hàm mục tiêu **Ridge Regression** với hệ số chính quy hóa $\gamma > 0$:
+
+$$\mathbf{W}^* = \arg\min_{\mathbf{W} \in \mathbb{R}^{D \times C}} \left(\|\boldsymbol{\Phi}\mathbf{W} - \mathbf{Y}\|_F^2 + \gamma\|\mathbf{W}\|_F^2\right)$$
+
+Lấy đạo hàm theo $\mathbf{W}$ và giải phương trình chuẩn $2\boldsymbol{\Phi}^\top(\boldsymbol{\Phi}\mathbf{W} - \mathbf{Y}) + 2\gamma\mathbf{W} = \mathbf{0}$, ta thu được nghiệm tối ưu toàn cục duy nhất dưới dạng đóng (*Closed-form Solution*):
+
+$$\mathbf{W}^* = \left(\boldsymbol{\Phi}^\top\boldsymbol{\Phi} + \gamma\mathbf{I}_D\right)^{-1}\boldsymbol{\Phi}^\top\mathbf{Y}$$
+
+Tuy nhiên, tính trực tiếp công thức trên tại mỗi thời điểm đòi hỏi phải lưu giữ toàn bộ ma trận $\boldsymbol{\Phi}$ và $\mathbf{Y}$ của quá khứ — vi phạm ràng buộc *Zero-replay* của OCIL. Đây chính là lý do F-OAL đưa vào cơ chế cập nhật đệ quy **RLS**.
+
+---
+
+### 3.5. Cơ chế Cập nhật Đệ quy Bình phương Tối thiểu (Recursive Least Squares — RLS)
+
+#### 3.5.1. Ma trận Trạng thái Hiệp phương sai Nghịch đảo $\mathbf{R}_t$
+Giả sử luồng dữ liệu đến theo từng mini-batch $(\mathbf{H}_1, \mathbf{Y}_1), (\mathbf{H}_2, \mathbf{Y}_2), \dots, (\mathbf{H}_t, \mathbf{Y}_t)$ với $\mathbf{H}_i \in \mathbb{R}^{S \times D}$ là đặc trưng sau Smooth Projection của lô thứ $i$. Tổng ma trận Gram tích lũy có thể viết tách rời theo lô: $\boldsymbol{\Phi}_t^\top\boldsymbol{\Phi}_t = \sum_{i=1}^{t}\mathbf{H}_i^\top\mathbf{H}_i$. F-OAL định nghĩa ma trận trạng thái:
+
+$$\mathbf{R}_t = \left(\gamma\mathbf{I}_D + \sum_{i=1}^{t}\mathbf{H}_i^\top\mathbf{H}_i\right)^{-1} \in \mathbb{R}^{D \times D}$$
+
+* **Ý nghĩa bản chất:** $\mathbf{R}_t$ nén toàn bộ hình học bậc hai (phương sai và tương quan chéo giữa các chiều đặc trưng) của mọi mẫu từng xuất hiện vào một ma trận đối xứng xác định dương kích thước cố định $D \times D$. Cần lưu ý rằng **$\mathbf{R}_t$ hoàn toàn không lưu nhãn**; mối liên hệ giữa đặc trưng và nhãn được duy trì đồng thời bên trong ma trận trọng số phân loại $\mathbf{W}_t$.
+
+#### 3.5.2. Hai Phương trình Cập nhật Woodbury Theo Mini-Batch (`Eq. 10–13`)
+Khởi tạo tại $t = 0$ trước khi thấy dữ liệu: $\mathbf{R}_0 = \gamma^{-1}\mathbf{I}_D$ và $\mathbf{W}_0 = \mathbf{0}$ (trong cấu hình chuẩn của F-OAL, $\gamma = 1 \implies \mathbf{R}_0 = \mathbf{I}_D$). Khi mini-batch mới $(\mathbf{H}_t, \mathbf{Y}_t)$ cỡ $S$ đi vào, F-OAL thực hiện đúng hai phép cập nhật đại số tuyến tính:
+
+1. **Cập nhật $\mathbf{R}_t$ bằng Đồng nhất thức Ma trận Woodbury (*Woodbury Matrix Identity*):**
+   $$\mathbf{R}_t = \mathbf{R}_{t-1} - \mathbf{R}_{t-1}\mathbf{H}_t^\top\left(\mathbf{I}_S + \mathbf{H}_t\mathbf{R}_{t-1}\mathbf{H}_t^\top\right)^{-1}\mathbf{H}_t\mathbf{R}_{t-1}$$
+   *(Thay vì phải nghịch đảo ma trận lớn cỡ $D \times D$ với $D=1{,}000$, công thức Woodbury chỉ cần giải hệ tuyến tính cỡ đúng bằng kích thước mini-batch $S \times S$ với $S=10$!)*
+2. **Cập nhật trọng số phân loại $\mathbf{W}_t$:**
+   $$\mathbf{W}_t = \mathbf{W}_{t-1} + \mathbf{R}_t\mathbf{H}_t^\top\left(\mathbf{Y}_t - \mathbf{H}_t\mathbf{W}_{t-1}\right)$$
+   Trong đó $\mathbf{Y}_t - \mathbf{H}_t\mathbf{W}_{t-1}$ là sai số dự đoán trên lô mới. Khác căn bản với Gradient Descent dùng hệ số bước học vô hướng cố định ($\eta$), RLS nhân sai số với ma trận khuếch đại $\mathbf{R}_t\mathbf{H}_t^\top$: những phương đặc trưng đã xuất hiện dày đặc ở các task cũ có trị riêng trong $\mathbf{R}_t$ rất nhỏ nên tự động được bảo vệ khỏi bị xô lệch quá mức bởi lô mới.
+
+#### 3.5.3. Ví dụ Tính toán Từng Bước Minh họa Tính Khớp Tuyệt đối (*Exact Joint Equivalence*)
+Xét bài toán tối giản $D = 1, C = 1, \gamma = 1 \implies R_0 = 1, W_0 = 0$:
+* **Bước 1:** Nhận mẫu đầu tiên $(H_1 = 1, Y_1 = 1)$ rồi hủy bỏ ngay sau khi học:
+  $$R_1 = 1 - \frac{1 \cdot 1}{1 + 1 \cdot 1 \cdot 1} = \frac{1}{2}, \qquad W_1 = 0 + \frac{1}{2}\cdot 1 \cdot (1 - 0) = \frac{1}{2}$$
+* **Bước 2:** Nhận mẫu thứ hai $(H_2 = 1, Y_2 = 0)$:
+  $$R_2 = \frac{1}{2} - \frac{(1/2)^2}{1 + 1 \cdot (1/2) \cdot 1} = \frac{1}{2} - \frac{1/4}{3/2} = \frac{1}{3}, \qquad W_2 = \frac{1}{2} + \frac{1}{3}\cdot 1 \cdot \left(0 - \frac{1}{2}\right) = \frac{1}{3}$$
+* **Đối chứng với học gộp toàn cục (*Joint Offline Ridge*):** Nếu giữ lại cả hai mẫu và giải một lần từ đầu:
+  $$W^* = \frac{H_1 Y_1 + H_2 Y_2}{H_1^2 + H_2^2 + \gamma} = \frac{1\cdot 1 + 1\cdot 0}{1^2 + 1^2 + 1} = \frac{1}{3} \equiv W_2$$
+Nghiệm cập nhật tuần tự từng bước bằng RLS **bằng chính xác 100%** nghiệm học đồng thời trên toàn bộ lịch sử dữ liệu mà không cần lưu lại mẫu $(H_1, Y_1)$.
+
+#### 3.5.4. Mở rộng Cột Động Khi Xuất hiện Lớp Mới & Bản chất Chống Quên
+* **Mở rộng lớp động:** Giả sử đến hết task trước mô hình đã biết $3$ lớp ($\mathbf{W}_{t-1} \in \mathbb{R}^{1000 \times 3}$) và lô mới mang thêm $2$ lớp chưa từng gặp. Trước bước cập nhật $\mathbf{W}_t$, F-OAL chỉ cần nối thêm $2$ cột $\mathbf{0}$ vào bên phải tạo thành $\mathbf{W}'_{t-1} = [\mathbf{W}_{t-1}, \mathbf{0}_{1000 \times 2}] \in \mathbb{R}^{1000 \times 5}$ (tương đương ngầm gán nhãn $0$ cho $2$ lớp mới đối với tất cả các mẫu quá khứ — hoàn toàn đúng về mặt ngữ nghĩa nhãn One-Hot!). Trong khi đó, **ma trận $\mathbf{R}_t \in \mathbb{R}^{1000 \times 1000}$ không hề thay đổi kích thước** dù số lớp tăng lên hàng trăm hay hàng nghìn.
+* **Vì sao RLS hạn chế Catastrophic Forgetting (và ranh giới của tính chất này):** Vì ở mọi bước $t$, $\mathbf{W}_t$ luôn là nghiệm cực tiểu toàn cục của tổng hàm mục tiêu $\sum_{i=1}^{t}\|\mathbf{H}_i\mathbf{W} - \mathbf{Y}_i\|_F^2 + \gamma\|\mathbf{W}\|_F^2$, mô hình **hoàn toàn miễn nhiễm với thiên lệch thời gian (*order / recency bias*)** vốn phá hủy các phương pháp SGD 1-pass. Tuy nhiên, đẳng thức nghiệm tối ưu bình phương tối thiểu **không đồng nghĩa độ chính xác phân loại lớp cũ không bao giờ giảm**: khi số lượng lớp $C_t$ tăng lên, các lớp mới có đặc trưng gần lớp cũ vẫn tạo ra sự chồng lấn biên quyết định tự nhiên (*inter-class confusion*).
+
+---
+
+### 3.6. Phân tích Độ phức tạp Không gian & Thời gian
+
+* **Không gian bộ nhớ bổ sung:** Hai ma trận trạng thái $\mathbf{R} \in \mathbb{R}^{D \times D}$ và $\mathbf{W} \in \mathbb{R}^{D \times C}$ chiếm độ phức tạp không gian $\mathcal{O}(D^2 + DC)$ — **hằng số theo tổng số mẫu $V$**. Với $D = 1{,}000$, riêng ma trận $\mathbf{R}$ chứa $10^6$ phần tử ($\approx 4\text{ MB}$ ở `float32` hoặc $7.63\text{ MB}$ ở `float64` chuẩn số học cao). Lưu ý rằng tổng VRAM thực tế khi chạy ($\approx 1.9\text{ GB}$ ở cỡ lô $10$) chủ yếu dùng để chứa trọng số và bước truyền xuôi của backbone `ViT-B/16`.
+* **Thời gian cập nhật mỗi mini-batch (Đính chính `Eq. 14` của paper):** Trên mỗi mini-batch cỡ $S$, phép cập nhật $\mathbf{R}_t$ cần $\Theta(D^2 S + DS^2 + S^3)$ phép toán và cập nhật $\mathbf{W}_t$ cần $\Theta(DSC_t)$ phép toán (bài báo gốc ở `Eq. 14` trang 5 ghi nhầm chi phí cập nhật $\mathbf{R}_t$ có chứa thừa số số lớp $C$). Vì $S = 10 \ll D = 1{,}000$, cập nhật đại số diễn ra cực nhanh ở quy mô mili-giây; tuy nhiên, sự phụ thuộc bậc hai $\Theta(D^2)$ vào chiều chiếu $D$ chính là giới hạn mở rộng được nhóm đi sâu ở **Trục II (Mục 5.3)**.
+
+---
+
+### 3.7. Tổng quan Kết quả Thực nghiệm Công bố trong Bài báo Gốc (NeurIPS 2024)
+
+Trong bài báo gốc, nhóm tác giả đánh giá F-OAL trên GPU **NVIDIA RTX 4070 Ti 12 GB** (trung bình 3 lần chạy, $S = 10, D = 1{,}000, \gamma = 1$) qua **6 bộ dữ liệu** trải rộng từ vật thể tự nhiên (*CIFAR-100, Tiny-ImageNet, CORe50*) đến phân loại tinh và kết cấu/địa điểm (*FGVC-Aircraft, DTD, Country211*) theo 3 chỉ số: **Average Incremental Accuracy ($A_{\text{avg}} \uparrow$)**, **Last Accuracy ($A_{\text{last}} \uparrow$)** và **Forgetting Rate ($F \downarrow$)**:
+
+1. **Độ chính xác công bố trên 6 tập dữ liệu (`Table 2` của bài báo gốc):**
+
+   | Tập dữ liệu | Số lớp / Số Tasks | F-OAL ($A_{\text{avg}}$) | Baseline Mạnh nhất Ngoài F-OAL ($A_{\text{avg}}$) | Chênh lệch của F-OAL | Đặc trưng Miền Dữ liệu |
+   | :--- | :---: | :---: | :--- | :---: | :--- |
+   | **CIFAR-100** | 100 lớp / 10 tasks | `91.1%` | `92.4%` — *DVC (Replay)* | `-1.3 pp` | Vật thể tự nhiên độ phân giải thấp ($32^2$). |
+   | **CORe50** | 50 lớp / 9 tasks | `96.3%` | `97.1%` — *DVC (Replay)* | `-0.8 pp` | Nhận dạng vật thể cầm tay qua nhiều phiên. |
+   | **FGVC-Aircraft** | 100 lớp / 10 tasks | **`62.2%`**\* | `55.6%` — *SCR (Replay)* | **`+6.6 pp`** | Phân loại tinh các biến thể máy bay. |
+   | **DTD** | 40 lớp / 10 tasks | **`82.8%`** | `76.0%` — *EASE (Exemplar-free)* | **`+6.8 pp`** | Kết cấu và họa tiết bề mặt tri giác. |
+   | **Tiny-ImageNet** | 200 lớp / 10 tasks | `91.2%` | `92.0%` — *EASE (Exemplar-free)* | `-0.8 pp` | Vật thể tự nhiên 200 lớp rút trích từ ImageNet. |
+   | **Country211** | 200 lớp / 10 tasks | **`24.4%`** | `17.8%` — *SLCA (Exemplar-free)* | **`+6.6 pp`** | Định vị quốc gia từ bối cảnh ảnh địa lý khó. |
+
+   *\*Lưu ý trích dẫn chính xác: Đoạn văn Mục 4.4 của bài báo ghi nhầm FGVC-Aircraft là `66.2%`, trong khi cả `Table 2` và `Table 4` đều ghi `62.2%` (và `Table 6` ghi `61.1%`). Báo cáo của nhóm sử dụng mốc chuẩn `62.2%` từ bảng kết quả chính.*
+
+2. **Tốc độ huấn luyện (`Table 3`) & Tiêu thụ VRAM GPU (`Figure 2` của bài báo gốc):**
+   * **Thời gian tổng thể (gồm cả trích xuất đặc trưng):** Trên CIFAR-100, F-OAL chỉ mất **`261s`** (nhanh gấp **`2.5×`** so với ER `652s` và nhanh hơn EASE `383s`); trên DTD mất **`8s`** (nhanh gấp **`17.4×`** so với EASE `139s`); trên FGVC-Aircraft mất **`16s`** (so với ER `40s`, EASE `147s`).
+   * **Bộ nhớ GPU đỉnh (*Peak VRAM*):** Trên CIFAR-100 ($S=10$), F-OAL sử dụng khoảng **`1.9 GB` VRAM**, thấp hơn nhiều so với các phương pháp Replay như ER (`~6.3 GB`) hay iCaRL (`~7.5 GB`). *(Dù một vài baseline exemplar-free gọn nhẹ khác có thể dùng VRAM tương đương hoặc thấp hơn chút ít, F-OAL đạt điểm cân bằng tốt nhất giữa độ chính xác cao và chi phí tài nguyên thấp).*
+
+3. **Nghiên cứu loại bỏ thành phần công bố trong bài báo gốc (`Table 4` & `Section 4.5`):**
+   * Trên **DTD (`Table 4`)**, bài báo báo cáo loại bỏ đồng thời `FF` và `SP` làm $A_{\text{avg}}$ sụt giảm mạnh `11.6 pp` (`82.8%` $\to$ `71.2%`).
+   * Ở **`Section 4.5`**, khi giữ nguyên toàn bộ đặc trưng `Frozen ViT + FF + SP` nhưng thay thế **Analytic Classifier (RLS)** bằng một tầng tuyến tính **Fully Connected huấn luyện 1-pass bằng Backpropagation**, $A_{\text{avg}}$ trên CIFAR-100 sụp đổ từ **`91.1%` xuống chỉ còn `32.4%`**, khẳng định cơ chế cập nhật giải tích RLS chính là trụ cột chống quên của toàn bộ hệ thống.
+
+Toàn bộ những tuyên bố trên của bài báo gốc được nhóm kiểm chứng độc lập bằng thực nghiệm tái lập ở **[Mục 4](#4-giai-đoạn-i--kết-quả-tái-lập-thực-nghiệm--giải-mã-chênh-lệch-đa-tập-dữ-liệu)** và mổ xẻ các giới hạn toán học ẩn sâu ở **[Mục 5](#5-giai-đoạn-ii--phân-tích-phản-biện-lý-thuyết-thực-nghiệm-lab-2--poster-a2)**.
 
 ---
 
