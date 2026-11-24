@@ -1,0 +1,52 @@
+{
+  "entity": "caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm",
+  "project": "hcmus-foal-reproduction",
+  "required_tags": [
+    "lab2-empirical-demo",
+    "critical-analysis"
+  ],
+  "runs": [
+    {
+      "experiment": "E1_LongTail",
+      "key": "vanilla_foal",
+      "name": "lab2_e1_cifar100_vanilla_foal_3seed",
+      "run_id": "g34o8awx",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/g34o8awx"
+    },
+    {
+      "experiment": "E1_LongTail",
+      "key": "norm_calibrated",
+      "name": "lab2_e1_cifar100_norm_calibrated_3seed",
+      "run_id": "kafjjzio",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kafjjzio"
+    },
+    {
+      "experiment": "E1_LongTail",
+      "key": "balanced_woodbury",
+      "name": "lab2_e1_cifar100_balanced_woodbury_3seed",
+      "run_id": "fqahbyt4",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/fqahbyt4"
+    },
+    {
+      "experiment": "E3A_Quadratic_Scaling",
+      "key": "quadratic_scaling",
+      "name": "lab2_e3a_cifar100_quadratic_scaling_3seed",
+      "run_id": "nbr04hu5",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/nbr04hu5"
+    },
+    {
+      "experiment": "E3B_DoubleDescent_FD2",
+      "key": "native",
+      "name": "lab2_e3b_cifar100_native_double_descent_fd2",
+      "run_id": "1bns4np4",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/1bns4np4"
+    },
+    {
+      "experiment": "E3B_DoubleDescent_FD2",
+      "key": "small_sample_v1600",
+      "name": "lab2_e3b_cifar100_small_sample_v1600_double_descent_fd2",
+      "run_id": "kyj36qk9",
+      "url": "https://forge.coreweave.com/wandb/caoban170106-tr-ng-i-h-c-khoa-h-c-t-nhi-n-hqg-hcm/hcmus-foal-reproduction/runs/kyj36qk9"
+    }
+  ]
+}

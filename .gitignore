@@ -57,9 +57,12 @@ results/foal_dtd_headline_baselines_results/**/*.pt
 !results/aircraft_c3_full/
 !results/aircraft_c1_diagnostics/
 !results/official_foal_aircraft_seed0/
+!results/lab2_empirical/
+results/lab2_empirical/**/*.pt
 *.zip
 data/
 *.ckpt
 *.pth
 .DS_Store
 ref/
+~$*
